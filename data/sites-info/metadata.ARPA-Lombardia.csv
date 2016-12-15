@@ -1,0 +1,63 @@
+idStazione,EOI_ST_CODE,NAME,idSensore,Comune,Localita,Provincia,Quota,LAT,LON
+508,IT1792A,Cassano d'Adda - Via di Vona,9963,Cassano d'Adda,via Quintino di Vona,MI,133,45.520009,9.512232
+517,IT1294A,Turbigo,10352,Turbigo,vicolo dello Sport,MI,141,45.526556,8.736502
+528,IT0705A,Milano - Verziere,6956,Milano,Largo dei Bersaglieri,MI,116,45.463349,9.195325
+531,IT0706A,Limito,6908,Pioltello,via Palermo,MI,114,45.483632,9.32736
+542,IT1034A,Meda,6910,Meda,via Gagarin,MB,222,45.661764,9.156647
+546,IT1010A,Magenta,6912,Magenta,via F. Turati,MI,137,45.462421,8.880214
+548,IT1016A,Milano - via Senato,10320,Milano,via Senato,MI,118,45.470501,9.197461
+554,IT1650A,Saronno - via Santuario,6915,Saronno,via Santuario,VA,212,45.626222,9.040068
+558,IT1459A,Busto Arsizio - Accam,6917,Busto Arsizio,via Novara,VA,206,45.582887,8.834492
+560,IT1588A,Varese - via Copelli,6918,Varese,Via Copelli,VA,383,45.816975,8.820249
+561,IT0771A,Como - viale Cattaneo,6919,Como,via Cattaneo,CO,202,45.815042,9.066979
+565,IT1648A,Cantù - via Meucci,6959,Cantù,Via Meucci,CO,369,45.730837,9.125739
+569,IT0906A,Sondrio - via Mazzini,6958,Sondrio,Via Mazzini,SO,307,46.167971,9.870146
+571,IT0908A,Bormio,6925,Bormio,via Monte Braulio,SO,1225,46.47028,10.37250
+572,IT1190A,Morbegno - via Cortivacci,6926,Morbegno,via Cortivacci,SO,262,46.13167,9.56659
+574,IT0776A,Lecco - Via Amendola,6927,Lecco,via Amendola,LC,214,45.850196,9.395581
+576,IT0777A,Merate,6929,Merate,via Madonna di Loreto,LC,279,45.69796,9.406192
+583,IT0707A,Bergamo - via Meucci,6931,Bergamo,Via Meucci,BG,249,45.691044,9.643662
+584,IT0997A,Bergamo - via Garibaldi,10405,Bergamo,via Garibaldi,BG,249,45.695687,9.661261
+592,IT0778A,Treviglio,6935,Treviglio,p.zza Insurrezione,BG,191,45.519335,9.592019
+596,IT1463A,Osio Sotto,6936,Osio Sotto,via per levante 40,BG,182,45.620583,9.611544
+598,IT1646A,S.Rocco al Porto,6938,San Rocco al Porto,via Matteotti,LO,55,45.081992,9.700793
+600,IT1286A,Lodi - viale Vignati,6939,Lodi,viale Vignati,LO,80,45.306016,9.485275
+604,IT0267A,Tavazzano,9740,Tavazzano con Villavesco,Via Cascina Bagnolo,LO,85,45.330364,9.414644
+608,IT1287A,Codogno - via Trento,9739,Codogno,Via Trento,LO,59,45.159377,9.698153
+609,IT1464A,Casirate d'Adda,9965,Casirate d'Adda,via Cimitero,BG,108,45.498228,9.556242
+627,IT1153A,Cremona - p.zza Cadorna,12584,Cremona,p.zza Cadorna,CR,39,45.13195,10.015741
+629,IT0839A,Crema - via XI febbraio,10339,Crema,via XI febbraio,CR,79,45.366311,9.703951
+633,IT0840A,Soresina,6945,Soresina,via Landriani/via Piave,CR,70,45.28398,9.863403
+642,IT0912A,Pavia - via Folperti,12028,Pavia,via Folperti,PV,77,45.194682,9.164649
+643,IT1104A,Pavia - p.zza Minerva,6947,Pavia,p.zza Minerva,PV,77,45.186335,9.146677
+649,IT0594A,Brescia - Broletto,6951,Brescia,P.zza Belfiore,BS,149,45.540065,10.22282
+654,IT0740A,Sarezzo - via Minelli,6952,Sarezzo,via Minelli,BS,274,45.649613,10.205081
+655,IT1385A,Darfo (aria),10501,Darfo Boario Terme,via De Amicis c/o asilo nido,BS,221,45.874603,10.177366
+659,IT0742A,Odolo,6953,Odolo,via Praes,BS,349,45.646052,10.389297
+661,IT0846A,Rezzato,6954,Rezzato,via A.De Gasperi,BS,147,45.515714,10.33624
+663,IT0709A,Mantova - via Ariosto,6955,Mantova,Via Ariosto,MN,18,45.145269,10.803335
+664,IT1869A,Mantova - p.zza Gramsci,9835,Mantova,p.zza Gramsci,MN,18,45.151752,10.781417
+669,IT1737A,Brescia - Villaggio Sereno,9961,Brescia,Villaggio Sereno,BS,70,45.515945,10.219148
+670,IT1868A,Mantova - S.Agnese,9831,Mantova,p.zza semimario 3 c/o scuola Alberti,MN,22,45.160577,10.795573
+673,IT1735A,Voghera - via Pozzoni,9872,Voghera,c\o ASM ,PV,90,44.999555,9.00845
+674,IT1743A,Monza - via Machiavelli,9890,Monza,via Machiavelli,MB,162,45.580265,9.273574
+677,IT1739A,Cremona - Via Fatebenefratelli,9927,Cremona,Via Fatebenefratelli 2/a,CR,43,45.142544,10.043848
+679,IT1734A,Valmadrera,9976,Valmadrera,Via Monsignor Pozzi,LC,247,45.842213,9.351662
+681,IT1812A,Moggio,10491,Moggio,Località Penscei,LC,1197,45.912791,9.497543
+687,IT1873A,Ferno,10043,Ferno,via Alfredo Di Dio,VA,215,45.619248,8.756977
+693,IT0692A,Sannazzaro de' Burgondi - AGIP ,10072,Sannazzaro de' Burgondi,Via Traversi,PV,85,45.102775,8.904187
+695,IT1388A,Ponti sul Mincio,10083,Ponti sul Mincio,Via San Martino e Solferino,MN,113,45.412776,10.683362
+697,IT1392A,Borgofranco - loc. Bonizzo,10103,Borgofranco sul Po,Bonizzo,MN,14,45.046503,11.180949
+703,IT1865A,Schivenoglia,10173,Schivenoglia,Via Malpasso,MN,,45.016881,11.076097
+705,IT1692A,Milano - Pascal Città Studi,10273,Milano,via Ponzio 34/6,MI,122,45.478998,9.235491
+706,IT1826A,Lecco - Via Sora,10290,Lecco,via Sora,LC,272,45.863754,9.399955
+708,IT1874A,Parona,10343,Parona,Via della Miseria 3,PV,112,45.281943,8.754336
+709,IT2079A,Vigevano - via Valletta,10335,Vigevano,via Valletta Fogliano 70,PV,109,45.303615,8.844806
+1264,IT1967A,Sondrio - via Paribelli,17293,Sondrio,Via Paribelli,SO,290,46.167857,9.879212
+1265,IT1965A,Lodi - S. Alberto,10483,Lodi,Via Vittime della violenza,LO,76,45.302787,9.495286
+1266,IT1964A,Bertonico,10484,Bertonico,Via Aldo Moro,LO,65,45.233497,9.666258
+1269,IT2062A,Dalmine - via Verdi,10548,Dalmine,Via Verdi,BG,207,45.64971,9.601235
+1297,IT2063A,Spinadesco,12531,Spinadesco,Via Cesare Battisti 1,CR,48,45.150473,9.930598
+1303,IT2095A,Cremona - via Gerre Borghi,12585,Cremona,via Gerre Borghi,CR,36,45.109543,10.069242
+1374,IT2098A,Monza Parco,17290,Monza,via Mirabellino,MB,181,45.603072,9.276156
+

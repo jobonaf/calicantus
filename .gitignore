@@ -1,6 +1,10 @@
 .Rproj.user
 .Rhistory
 .RData
-tmp/*
+tmp/
 config/config*
 config/access*
+run/
+log/
+old/
+data/

@@ -1,13 +1,13 @@
+source("/home/giovanni/R/projects/calicantus/R/reading_functions.R")
+source("/home/giovanni/R/projects/calicantus/R/get_data.R")
+
+
 read_data <- function(config,File,metadata,day,pollutant,clean=TRUE){
-  source("/home/giovanni/R/projects/calicantus/R/reading_functions.R")
-  source(config,local=TRUE)
-  cat(paste0("config=",config,"\n"))
-  cat(paste0("select.by.day=",select.by.day,"\n"))
+  source(config)
   cat(paste("estraggo dati",Source,day,"\n"))
   check <- nchar(File)>0
   if(check) {
     dat <- NULL
-    cat(paste0("select.by.day=",select.by.day,"\n"))
     if(!select.by.day) dat <- try(readFun(file = File, sep=Sep))
     if(select.by.day) dat <- try(readFun(file = File, sep=Sep, day=day))
     check <- class(dat)!="try-error"
@@ -17,6 +17,9 @@ read_data <- function(config,File,metadata,day,pollutant,clean=TRUE){
     ana <- read.csv(metadata)
     id.dat <- match(as.character(ana[,Id.metadata]),as.character(dat[,Id.data]))
     id.ana <- which(!is.na(id.dat))
+    check <- length(id.ana)>0
+  }
+  if(check) {
     id.dat <- na.omit(id.dat)
     value <- as.numeric(as.character(dat[id.dat,Val.data]))
     lat <- ana$LAT[id.ana]
@@ -32,7 +35,7 @@ read_data <- function(config,File,metadata,day,pollutant,clean=TRUE){
   } else {
     Dat <- NULL
   }  
-  if(clean) file.remove(File)
+  if(clean && file.exists(File)) file.remove(File)
   return(Dat)
 }
 
@@ -49,10 +52,15 @@ read_info <- function(config,filein){}
 
 data2db <- function(Source,day,pollutant,path="/home/giovanni/R/projects/calicantus/"){
   dat <- import_data(Source=Source,day=day,pollutant=pollutant,path=path)
-  day <- as.POSIXct(day,tz="Africa/Algiers")
-  Dir <- paste0(path,"data/obs-data/",format(day,"%Y/%m/%d/"))
-  if(!dir.exists(Dir)) dir.create(Dir,recursive=TRUE)
-  save(dat, file = paste0(path,"data/obs-data/",format(day,"%Y/%m/%d/%Y%m%d_"),pollutant,"_",Source,".rda"))
+  if(length(dat)>0) {
+    dat <- data.frame(dat, Sys_time=Sys.time())
+    day <- as.POSIXct(day,tz="Africa/Algiers")
+    Dir <- paste0(path,"data/obs-data/",format(day,"%Y/%m/%d/"))
+    if(!dir.exists(Dir)) dir.create(Dir,recursive=TRUE)
+    fileout <- paste0(path,"data/obs-data/",format(day,"%Y/%m/%d/%Y%m%d_"),pollutant,"_",Source,".rda")
+    save(dat, file = fileout)
+    cat(paste0("saved ",fileout),sep="\n")
+  }
 }
 
 info2db <- function(info){}

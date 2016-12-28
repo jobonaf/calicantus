@@ -1,30 +1,28 @@
-Functions:
+collecting data:
 
-- [ ] `get_ftp`
-- [ ] `get_http`
-- [ ] `get_ssh`
-- [ ] `get_data`
-- [ ] `prepare_data` (data + metadata)
-- [ ] `meld_data`
-- [ ] `export_data`
+- [x] `get_ftp`
+- [x] `get_http`
+- [x] `get_ssh`
+- [x] `get_local`
+- [x] `get_dbqaemr`
+- [x] `get_metadata_dbqaemr`
+- [x] `get_data`
 
-Templates/examples:
+preparing data:
 
-- [ ] `upload_data`
-- [ ] `upload_config`
-- [ ] `template_config`
-- [ ] `template_data`
-- [ ] `template_metadata`
+- [x] `read_ArpaV`
+- [x] `read_ArpaT`
+- [x] `read_data`
+- [x] `import_data`
+- [ ] `read_info`
+- [x] `data2db`
+- [ ] `info2db`
+- [x] `collect_data.R` under crontab
 
-Shiny:
+web interface:
 
-- [ ] `map_data` (leaflet)
-- [ ] `map_metadata` (leaflet)
-- [ ] `ts_station` (rCharts)
-- [ ] `ts_group` (rCharts)
-
-Shinydashboard:
-
-- [ ] `alert_exceed`
-- [ ] `message_summary`
-- [ ] `dashboard_calicantus`
+- [ ] page:login
+- [ ] tab:data
+- [x] tab:map
+- [ ] tab:timeseries
+- [x] tab:about

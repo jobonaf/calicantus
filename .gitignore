@@ -4,6 +4,7 @@
 tmp/
 config/config*
 config/access*
+config/ui_credentials.R
 run/
 log/
 old/

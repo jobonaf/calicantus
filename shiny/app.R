@@ -1,5 +1,6 @@
 #packages
 suppressMessages({
+  .libPaths(new=unique(c("/home/giovanni/R/x86_64-pc-linux-gnu-library/3.2", .libPaths())))
   library(shiny)
 #  library(shinyBS)
 #  library(shinyjs)
@@ -23,15 +24,15 @@ bb <- c(0,25,50,75,100,300)
 cc <- c("steelblue","olivedrab","orange","red","purple")
 
 # UI: map
-ui_map <- fluidPage(leafletOutput("Map", width="100%", height="600px")
-          ,absolutePanel(id="controls", top=100, right=100, height=200, width=100
-                         ,dateInput("day", "", Sys.Date()-1)
-          )
+ui_map <- sidebarLayout(
+  sidebarPanel(dateInput("day", "day of interest", Sys.Date()-1),
+               width=3),
+  mainPanel(leafletOutput("Map", width="100%", height="600px"))
 )
 
 # UI: data table
 ui_data <- sidebarLayout(
-  sidebarPanel(dateRangeInput("daterange","period of analysis",
+  sidebarPanel(dateRangeInput("daterange","period of interest",
                               start=Sys.Date()-10,
                               end=Sys.Date()-1,
                               max = Sys.Date()-1),
@@ -83,8 +84,8 @@ Logged = FALSE
 ui_login <- function(){
   tagList(
     div(id = "login",
-        wellPanel(textInput("Usr", "", "user"),
-                  passwordInput("Pwd", "", "password"),
+        wellPanel(textInput("Usr", "user:", "user"),
+                  passwordInput("Pwd", "password:", "password"),
                   br(),actionButton("Login", "Log in")))
     ,tags$style(type="text/css", "#login {font-size:12px;   text-align: left;position:absolute;top: 40%;left: 50%;margin-top: -100px;margin-left: -150px;}")
   )}
@@ -141,6 +142,7 @@ server <- function(input, output, session) {
       Dat <- bind_rows(Dat,dat)
     }
     Dat$Value <- round(Dat$Value)
+    Dat <- arrange(Dat, desc(Value))
     return(Dat)
   })
   
@@ -158,7 +160,7 @@ server <- function(input, output, session) {
       if(input$emphasis=="period max") Dat %>% group_by(Pollutant) -> Dat  
       if(input$emphasis=="daily max") Dat %>% group_by(Pollutant,Day) -> Dat  
       if(input$emphasis=="data source max") Dat %>% group_by(Pollutant,Source) -> Dat  
-      Dat %>% mutate(Rank=1+n()-rank(Value,na.last=FALSE), Peak=(Rank<=input$howmany)) %>% left_join(.,Dat) -> Dat
+      Dat %>% mutate(Rank=1+n()-rank(Value,na.last=FALSE,ties.method="max"), Peak=(Rank<=input$howmany)) %>% left_join(.,Dat) -> Dat
       Dat %>% group_by(Pollutant,Name,Source) %>% mutate(Emphasis=max(Peak,na.rm=T)) %>% left_join(.,Dat) -> Dat
     }
     Dat$Emphasis[!Dat$Emphasis] <- NA

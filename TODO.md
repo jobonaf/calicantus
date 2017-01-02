@@ -21,8 +21,12 @@ preparing data:
 
 web interface:
 
-- [ ] page:login
-- [ ] tab:data
+- [x] page:login
+- [x] tab:data
 - [x] tab:map
-- [ ] tab:timeseries
+- [x] tab:timeseries
 - [x] tab:about
+
+details:
+- [ ] avoid zoom resetting (http://stackoverflow.com/questions/28393310/how-to-prevent-leaflet-map-from-resetting-zoom-in-shiny-app)
+- [ ] import older data

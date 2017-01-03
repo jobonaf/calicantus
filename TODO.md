@@ -30,6 +30,7 @@ web interface:
 details:
 - [ ] avoid zoom resetting (http://stackoverflow.com/questions/28393310/how-to-prevent-leaflet-map-from-resetting-zoom-in-shiny-app)
 - [ ] import older data
-- [ ] add some helps ("extend PoI in the 'data' tab to see map of other days")
-- [ ] set daterange min-max for the map
-- [ ] duplicate PoI selection in 'map' tab (if possible)
+- [ ] add some helps
+- [x] set daterange min-max for the map
+- [x] duplicate PoI selection in 'map' tab
+- [x] add ARPAT contact

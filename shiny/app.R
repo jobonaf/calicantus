@@ -24,21 +24,10 @@ bb <- c(0,25,50,75,100,300)
 cc <- c("steelblue","olivedrab","orange","red","purple")
 
 # UI: map
-ui_map <- sidebarLayout(
-  sidebarPanel(dateInput("day", "day of interest", Sys.Date()-1),
-               width=3),
-  mainPanel(leafletOutput("Map", width="100%", height="600px"))
-)
+ui_map <- uiOutput("ui_map")
 
 # UI: data table
-ui_data <- sidebarLayout(
-  sidebarPanel(dateRangeInput("daterange","period of interest",
-                              start=Sys.Date()-10,
-                              end=Sys.Date()-1,
-                              max = Sys.Date()-1),
-               width=3),
-  mainPanel(dataTableOutput("df"))
-)
+ui_data <- uiOutput("ui_data")
 
 # UI: time series
 ui_ts <- sidebarLayout(
@@ -72,7 +61,8 @@ ui_about <- fluidPage(
     tags$li("Friuli Venezia Giulia: ", a("Fulvio Stel", href="mailto:fulvio.stel@arpa.fvg.it"), "(ARPA-FVG)"),
     tags$li("Liguria: ", a("Monica Beggiato", href="mailto:monica.beggiato@arpal.gov.it"), "(ARPAL)"),
     tags$li("Lombardy: ", a("Anna Di Leo", href="mailto:a.dileo@arpalombardia.it"), "(ARPA Lombardia)"),
-    tags$li("Sicily: ", a("Anna Abita", href="mailto:abita@arpa.sicilia.it"), "(ARPA Sicilia)")
+    tags$li("Sicily: ", a("Anna Abita", href="mailto:abita@arpa.sicilia.it"), "(ARPA Sicilia)"),
+    tags$li("Tuscany: ", a("Marco Stefanelli", href="mailto:m.stefanelli@arpat.toscana.it"), "(ARPAT)")
   ),
   h3("code"),
   p(code("calicantus"), " is open source and available", a("here", href="https://github.com/jobonaf/calicantus"))
@@ -124,6 +114,45 @@ server <- function(input, output, session) {
       })
       print(ui)
     }
+  })
+  
+  # UI: data table
+  output$ui_data <- renderUI({
+    sidebarLayout(
+      sidebarPanel(dateRangeInput("daterange","period of interest",
+                                  start=Sys.Date()-10,
+                                  end=Sys.Date()-1,
+                                  max = Sys.Date()-1),
+                   width=3),
+      mainPanel(dataTableOutput("df"))
+    )
+  })
+  
+  observe({
+    updateDateInput(session=session, inputId = "day", 
+                    value=max(min(input$daterange[2],input$day),input$daterange[1]))
+  })
+  
+  # UI: map
+  output$ui_map <- renderUI({
+    sidebarLayout(
+      sidebarPanel(dateRangeInput("daterange2","period of interest",
+                                  start=input$daterange[1],
+                                  end=input$daterange[2],
+                                  max = Sys.Date()-1),
+                   dateInput("day", "day of interest", value=max(input$daterange), 
+                             min = min(input$daterange), max = max(input$daterange)),
+                   width=3),
+      mainPanel(leafletOutput("Map", width="100%", height="600px"))
+    )
+  })
+  
+  observe({
+    updateDateRangeInput(session=session, inputId = "daterange",
+                         start=input$daterange2[1],
+                         end=input$daterange2[2])
+    updateDateInput(session=session, inputId = "day", 
+                    value=max(min(input$daterange2[2],input$day),input$daterange2[1]))
   })
   
   # load data

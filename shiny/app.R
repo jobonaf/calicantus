@@ -140,7 +140,7 @@ server <- function(input, output, session) {
                                   start=input$daterange[1],
                                   end=input$daterange[2],
                                   max = Sys.Date()-1),
-                   dateInput("day", "day of interest", value=max(input$daterange), 
+                   dateInput("day", "day of interest", value="", 
                              min = min(input$daterange), max = max(input$daterange)),
                    width=3),
       mainPanel(leafletOutput("Map", width="100%", height="600px"))
@@ -222,13 +222,18 @@ server <- function(input, output, session) {
     Dat[Dat$Day==as.character(input$day),]
   })
   
-  # daily map
+  # daily map: initialize basemap
   output$Map <- renderLeaflet({
-    na.omit(dataOfDay()) -> Dat
-    lon0 <- (min(Dat$Lon)+max(Dat$Lon))/2
-    lat0 <- (min(Dat$Lat)+max(Dat$Lat))/2
+    lon0 <- 11
+    lat0 <- 43
     
-    leaflet() %>% setView(lon0, lat0, 6) %>% addTiles()  %>% addProviderTiles("CartoDB.Positron") %>%
+    leaflet() %>% setView(lon0, lat0, 6) %>% addTiles()  %>% addProviderTiles("CartoDB.Positron")
+  })
+  
+  # daily map: dynamic layers
+  observeEvent(input$day,{
+    na.omit(dataOfDay()) -> Dat
+    leafletProxy("Map",data = Dat) %>% 
       addCircleMarkers(data=Dat
                        ,lng=~Lon, lat=~Lat
                        ,radius=6 

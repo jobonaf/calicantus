@@ -233,14 +233,15 @@ server <- function(input, output, session) {
   # daily map: dynamic layers
   observeEvent(input$day,{
     na.omit(dataOfDay()) -> Dat
-    leafletProxy("Map",data = Dat) %>% 
+    leafletProxy("Map") %>% 
+      clearMarkers() %>%
       addCircleMarkers(data=Dat
                        ,lng=~Lon, lat=~Lat
                        ,radius=6 
                        ,color=as.character(cut(Dat$Value,
                                                breaks=bb,
                                                labels=cc))
-                       ,stroke=FALSE, fillOpacity=0.5
+                       ,stroke=FALSE, fillOpacity=1
                        ,popup= ~htmlEscape(paste0(Name,": ",Value))
       )
   })

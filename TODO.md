@@ -27,10 +27,12 @@ web interface:
 - [x] tab:timeseries
 - [x] tab:about
 
-details:
-- [ ] avoid zoom resetting (http://stackoverflow.com/questions/28393310/how-to-prevent-leaflet-map-from-resetting-zoom-in-shiny-app)
+improvements, details, etc:
+- [x] avoid zoom resetting (http://stackoverflow.com/questions/28393310/how-to-prevent-leaflet-map-from-resetting-zoom-in-shiny-app)
 - [ ] import older data
 - [ ] add some helps
 - [x] set daterange min-max for the map
 - [x] duplicate PoI selection in 'map' tab
 - [x] add ARPAT contact
+- [ ] add colorbar to map
+- [ ] map delta

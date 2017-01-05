@@ -83,11 +83,11 @@ ui_login <- function(){
   )}
 
 # UI: webpage with tabs
-ui_main <- function(){tagList(tabPanel("data",ui_data),
-                              tabPanel("map",ui_map),
+ui_menu <- function(){tagList(tabPanel("data",      ui_data),
+                              tabPanel("map",       ui_map),
                               tabPanel("timeseries",ui_ts),
-                              tabPanel("about",ui_about),
-                              tabPanel("debug",ui_debug))}
+                              tabPanel("about",     ui_about),
+                              tabPanel("debug",     ui_debug))}
 ui <- (htmlOutput("page"))
 
 ## server
@@ -113,7 +113,7 @@ server <- function(input, output, session) {
     # main page
     if (USER$Logged) {
       output$page <- renderUI({
-        div(class="outer",do.call(navbarPage,c(inverse=TRUE,title = "[calicantus]",ui_main())))
+        div(class="outer",do.call(navbarPage,c(inverse=TRUE,title = "[calicantus]",ui_menu())))
       })
       print(ui)
     }
@@ -127,34 +127,37 @@ server <- function(input, output, session) {
                                   start=Sys.Date()-10,
                                   end=Sys.Date()-1,
                                   max = Sys.Date()-1),
-                   helpText("Please note that the table on the right side is interactive:",
-                            "you can sort it by clicking on the header,",
-                            "look for a specific value using the 'search' tool,",
-                            "filter the data by writing in the cells below the table, and so on."),
+                   actionButton("goPeriod", label="load", icon = icon("arrow-circle-right")),
+                   conditionalPanel(condition = "input.goPeriod",
+                                    helpText("Please note that the table on the right side is interactive:",
+                                             "you can sort it by clicking on the header,",
+                                             "look for a specific value using the 'search' tool,",
+                                             "filter the data by writing in the cells below the table, and so on.")),
                    width=3),
       mainPanel(dataTableOutput("df"))
     )
   })
   
   # load data
-  dataOfPeriod <- reactive({
-    dd <- as.character(seq.Date(input$daterange[1],input$daterange[2],"1 day"))
-    ff <- NULL
-    for(d in dd) {
-      ff <- c(ff,system(paste0("ls /home/giovanni/R/projects/calicantus/data/obs-data/",
-                               format(as.Date(d),"%Y/%m/%d/%Y%m%d_*.rda 2>/dev/null")),
-                        intern=TRUE))
-    }
-    Dat <- NULL
-    nf <- length(ff)
-    for (i in 1:nf) {
-      load(ff[i])
-      Dat <- bind_rows(Dat,dat)
-    }
-    Dat$Value <- round(Dat$Value)
-    Dat <- dplyr::arrange(Dat, desc(Value))
-    return(Dat)
-  })
+  dataOfPeriod <- eventReactive(eventExpr = input$goPeriod, 
+                                valueExpr = {
+                                  dd <- as.character(seq.Date(input$daterange[1],input$daterange[2],"1 day"))
+                                  ff <- NULL
+                                  for(d in dd) {
+                                    ff <- c(ff,system(paste0("ls /home/giovanni/R/projects/calicantus/data/obs-data/",
+                                                             format(as.Date(d),"%Y/%m/%d/%Y%m%d_*.rda 2>/dev/null")),
+                                                      intern=TRUE))
+                                  }
+                                  Dat <- NULL
+                                  nf <- length(ff)
+                                  for (i in 1:nf) {
+                                    load(ff[i])
+                                    Dat <- bind_rows(Dat,dat)
+                                  }
+                                  Dat$Value <- round(Dat$Value)
+                                  Dat <- dplyr::arrange(Dat, desc(Value))
+                                  return(Dat)
+                                })
   
   # UI: map
   output$ui_map <- renderUI({

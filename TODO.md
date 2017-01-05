@@ -36,3 +36,5 @@ improvements, details, etc:
 - [x] add ARPAT contact
 - [ ] add colorbar to map
 - [ ] map delta
+- [ ] statistics over a long period (table & map)
+- [ ] table: selection of single day

@@ -28,13 +28,14 @@ web interface:
 - [x] tab:about
 
 improvements, details, etc:
-- [x] avoid zoom resetting (http://stackoverflow.com/questions/28393310/how-to-prevent-leaflet-map-from-resetting-zoom-in-shiny-app)
-- [ ] import older data
-- [ ] add some helps
+- [x] avoid zoom resetting
+- [x] import older data
+- [x] add some helps
 - [x] set daterange min-max for the map
 - [x] duplicate PoI selection in 'map' tab
 - [x] add ARPAT contact
 - [ ] add colorbar to map
 - [ ] map delta
 - [ ] statistics over a long period (table & map)
-- [ ] table: selection of single day
+- [x] data table: selection of single day
+- [ ] timeseries: x axis with days, weeks, months, wday, season, year...

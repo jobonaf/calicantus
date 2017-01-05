@@ -25,6 +25,16 @@ ll2source <- function(lat,lon) {
   unlist(out)
 }
 
+read.json.single <- function(date,poll="PM10") {
+  #library("RJSONIO", lib.loc="/usr/local/lib/R/site-library")
+  library("RJSONIO")
+  date <- as.POSIXct(date)
+  filein <-  paste("~/R/projects/map-po/maps/",format(date,"%Y-%m-%d"),
+                   "/",poll,"_",format(date,"%Y%m%d"),".geojson",sep="") 
+  out <- try(fromJSON(filein))
+  return(out)
+}
+
 read.json.multi <- function(first=as.Date("2014-10-10"),last=as.Date("2016-12-12"),poll="PM10") {
   library(dplyr)
   first <- as.POSIXct(first, tz="UTC")
@@ -40,9 +50,9 @@ read.json.multi <- function(first=as.Date("2014-10-10"),last=as.Date("2016-12-12
     records <- NULL
     for(iS in 1:ns) {
       record <- data.frame(
+        Name=dum[[2]][[iS]]$properties[1],
         Lon=as.numeric(dum[[2]][[iS]]$geometry$coordinates[1]),
         Lat=as.numeric(dum[[2]][[iS]]$geometry$coordinates[2]),
-        Name=dum[[2]][[iS]]$properties[1],
         Value=as.numeric(dum[[2]][[iS]]$properties[2]),
         Day=as.Date(date))
       records <- bind_rows(records,record)
@@ -64,7 +74,7 @@ expand_dataset <- function(Data) {
   ll <- unique(Data[,c("Lat","Lon")])
   extra <- data.frame(Lat=ll$Lat, Lon=ll$Lon, Source=ll2source(ll$Lat,ll$Lon))
   Data <- merge(Data,extra)
-  data.frame(Data, Sys_time=format(Sys.time(),"%Y-%m-%d %H:%M:%S"))
+  data.frame(Data, Sys_time=Sys.time())
 }
 
 save_to_multiple_rda <- function(Data,path="/home/giovanni/R/projects/calicantus/",pollutant="PM10") {
@@ -85,3 +95,7 @@ save_to_multiple_rda <- function(Data,path="/home/giovanni/R/projects/calicantus
     }
   }
 }
+
+ddd <- read.json.multi()
+eee <- expand_dataset(ddd)
+save_to_multiple_rda(eee)

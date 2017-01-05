@@ -1,19 +1,25 @@
 #packages
 suppressMessages({
-  .libPaths(new=unique(c("/home/giovanni/R/x86_64-pc-linux-gnu-library/3.2", .libPaths())))
-  library(shiny)
+  pkgO <- names(sessionInfo()$otherPkgs)
+  pkg1 <- c(pkgO)
+  pkg2 <- setdiff(pkg1,"shiny")
+  if(length(pkg2)>0) lapply(paste0('package:',pkg2), detach, character.only = TRUE, unload = TRUE)
+ # .libPaths(new=unique(c("/home/giovanni/R/x86_64-pc-linux-gnu-library/3.2", .libPaths())))
+  library(shiny, lib.loc = "/usr/lib/R/library")
+  library(dplyr, lib.loc = "/usr/lib/R/library")
+  library(plyr, lib.loc = "/home/giovanni/R/x86_64-pc-linux-gnu-library/3.2")
 #  library(shinyBS)
-#  library(shinyjs)
-  library(leaflet)
-  library(DT)
-  library(rgdal)
-  library(raster)
-  library(data.table)
-  library(dplyr)
-  library(tidyr)
-  library(ggplot2)
-  library(RColorBrewer)
-  library(htmltools)
+  library(shinyjs, lib.loc = "/usr/lib/R/library")
+  library(leaflet, lib.loc = "/home/giovanni/R/x86_64-pc-linux-gnu-library/3.2")
+ # library(DT, lib.loc = "/home/giovanni/R/x86_64-pc-linux-gnu-library/3.2")
+  #library(rgdal, lib.loc = "/home/giovanni/R/x86_64-pc-linux-gnu-library/3.2")
+  library(raster, lib.loc = "/usr/lib/R/library")
+  library(data.table, lib.loc = "/home/giovanni/R/x86_64-pc-linux-gnu-library/3.2")
+  library(tidyr, lib.loc = "/usr/lib/R/library")
+  library(scales, lib.loc = "/home/giovanni/R/x86_64-pc-linux-gnu-library/3.2")
+  library(ggplot2, lib.loc = "/home/giovanni/R/x86_64-pc-linux-gnu-library/3.2")
+  library(RColorBrewer, lib.loc = "/usr/lib/R/library")
+  library(htmltools, lib.loc = "/usr/lib/R/library")
 })
 
 # credentials
@@ -30,16 +36,7 @@ ui_map <- uiOutput("ui_map")
 ui_data <- uiOutput("ui_data")
 
 # UI: time series
-ui_ts <- sidebarLayout(
-  sidebarPanel(selectInput("colorby","color by",c("data source"="Source","same color"="same")),
-               selectInput("splitby","split by",c("data source"="Source","don't split"="none")),
-               selectInput("geom_type","plot type",c("boxplot","violin","jitter")),
-               selectInput("emphasis","emphasis",c("period max","daily max","data source max","none")),
-               sliderInput("howmany","how many peaks do you want to emphasize?",1,5,1,1,ticks = FALSE),
-               checkboxInput("labels","peaks labelled with values?",FALSE),
-               width=3),
-  mainPanel(plotOutput("ts"))
-)
+ui_ts <- uiOutput("ui_ts")
 
 # UI: about
 ui_about <- fluidPage(
@@ -68,6 +65,11 @@ ui_about <- fluidPage(
   p(code("calicantus"), " is open source and available", a("here", href="https://github.com/jobonaf/calicantus"))
 )
 
+# UI: debug
+ui_debug <- fluidPage(
+  verbatimTextOutput("debug")
+)
+  
 
 # UI: login
 Logged = FALSE
@@ -84,7 +86,8 @@ ui_login <- function(){
 ui_main <- function(){tagList(tabPanel("data",ui_data),
                               tabPanel("map",ui_map),
                               tabPanel("timeseries",ui_ts),
-                              tabPanel("about",ui_about))}
+                              tabPanel("about",ui_about),
+                              tabPanel("debug",ui_debug))}
 ui <- (htmlOutput("page"))
 
 ## server
@@ -119,40 +122,18 @@ server <- function(input, output, session) {
   # UI: data table
   output$ui_data <- renderUI({
     sidebarLayout(
-      sidebarPanel(dateRangeInput("daterange","period of interest",
+      sidebarPanel(helpText("Here you select the period you are interested in."),
+                   dateRangeInput("daterange","period of interest",
                                   start=Sys.Date()-10,
                                   end=Sys.Date()-1,
                                   max = Sys.Date()-1),
+                   helpText("Please note that the table on the right side is interactive:",
+                            "you can sort it by clicking on the header,",
+                            "look for a specific value using the 'search' tool,",
+                            "filter the data by writing in the cells below the table, and so on."),
                    width=3),
       mainPanel(dataTableOutput("df"))
     )
-  })
-  
-  observe({
-    updateDateInput(session=session, inputId = "day", 
-                    value=max(min(input$daterange[2],input$day),input$daterange[1]))
-  })
-  
-  # UI: map
-  output$ui_map <- renderUI({
-    sidebarLayout(
-      sidebarPanel(dateRangeInput("daterange2","period of interest",
-                                  start=input$daterange[1],
-                                  end=input$daterange[2],
-                                  max = Sys.Date()-1),
-                   dateInput("day", "day of interest", value="", 
-                             min = min(input$daterange), max = max(input$daterange)),
-                   width=3),
-      mainPanel(leafletOutput("Map", width="100%", height="600px"))
-    )
-  })
-  
-  observe({
-    updateDateRangeInput(session=session, inputId = "daterange",
-                         start=input$daterange2[1],
-                         end=input$daterange2[2])
-    updateDateInput(session=session, inputId = "day", 
-                    value=max(min(input$daterange2[2],input$day),input$daterange2[1]))
   })
   
   # load data
@@ -171,26 +152,62 @@ server <- function(input, output, session) {
       Dat <- bind_rows(Dat,dat)
     }
     Dat$Value <- round(Dat$Value)
-    Dat <- arrange(Dat, desc(Value))
+    Dat <- dplyr::arrange(Dat, desc(Value))
     return(Dat)
   })
   
+  # UI: map
+  output$ui_map <- renderUI({
+    sidebarLayout(
+      sidebarPanel(helpText(paste0("Here you can select the day to plot, in the range from ",
+                                   min(as.Date(dataOfPeriod()$Day))," to ",max(as.Date(dataOfPeriod()$Day)),
+                                   ". To select a date outside this range, please change the period of interest in the 'data' tab.")),
+                   dateInput("day", "day of interest", value=max(as.Date(dataOfPeriod()$Day)), 
+                             min = min(as.Date(dataOfPeriod()$Day)), max = max(as.Date(dataOfPeriod()$Day))),
+                   helpText("Please note that the map on the right side is interactive:",
+                            "you can zoom in and out with the mouse wheel or with the '+' and '-',",
+                            "and click on a marker to get name of the station and observed concentration."),
+                   width=3),
+      mainPanel(leafletOutput("Map", width="100%", height="800px"))
+    )
+  })
+  
+  # UI: timeseries
+  output$ui_ts <- renderUI({
+    sidebarLayout(
+      sidebarPanel(helpText(paste0("Here you can plot aggregated timeseries, in the range from ",
+                                   min(as.Date(dataOfPeriod()$Day))," to ",max(as.Date(dataOfPeriod()$Day)),
+                                   ". To plot a different period of interest, please change it in the 'data' tab.")),
+                   selectInput("colorby","color by",c("data source"="Source","same color"="same")),
+                   selectInput("splitby","split by",c("data source"="Source","don't split"="none")),
+                   selectInput("geom_type","plot type",c("boxplot","violin","jitter")),
+                   hr(),
+                   helpText("You can emphasize one or more peaks, by plotting data measured by some stations."),
+                   selectInput("emphasis","emphasis",c("period max","daily max","data source max","none")),
+                   sliderInput("howmany","how many peaks do you want to emphasize?",1,5,1,1,ticks = FALSE),
+                   checkboxInput("labels","peaks labelled with values?",FALSE),
+                   width=3),
+      mainPanel(plotOutput("ts"))
+    )
+  })
+  
   # data table
-  output$df <- renderDataTable({
-    dataOfPeriod()
-  }, options = list(pageLength = 20))
+  output$df <- renderDataTable(options = list(pageLength = 10),
+                               expr={
+                                 dataOfPeriod()
+                               })
   
   # peaks detection
   dataWithPeaks <- reactive({
-    dataOfPeriod() %>% mutate(Station=paste0(Name," (",Source,")")) -> Dat
+    dataOfPeriod() %>% dplyr::mutate(Station=paste0(Name," (",Source,")")) -> Dat
     if(input$emphasis=="none") {
       Dat$Emphasis <- Dat$Peak <- NA
     } else {
       if(input$emphasis=="period max") Dat %>% group_by(Pollutant) -> Dat  
       if(input$emphasis=="daily max") Dat %>% group_by(Pollutant,Day) -> Dat  
       if(input$emphasis=="data source max") Dat %>% group_by(Pollutant,Source) -> Dat  
-      Dat %>% mutate(Rank=1+n()-rank(Value,na.last=FALSE,ties.method="max"), Peak=(Rank<=input$howmany)) %>% left_join(.,Dat) -> Dat
-      Dat %>% group_by(Pollutant,Name,Source) %>% mutate(Emphasis=max(Peak,na.rm=T)) %>% left_join(.,Dat) -> Dat
+      Dat %>% dplyr::mutate(N=n(), Rank=1+N-rank(Value,na.last=FALSE,ties.method="max"), Peak=(Rank<=input$howmany)) %>% left_join(.,Dat) -> Dat
+      Dat %>% group_by(Pollutant,Name,Source) %>% dplyr::mutate(Emphasis=max(Peak,na.rm=T)) %>% left_join(.,Dat) -> Dat
     }
     Dat$Emphasis[!Dat$Emphasis] <- NA
     Dat$Peak[!Dat$Peak] <- NA
@@ -219,14 +236,13 @@ server <- function(input, output, session) {
   # data selection for the map (single day)
   dataOfDay <- reactive({
     Dat <- dataOfPeriod()
-    Dat[Dat$Day==as.character(input$day),]
+    Dat[as.character(Dat$Day)==as.character(input$day),]
   })
   
   # daily map: initialize basemap
   output$Map <- renderLeaflet({
     lon0 <- 11
-    lat0 <- 43
-    
+    lat0 <- 42.5
     leaflet() %>% setView(lon0, lat0, 6) %>% addTiles()  %>% addProviderTiles("CartoDB.Positron")
   })
   
@@ -244,6 +260,11 @@ server <- function(input, output, session) {
                        ,stroke=FALSE, fillOpacity=1
                        ,popup= ~htmlEscape(paste0(Name,": ",Value))
       )
+  })
+  
+  # support for debug
+  output$debug <- renderPrint({
+    sessionInfo()
   })
 }
 

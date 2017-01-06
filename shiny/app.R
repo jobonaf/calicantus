@@ -18,16 +18,13 @@ suppressMessages({
   library(tidyr, lib.loc = "/usr/lib/R/library")
   library(scales, lib.loc = "/home/giovanni/R/x86_64-pc-linux-gnu-library/3.2")
   library(ggplot2, lib.loc = "/home/giovanni/R/x86_64-pc-linux-gnu-library/3.2")
+  library(ggrepel, lib.loc = "/home/giovanni/R/x86_64-pc-linux-gnu-library/3.2")
   library(RColorBrewer, lib.loc = "/usr/lib/R/library")
   library(htmltools, lib.loc = "/usr/lib/R/library")
 })
 
 # credentials
 source("/home/giovanni/R/projects/calicantus/config/ui_credentials.R")
-
-# parameters
-bb <- c(0,25,50,75,100,300)
-cc <- c("steelblue","olivedrab","orange","red","purple")
 
 # UI: map
 ui_map <- uiOutput("ui_map")
@@ -67,7 +64,9 @@ ui_about <- fluidPage(
 
 # UI: debug
 ui_debug <- fluidPage(
-  verbatimTextOutput("debug")
+  verbatimTextOutput("summary"),
+  verbatimTextOutput("sessionInfo"),
+  verbatimTextOutput("uiInput")
 )
   
 
@@ -83,12 +82,12 @@ ui_login <- function(){
   )}
 
 # UI: webpage with tabs
-ui_menu <- function(){tagList(tabPanel("data",      ui_data),
-                              tabPanel("map",       ui_map),
+ui_menu <- function(){tagList(tabPanel("map",       ui_map),
+                              tabPanel("data",      ui_data),
                               tabPanel("timeseries",ui_ts),
                               tabPanel("about",     ui_about),
                               tabPanel("debug",     ui_debug))}
-ui <- (htmlOutput("page"))
+ui <- uiOutput("page")
 
 ## server
 server <- function(input, output, session) {
@@ -138,7 +137,7 @@ server <- function(input, output, session) {
     )
   })
   
-  # load data
+  # load data of period
   dataOfPeriod <- eventReactive(eventExpr = input$goPeriod, 
                                 valueExpr = {
                                   dd <- as.character(seq.Date(input$daterange[1],input$daterange[2],"1 day"))
@@ -159,17 +158,42 @@ server <- function(input, output, session) {
                                   return(Dat)
                                 })
   
+  # load data of single day
+  dataOfDay <- eventReactive(eventExpr = input$goDay, 
+                             valueExpr = {
+                               d <- as.character(input$day)
+                               ff <- system(paste0("ls /home/giovanni/R/projects/calicantus/data/obs-data/",
+                                                   format(as.Date(d),"%Y/%m/%d/%Y%m%d_*.rda 2>/dev/null")),
+                                            intern=TRUE)
+                               Dat <- NULL
+                               nf <- length(ff)
+                               for (i in 1:nf) {
+                                 load(ff[i])
+                                 Dat <- bind_rows(Dat,dat)
+                               }
+                               Dat$Value <- round(Dat$Value)
+                               Dat <- dplyr::arrange(Dat, Value) %>% 
+                                 filter(as.character(Day)==as.character(input$day)) %>%
+                                 filter(!is.na(Value) & !is.na(Lat) & !is.na(Lon)) %>%
+                                 mutate(ValueInterval=cut(Value
+                                                          #,breaks=Breaks()
+                                                          ,breaks=c(0,25,50,75,100,300)
+                                                          ,ordered_result=TRUE, include.lowest=TRUE))
+                               return(Dat)
+                             })
+
   # UI: map
   output$ui_map <- renderUI({
     sidebarLayout(
-      sidebarPanel(helpText(paste0("Here you can select the day to plot, in the range from ",
-                                   min(as.Date(dataOfPeriod()$Day))," to ",max(as.Date(dataOfPeriod()$Day)),
-                                   ". To select a date outside this range, please change the period of interest in the 'data' tab.")),
-                   dateInput("day", "day of interest", value=max(as.Date(dataOfPeriod()$Day)), 
-                             min = min(as.Date(dataOfPeriod()$Day)), max = max(as.Date(dataOfPeriod()$Day))),
-                   helpText("Please note that the map on the right side is interactive:",
-                            "you can zoom in and out with the mouse wheel or with the '+' and '-',",
-                            "and click on a marker to get name of the station and observed concentration."),
+      sidebarPanel(helpText("Here you can select the day to plot in the map."),
+                   dateInput("day", "day of interest", value=Sys.Date()-1, 
+                             min="2014-10-10", max = Sys.Date()-1,
+                             width="50%"),
+                   actionButton("goDay", label="plot", icon = icon("arrow-circle-right")),
+                   conditionalPanel(condition = "input.goDay",
+                                    helpText("Please note that the map on the right side is interactive:",
+                                             "you can zoom in and out with the mouse wheel or with the '+' and '-',",
+                                             "and click on a marker to get name of the station and observed concentration.")),
                    width=3),
       mainPanel(leafletOutput("Map", width="100%", height="800px"))
     )
@@ -183,12 +207,13 @@ server <- function(input, output, session) {
                                    ". To plot a different period of interest, please change it in the 'data' tab.")),
                    selectInput("colorby","color by",c("data source"="Source","same color"="same")),
                    selectInput("splitby","split by",c("data source"="Source","don't split"="none")),
-                   selectInput("geom_type","plot type",c("boxplot","violin","jitter")),
+                   selectInput("geom_type","plot type",c("boxplot","violin","jitter","blank")),
                    hr(),
                    helpText("You can emphasize one or more peaks, by plotting data measured by some stations."),
                    selectInput("emphasis","emphasis",c("period max","daily max","data source max","none")),
                    sliderInput("howmany","how many peaks do you want to emphasize?",1,5,1,1,ticks = FALSE),
-                   checkboxInput("labels","peaks labelled with values?",FALSE),
+                   checkboxInput("emph_lines","lines for stations' concentration?",TRUE),
+                   checkboxInput("emph_labels","peaks labelled with values?",FALSE),
                    width=3),
       mainPanel(plotOutput("ts"))
     )
@@ -221,54 +246,86 @@ server <- function(input, output, session) {
   output$ts <- renderPlot({
     Aes <- aes_string(x="Day", y="Value", group="Day")
     if(input$colorby!="same") Aes <- modifyList(Aes, aes_string(col=input$colorby))
-    pl <- ggplot(data = dataWithPeaks(), Aes)
+    pl <- ggplot(data = dataWithPeaks(), Aes) + theme_bw()
     geom_ <- get(paste0("geom_",input$geom_type))
-    pl <- pl + theme_bw() + geom_(width=0.4)
+    pl <- pl + geom_(width=0.4)
     if(input$splitby!="none") pl <- pl + facet_wrap(input$splitby) 
+    if(input$emphasis!="none" & input$emph_lines) pl <- pl +
+      geom_line(aes(x=as.numeric(ordered(Day))*Emphasis, y=Value*Emphasis, group=Station))
     if(input$emphasis!="none") pl <- pl +
-      geom_line(aes(x=as.numeric(ordered(Day))*Emphasis, y=Value*Emphasis, group=Station)) + 
       geom_point(aes(x=as.numeric(ordered(Day))[Peak], y=Value[Peak]), shape=21, fill="white", size=5) +
       geom_point(aes(x=as.numeric(ordered(Day))[Peak], y=Value[Peak], shape=Station[Peak], group=Station[Peak]), size=2.5) +
       scale_shape_manual(values=c(65:90,97:122))
-    if(input$labels) pl <- pl +
-      geom_text(aes(x=as.numeric(ordered(Day))[Peak]-0.2, y=Value[Peak], label=Value), hjust=1, vjust=0.3)
+    if(input$emph_labels) pl <- pl +
+      geom_label_repel(aes(x=as.numeric(ordered(Day))[Peak], y=Value[Peak], label=Value), hjust=1, vjust=0.3)
     pl <- pl + theme(axis.text.x = element_text(angle = 90, hjust = 1))
     pl
-  },height = function(){ifelse(input$splitby=="none",600,900)})
-
-  # data selection for the map (single day)
-  dataOfDay <- reactive({
-    Dat <- dataOfPeriod()
-    Dat[as.character(Dat$Day)==as.character(input$day),]
+  },height = function(){ifelse(input$splitby=="none",600,900)
+  })
+  
+  # breaks for the map
+  Breaks <- reactive({
+    bb <- c(0,25,50,75,100,300)
+    bb
+  })
+  
+  # daily map: palette
+  colorpal <- reactive({
+    cc <- c("steelblue","olivedrab","orange","red","purple")
+    colorFactor(palette = cc, 
+                domain = cut(Breaks(),Breaks(),
+                             ordered_result=TRUE, include.lowest=TRUE))
   })
   
   # daily map: initialize basemap
   output$Map <- renderLeaflet({
     lon0 <- 11
     lat0 <- 42.5
-    leaflet() %>% setView(lon0, lat0, 6) %>% addTiles()  %>% addProviderTiles("CartoDB.Positron")
+    leaflet() %>% 
+      setView(lon0, lat0, 6) %>% 
+      #fitBounds(~min(Lon, na.rm=T), ~min(Lat, na.rm=T), ~max(Lon, na.rm=T), ~max(Lat, na.rm=T)) %>%
+      addTiles()  %>% addProviderTiles("CartoDB.Positron")
+  })
+
+  # daily map: dynamic layer
+  observeEvent(input$goDay,{
+    Dat <- dataOfDay()
+    Pal <- colorpal()
+    
+    leafletProxy("Map",session) %>% clearMarkers() -> map
+    if (!is.null(Dat) && nrow(Dat)>0) {
+      ns <- nrow(Dat)
+      map %>%
+        addCircleMarkers(lng=~Lon, lat=~Lat
+                         ,data=Dat
+                         ,radius=6 
+                         ,color=~Pal(ValueInterval)
+                         #,color="blue"
+                         ,stroke=F, fillOpacity=1
+                         ,layerId=1:ns
+                         ,popup= ~htmlEscape(paste0(Name,": ",Value))
+        ) -> map
+    }else{
+      map %>% addPopups(lng=11,lat=44,popup="No valid data!") -> map
+    }
+    map
   })
   
-  # daily map: dynamic layers
-  observeEvent(input$day,{
-    na.omit(dataOfDay()) -> Dat
-    leafletProxy("Map") %>% 
-      clearMarkers() %>%
-      addCircleMarkers(data=Dat
-                       ,lng=~Lon, lat=~Lat
-                       ,radius=6 
-                       ,color=as.character(cut(Dat$Value,
-                                               breaks=bb,
-                                               labels=cc))
-                       ,stroke=FALSE, fillOpacity=1
-                       ,popup= ~htmlEscape(paste0(Name,": ",Value))
-      )
+  # daily map: legend
+  observe({
+    Dat <- dataOfDay()
+    Pal <- colorpal()
+    proxy <- leafletProxy("Map", data = Dat)
+    
+    proxy %>% 
+      clearControls() %>%
+      addLegend(position = "bottomright", pal = Pal, values = ~ValueInterval)
   })
   
   # support for debug
-  output$debug <- renderPrint({
-    sessionInfo()
-  })
+  output$sessionInfo <- renderPrint({sessionInfo()})
+  output$uiInput <- renderPrint({input})
+  output$summary <- renderPrint({summary(dataOfDay())})
 }
 
 shinyApp(ui = ui, server = server)

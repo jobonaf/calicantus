@@ -32,9 +32,8 @@ improvements, details, etc:
 - [x] import older data
 - [x] add some helps
 - [x] set daterange min-max for the map
-- [x] duplicate PoI selection in 'map' tab
 - [x] add ARPAT contact
-- [ ] add colorbar to map
+- [x] add colorbar to map
 - [ ] map delta
 - [ ] statistics over a long period (table & map)
 - [x] data table: selection of single day

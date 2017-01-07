@@ -20,7 +20,9 @@ suppressMessages({
   library(ggplot2, lib.loc = "/home/giovanni/R/x86_64-pc-linux-gnu-library/3.2")
   library(ggrepel, lib.loc = "/home/giovanni/R/x86_64-pc-linux-gnu-library/3.2")
   library(RColorBrewer, lib.loc = "/usr/lib/R/library")
+  library(maps, lib.loc = "/usr/lib/R/library")
   library(htmltools, lib.loc = "/usr/lib/R/library")
+  #library(lubridate, lib.loc = "/usr/lib/R/library")
 })
 
 # credentials
@@ -34,6 +36,12 @@ ui_data <- uiOutput("ui_data")
 
 # UI: time series
 ui_ts <- uiOutput("ui_ts")
+
+# UI: exceedances
+ui_exc <- uiOutput("ui_exc")
+
+# UI: account info
+ui_account <- uiOutput("ui_account")
 
 # UI: about
 ui_about <- fluidPage(
@@ -84,9 +92,17 @@ ui_login <- function(){
 # UI: webpage with tabs
 ui_menu <- function(){tagList(tabPanel("map",       ui_map),
                               tabPanel("data",      ui_data),
-                              tabPanel("timeseries",ui_ts),
-                              tabPanel("about",     ui_about),
-                              tabPanel("debug",     ui_debug))}
+                              navbarMenu("analysis"
+                                         ,tabPanel("timeseries",ui_ts)
+                                         ,tabPanel("exceedances",ui_exc)
+                                         #,tabPanel("clustering",ui_clu)
+                                         ),
+                              navbarMenu("more"
+                                         ,tabPanel("about",ui_about)
+                                         ,tabPanel("account",ui_account)
+                                         ,tabPanel("debug",ui_debug)
+                                         )
+  )}
 ui <- uiOutput("page")
 
 ## server
@@ -208,14 +224,38 @@ server <- function(input, output, session) {
                    selectInput("colorby","color by",c("data source"="Source","same color"="same")),
                    selectInput("splitby","split by",c("data source"="Source","don't split"="none")),
                    selectInput("geom_type","plot type",c("boxplot","violin","jitter","blank")),
+                   selectInput("timestep","time step",c("Day","Weekday","Year_Week","Year_Month")),
                    hr(),
                    helpText("You can emphasize one or more peaks, by plotting data measured by some stations."),
                    selectInput("emphasis","emphasis",c("period max","daily max","data source max","none")),
                    sliderInput("howmany","how many peaks do you want to emphasize?",1,5,1,1,ticks = FALSE),
                    checkboxInput("emph_lines","lines for stations' concentration?",TRUE),
-                   checkboxInput("emph_labels","peaks labelled with values?",FALSE),
+                   checkboxInput("emph_labels","peaks labelled with values",FALSE),
+                   hr(),
+                   checkboxInput("yax_ctrl","change y axis",FALSE),
+                   conditionalPanel(condition = "input.yax_ctrl",
+                                    selectInput("yax_percmin","lower percentile",choices = c(0,0.1,0.5,1)),
+                                    selectInput("yax_percmax","upper percentile",choices = c(100,99.9,99.5,99))
+                   ),
+                   actionButton("goTs", label="plot", icon = icon("arrow-circle-right")),
                    width=3),
       mainPanel(plotOutput("ts"))
+    )
+  })
+  
+  # UI: exceedances
+  output$ui_exc <- renderUI({
+    sidebarLayout(
+      sidebarPanel(helpText(paste0("Here you can analize exceedances of a given threshold, in the period from ",
+                                   min(as.Date(dataOfPeriod()$Day))," to ",max(as.Date(dataOfPeriod()$Day)),
+                                   ". To plot a different period of interest, please change it in the 'data' tab.")),
+                   sliderInput("threshold","threshold",10,100,50,5),
+                   width=3),
+      mainPanel(tabsetPanel(
+        tabPanel("plot",  plotOutput("exc_plot"))
+        ,tabPanel("map",   plotOutput("exc_map"))
+        #,tabPanel("table", dataTableOutput("exc_table"))
+      ))
     )
   })
   
@@ -227,15 +267,22 @@ server <- function(input, output, session) {
   
   # peaks detection
   dataWithPeaks <- reactive({
-    dataOfPeriod() %>% dplyr::mutate(Station=paste0(Name," (",Source,")")) -> Dat
+    dataOfPeriod() %>% dplyr::mutate(Station=paste0(Name," (",Source,")"),
+                                     Weekday=format(as.Date(Day),"%a"),
+                                     Year_Week=format(as.Date(Day),"%Y_%U"),
+                                     Year_Month=format(as.Date(Day),"%Y_%m")) -> Dat
     if(input$emphasis=="none") {
       Dat$Emphasis <- Dat$Peak <- NA
     } else {
       if(input$emphasis=="period max") Dat %>% group_by(Pollutant) -> Dat  
       if(input$emphasis=="daily max") Dat %>% group_by(Pollutant,Day) -> Dat  
       if(input$emphasis=="data source max") Dat %>% group_by(Pollutant,Source) -> Dat  
-      Dat %>% dplyr::mutate(N=n(), Rank=1+N-rank(Value,na.last=FALSE,ties.method="max"), Peak=(Rank<=input$howmany)) %>% left_join(.,Dat) -> Dat
-      Dat %>% group_by(Pollutant,Name,Source) %>% dplyr::mutate(Emphasis=max(Peak,na.rm=T)) %>% left_join(.,Dat) -> Dat
+      Dat %>% dplyr::mutate(N=n(), 
+                            Rank=1+N-rank(Value,na.last=FALSE,ties.method="max"), 
+                            Peak=(Rank<=input$howmany)) %>% 
+        left_join(.,Dat) -> Dat
+      Dat %>% group_by(Pollutant,Name,Source) %>% dplyr::mutate(Emphasis=max(Peak,na.rm=T)) %>% 
+        left_join(.,Dat) -> Dat
     }
     Dat$Emphasis[!Dat$Emphasis] <- NA
     Dat$Peak[!Dat$Peak] <- NA
@@ -244,24 +291,71 @@ server <- function(input, output, session) {
   
   # plot time series
   output$ts <- renderPlot({
-    Aes <- aes_string(x="Day", y="Value", group="Day")
+    Aes <- aes_string(x=input$timestep, y="Value", group=input$timestep)
     if(input$colorby!="same") Aes <- modifyList(Aes, aes_string(col=input$colorby))
     pl <- ggplot(data = dataWithPeaks(), Aes) + theme_bw()
     geom_ <- get(paste0("geom_",input$geom_type))
     pl <- pl + geom_(width=0.4)
     if(input$splitby!="none") pl <- pl + facet_wrap(input$splitby) 
     if(input$emphasis!="none" & input$emph_lines) pl <- pl +
-      geom_line(aes(x=as.numeric(ordered(Day))*Emphasis, y=Value*Emphasis, group=Station))
+      geom_line(aes(x=as.numeric(ordered(get(input$timestep)))*Emphasis, 
+                    y=Value*Emphasis, group=Station))
     if(input$emphasis!="none") pl <- pl +
-      geom_point(aes(x=as.numeric(ordered(Day))[Peak], y=Value[Peak]), shape=21, fill="white", size=5) +
-      geom_point(aes(x=as.numeric(ordered(Day))[Peak], y=Value[Peak], shape=Station[Peak], group=Station[Peak]), size=2.5) +
+      geom_point(aes(x=as.numeric(ordered(get(input$timestep)))[Peak], y=Value[Peak]), 
+                 shape=21, fill="white", size=5) +
+      geom_point(aes(x=as.numeric(ordered(get(input$timestep)))[Peak], y=Value[Peak], 
+                     shape=Station[Peak], group=Station[Peak]), size=2.5) +
       scale_shape_manual(values=c(65:90,97:122))
     if(input$emph_labels) pl <- pl +
-      geom_label_repel(aes(x=as.numeric(ordered(Day))[Peak], y=Value[Peak], label=Value), hjust=1, vjust=0.3)
+      geom_label_repel(aes(x=as.numeric(ordered(get(input$timestep)))[Peak], y=Value[Peak], label=Value), hjust=1, vjust=0.3)
+    if(input$yax_ctrl) pl <- pl +
+      scale_y_continuous(limits=c(quantile(dataWithPeaks()$Value,as.numeric(input$yax_percmin)*0.01,na.rm=T),
+                                  quantile(dataWithPeaks()$Value,as.numeric(input$yax_percmax)*0.01,na.rm=T)))
     pl <- pl + theme(axis.text.x = element_text(angle = 90, hjust = 1))
     pl
-  },height = function(){ifelse(input$splitby=="none",600,900)
+  },height = function() ifelse(input$splitby=="none",600,900)
+  )
+  
+  # exceedances: barplot
+  output$exc_plot <- renderPlot({
+    dataOfPeriod() %>% dplyr::mutate(Exc=Value>input$threshold,
+                                     notExc=Value<=input$threshold) %>% group_by(Day) %>%
+      dplyr::summarize(notExceeding=sum(notExc, na.rm=T),
+                       Exceeding=sum(Exc, na.rm=T)) %>%
+      gather(key=Status,value=Stations,-Day) -> Dat
+    pl <- ggplot(data=Dat, aes(x=Day,y=Stations,fill=Status)) + geom_col() + 
+      theme_bw() + scale_fill_manual(values=c("olivedrab","orangered")) +
+      theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    pl
   })
+  
+  # exceedances: map
+  output$exc_map <- renderPlot({
+    dataOfPeriod() %>% dplyr::mutate(Exc=Value>input$threshold) %>% group_by(Name,Lat,Lon) %>%
+      dplyr::summarize(Exceedances=sum(Exc, na.rm=T)) -> Dat
+    MapData <- map_data("world")
+    xmin<-min(Dat$Lon,na.rm=T)
+    xmax<-max(Dat$Lon,na.rm=T)
+    ymin<-min(Dat$Lat,na.rm=T)
+    ymax<-max(Dat$Lat,na.rm=T)
+    dx<-xmax-xmin
+    dy<-ymax-ymin
+    pl <- ggplot() + 
+      geom_polygon(data=MapData, aes(x=long, y=lat, group = group),
+                   colour="grey80", fill="grey30" ) +
+      geom_point(data=Dat, aes(x=Lon, y=Lat, color=Exceedances), shape=19) +
+      scale_colour_gradientn(colours = c("yellowgreen","white","orange","purple")) +
+      coord_map(xlim = c(xmin-dx*0.05,xmax+dx*0.05),
+                ylim = c(ymin-dy*0.05,ymax+dy*0.05))
+    pl
+  },height = 800
+  )
+  
+  # exceedances: map
+  
+  # exceedances: table
+  
+  
   
   # breaks for the map
   Breaks <- reactive({
@@ -326,6 +420,13 @@ server <- function(input, output, session) {
   output$sessionInfo <- renderPrint({sessionInfo()})
   output$uiInput <- renderPrint({input})
   output$summary <- renderPrint({summary(dataOfDay())})
+  
+  # account info
+  output$ui_account <- renderUI({
+    fluidPage(
+      p("You are logged in with the user ",code(input$Usr))
+    )
+  })
 }
 
 shinyApp(ui = ui, server = server)

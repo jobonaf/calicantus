@@ -6,6 +6,7 @@ suppressMessages({
   if(length(pkg2)>0) lapply(paste0('package:',pkg2), detach, character.only = TRUE, unload = TRUE)
  # .libPaths(new=unique(c("/home/giovanni/R/x86_64-pc-linux-gnu-library/3.2", .libPaths())))
   library(shiny, lib.loc = "/usr/lib/R/library")
+  library(lubridate, lib.loc = "/usr/lib/R/library")
   library(dplyr, lib.loc = "/usr/lib/R/library")
   library(plyr, lib.loc = "/home/giovanni/R/x86_64-pc-linux-gnu-library/3.2")
 #  library(shinyBS)
@@ -22,7 +23,6 @@ suppressMessages({
   library(RColorBrewer, lib.loc = "/usr/lib/R/library")
   library(maps, lib.loc = "/usr/lib/R/library")
   library(htmltools, lib.loc = "/usr/lib/R/library")
-  #library(lubridate, lib.loc = "/usr/lib/R/library")
 })
 
 # credentials
@@ -169,8 +169,8 @@ server <- function(input, output, session) {
                                     load(ff[i])
                                     Dat <- bind_rows(Dat,dat)
                                   }
-                                  Dat$Value <- round(Dat$Value)
-                                  Dat <- dplyr::arrange(Dat, desc(Value))
+                                  Dat %>% dplyr::filter(!is.na(Name) & !is.na(Lat) & !is.na(Lon))  %>%
+                                    dplyr::mutate(Value=round(Value)) %>% dplyr::arrange(desc(Value)) -> Dat
                                   return(Dat)
                                 })
   
@@ -237,7 +237,7 @@ server <- function(input, output, session) {
                                     selectInput("yax_percmin","lower percentile",choices = c(0,0.1,0.5,1)),
                                     selectInput("yax_percmax","upper percentile",choices = c(100,99.9,99.5,99))
                    ),
-                   actionButton("goTs", label="plot", icon = icon("arrow-circle-right")),
+                   #actionButton("goTs", label="plot", icon = icon("arrow-circle-right")),
                    width=3),
       mainPanel(plotOutput("ts"))
     )
@@ -254,7 +254,7 @@ server <- function(input, output, session) {
       mainPanel(tabsetPanel(
         tabPanel("plot",  plotOutput("exc_plot"))
         ,tabPanel("map",   plotOutput("exc_map"))
-        #,tabPanel("table", dataTableOutput("exc_table"))
+        ,tabPanel("table", dataTableOutput("exc_table"))
       ))
     )
   })
@@ -268,7 +268,7 @@ server <- function(input, output, session) {
   # peaks detection
   dataWithPeaks <- reactive({
     dataOfPeriod() %>% dplyr::mutate(Station=paste0(Name," (",Source,")"),
-                                     Weekday=format(as.Date(Day),"%a"),
+                                     Weekday=wday(Day,label = T),
                                      Year_Week=format(as.Date(Day),"%Y_%U"),
                                      Year_Month=format(as.Date(Day),"%Y_%m")) -> Dat
     if(input$emphasis=="none") {
@@ -322,7 +322,8 @@ server <- function(input, output, session) {
                                      notExc=Value<=input$threshold) %>% group_by(Day) %>%
       dplyr::summarize(notExceeding=sum(notExc, na.rm=T),
                        Exceeding=sum(Exc, na.rm=T)) %>%
-      gather(key=Status,value=Stations,-Day) -> Dat
+      gather(key=Status,value=Stations,-Day) %>%
+      dplyr::mutate(Day=as.Date(as.character(Day)))-> Dat
     pl <- ggplot(data=Dat, aes(x=Day,y=Stations,fill=Status)) + geom_col() + 
       theme_bw() + scale_fill_manual(values=c("olivedrab","orangered")) +
       theme(axis.text.x = element_text(angle = 90, hjust = 1))
@@ -332,7 +333,8 @@ server <- function(input, output, session) {
   # exceedances: map
   output$exc_map <- renderPlot({
     dataOfPeriod() %>% dplyr::mutate(Exc=Value>input$threshold) %>% group_by(Name,Lat,Lon) %>%
-      dplyr::summarize(Exceedances=sum(Exc, na.rm=T)) -> Dat
+      dplyr::summarize(Exceed=sum(Exc, na.rm=T),
+                       Valid=sum(!is.na(Exc))) -> Dat
     MapData <- map_data("world")
     xmin<-min(Dat$Lon,na.rm=T)
     xmax<-max(Dat$Lon,na.rm=T)
@@ -340,21 +342,29 @@ server <- function(input, output, session) {
     ymax<-max(Dat$Lat,na.rm=T)
     dx<-xmax-xmin
     dy<-ymax-ymin
+    bb <- unique(round(quantile(Dat$Exceed,c(0,20,40,60,80,90,100)/100)))
+    Dat %>% mutate(Exceedances=cut(Exceed,bb,include.lowest = T)) %>% dplyr::arrange(desc(Exceed))-> Dat
     pl <- ggplot() + 
       geom_polygon(data=MapData, aes(x=long, y=lat, group = group),
                    colour="grey80", fill="grey30" ) +
-      geom_point(data=Dat, aes(x=Lon, y=Lat, color=Exceedances), shape=19) +
-      scale_colour_gradientn(colours = c("yellowgreen","white","orange","purple")) +
+      geom_point(data=Dat, aes(x=Lon, y=Lat, color=Exceedances, size=Valid), shape=19) +
+      scale_colour_brewer(palette = "Spectral", direction=-1) +
+      scale_size_area() +
       coord_map(xlim = c(xmin-dx*0.05,xmax+dx*0.05),
                 ylim = c(ymin-dy*0.05,ymax+dy*0.05))
     pl
   },height = 800
   )
   
-  # exceedances: map
-  
   # exceedances: table
-  
+  output$exc_table <- renderDataTable({
+    dataOfPeriod() %>% dplyr::mutate(Exc=Value>input$threshold) %>% group_by(Name,Lat,Lon) %>%
+      dplyr::summarize(Exceed=sum(Exc, na.rm=T),
+                       Valid=sum(!is.na(Exc))) -> Dat
+    bb <- unique(round(quantile(Dat$Exceed,c(0,20,40,60,80,90,100)/100)))
+    Dat %>% mutate(Exceedances=cut(Exceed,bb,include.lowest = T)) %>% dplyr::arrange(desc(Exceed))-> Dat
+    Dat
+  })
   
   
   # breaks for the map

@@ -96,6 +96,6 @@ save_to_multiple_rda <- function(Data,path="/home/giovanni/R/projects/calicantus
   }
 }
 
-ddd <- read.json.multi()
+ddd <- read.json.multi(first=as.Date("2016-11-03"),last=as.Date("2016-11-03"),poll="PM10")
 eee <- expand_dataset(ddd)
 save_to_multiple_rda(eee)

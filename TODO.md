@@ -35,6 +35,7 @@ improvements, details, etc:
 - [x] add ARPAT contact
 - [x] add colorbar to map
 - [ ] map delta
-- [ ] statistics over a long period (table & map)
+- [x] statistics over a long period (table & map)
 - [x] data table: selection of single day
-- [ ] timeseries: x axis with days, weeks, months, wday, season, year...
+- [x] timeseries: x axis with days, weeks, months, wday...
+- [x] cluster analysis

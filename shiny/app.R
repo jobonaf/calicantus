@@ -6,6 +6,7 @@ suppressMessages({
   if(length(pkg2)>0) lapply(paste0('package:',pkg2), detach, character.only = TRUE, unload = TRUE)
  # .libPaths(new=unique(c("/home/giovanni/R/x86_64-pc-linux-gnu-library/3.2", .libPaths())))
   library(shiny, lib.loc = "/usr/lib/R/library")
+ # library("dtw", lib.loc="~/R/x86_64-pc-linux-gnu-library/3.2")
   library(lubridate, lib.loc = "/usr/lib/R/library")
   library(dplyr, lib.loc = "/usr/lib/R/library")
   library(plyr, lib.loc = "/home/giovanni/R/x86_64-pc-linux-gnu-library/3.2")
@@ -22,6 +23,7 @@ suppressMessages({
   library(ggrepel, lib.loc = "/home/giovanni/R/x86_64-pc-linux-gnu-library/3.2")
   library(RColorBrewer, lib.loc = "/usr/lib/R/library")
   library(maps, lib.loc = "/usr/lib/R/library")
+  library(cluster, lib.loc = "/usr/lib/R/library")
   library(htmltools, lib.loc = "/usr/lib/R/library")
 })
 
@@ -39,6 +41,9 @@ ui_ts <- uiOutput("ui_ts")
 
 # UI: exceedances
 ui_exc <- uiOutput("ui_exc")
+
+# UI: clustering
+ui_clu <- uiOutput("ui_clu")
 
 # UI: account info
 ui_account <- uiOutput("ui_account")
@@ -85,17 +90,17 @@ ui_login <- function(){
     div(id = "login",
         wellPanel(textInput("Usr", "user:", "user"),
                   passwordInput("Pwd", "password:", "password"),
-                  br(),actionButton("Login", "Log in")))
-    ,tags$style(type="text/css", "#login {font-size:12px;   text-align: left;position:absolute;top: 40%;left: 50%;margin-top: -100px;margin-left: -150px;}")
+                  br(),actionButton("Login", "Log in"))),
+    tags$style(type="text/css", "#login {font-size:12px;   text-align: left;position:absolute;top: 40%;left: 50%;margin-top: -100px;margin-left: -150px;}")
   )}
 
 # UI: webpage with tabs
-ui_menu <- function(){tagList(tabPanel("map",       ui_map),
-                              tabPanel("data",      ui_data),
+ui_menu <- function(){tagList(tabPanel("map", ui_map),
+                              tabPanel("data", ui_data),
                               navbarMenu("analysis"
                                          ,tabPanel("timeseries",ui_ts)
                                          ,tabPanel("exceedances",ui_exc)
-                                         #,tabPanel("clustering",ui_clu)
+                                         ,tabPanel("clustering",ui_clu)
                                          ),
                               navbarMenu("more"
                                          ,tabPanel("about",ui_about)
@@ -248,13 +253,34 @@ server <- function(input, output, session) {
     sidebarLayout(
       sidebarPanel(helpText(paste0("Here you can analize exceedances of a given threshold, in the period from ",
                                    min(as.Date(dataOfPeriod()$Day))," to ",max(as.Date(dataOfPeriod()$Day)),
-                                   ". To plot a different period of interest, please change it in the 'data' tab.")),
+                                   ". To analize a different period of interest, please change it in the 'data' tab.")),
                    sliderInput("threshold","threshold",10,100,50,5),
                    width=3),
       mainPanel(tabsetPanel(
         tabPanel("plot",  plotOutput("exc_plot"))
         ,tabPanel("map",   plotOutput("exc_map"))
         ,tabPanel("table", dataTableOutput("exc_table"))
+      ))
+    )
+  })
+  
+  # UI: clustering
+  output$ui_clu <- renderUI({
+    sidebarLayout(
+      sidebarPanel(helpText(paste0("Here you perform cluster analysis of the time series, in the period from ",
+                                   min(as.Date(dataOfPeriod()$Day))," to ",max(as.Date(dataOfPeriod()$Day)),
+                                   ". To analize a different period of interest, please change it in the 'data' tab.")),
+                   sliderInput("nclu","number of clusters",2,10,5),
+                   sliderInput("clu_req","data needed (%)",50,100,80,5),
+                   hr(),
+                   helpText("Change here some details of the time series plot. Note that 'medoid' of a cluster is its most representative station."),
+                   selectInput("clu_add",label = "line",choices = c("medoid","mean","median","none")),
+                   checkboxInput("clu_box","boxplot",TRUE),
+                   width=3),
+      mainPanel(tabsetPanel(
+        tabPanel("map",   plotOutput("clu_map"))
+        ,tabPanel("plot",  plotOutput("clu_plot"))
+        ,tabPanel("table", dataTableOutput("clu_table"))
       ))
     )
   })
@@ -268,7 +294,7 @@ server <- function(input, output, session) {
   # peaks detection
   dataWithPeaks <- reactive({
     dataOfPeriod() %>% dplyr::mutate(Station=paste0(Name," (",Source,")"),
-                                     Weekday=wday(Day,label = T),
+                                     Weekday=lubridate::wday(Day,label = T),
                                      Year_Week=format(as.Date(Day),"%Y_%U"),
                                      Year_Month=format(as.Date(Day),"%Y_%m")) -> Dat
     if(input$emphasis=="none") {
@@ -307,7 +333,7 @@ server <- function(input, output, session) {
                      shape=Station[Peak], group=Station[Peak]), size=2.5) +
       scale_shape_manual(values=c(65:90,97:122))
     if(input$emph_labels) pl <- pl +
-      geom_label_repel(aes(x=as.numeric(ordered(get(input$timestep)))[Peak], y=Value[Peak], label=Value), hjust=1, vjust=0.3)
+      geom_label_repel(aes(x=as.numeric(ordered(get(input$timestep)))[Peak], y=Value[Peak], label=Value))
     if(input$yax_ctrl) pl <- pl +
       scale_y_continuous(limits=c(quantile(dataWithPeaks()$Value,as.numeric(input$yax_percmin)*0.01,na.rm=T),
                                   quantile(dataWithPeaks()$Value,as.numeric(input$yax_percmax)*0.01,na.rm=T)))
@@ -325,8 +351,8 @@ server <- function(input, output, session) {
       gather(key=Status,value=Stations,-Day) %>%
       dplyr::mutate(Day=as.Date(as.character(Day)))-> Dat
     pl <- ggplot(data=Dat, aes(x=Day,y=Stations,fill=Status)) + geom_col() + 
-      theme_bw() + scale_fill_manual(values=c("olivedrab","orangered")) +
-      theme(axis.text.x = element_text(angle = 90, hjust = 1))
+      theme_bw() + scale_fill_manual(values=c("olivedrab","orangered")) #+
+      #theme(axis.text.x = element_text(angle = 90, hjust = 1))
     pl
   })
   
@@ -366,6 +392,81 @@ server <- function(input, output, session) {
     Dat
   })
   
+  # clustering
+  dataWithClusters <- reactive({
+    ddd <- dataOfPeriod() %>% mutate(Station=paste0(Name," (",Source,")"))
+    nd <- length(unique(ddd$Day))
+    ss <- unique(ddd$Station)
+    ii <- paste0("st",1:length(ss))
+    i2s <- function(i) ss[match(i,ii)]
+    s2i <- function(s) ii[match(s,ss)]
+    ddd %>% mutate(Code=s2i(Station)) -> ddd
+    ddd %>% 
+      dplyr::select(Day,Code,Value) %>%
+      dplyr::arrange(Day) %>% distinct() %>% spread(Code,Value) ->  dat
+    dat <- dat[,colSums(!is.na(dat))>nd*input$clu_req/100]
+    clu <- clara(t(dat[,-1]),k=input$nclu,stand=TRUE,samples = 50,metric="manhattan")
+    Clu <- data.frame(Code=names(clu$clustering), 
+                      Cluster=sprintf(clu$clustering,fmt="%02i"), 
+                      isMedoid=names(clu$clustering)%in%rownames(clu$medoids))
+    Dat <- merge(ddd, Clu, all.x=FALSE)
+    Dat
+  })
+  
+  # clustering: table
+  output$clu_table <- renderDataTable({
+    dataWithClusters() %>% dplyr::select(Name,Source,Cluster,isMedoid) %>% distinct() -> Dat
+    Dat
+  })
+  
+  # clustering: plot
+  output$clu_plot <- renderPlot({
+    Dat <- dataWithClusters() %>% 
+      dplyr::mutate(col=c("odd","even")[1 + as.numeric(as.Date(as.character(Day)) - as.Date("1900-01-01")) %% 2])
+    ymin <- max(1,min(Dat$Value,na.rm=T))
+    ymax <- max(Dat$Value,na.rm=T)*1.2
+    ggplot(Dat, aes(x=Day, y=Value, colour=Cluster)) +
+      scale_y_log10(limits=c(ymin,ymax)) + 
+      geom_crossbar(aes(x=Day, 
+                        y=   ymin, 
+                        ymin=ymin,
+                        ymax=ymax,
+                        fill = col),
+                    col="transparent", width=1) +
+      scale_fill_manual(values=c("white","grey80"), guide =FALSE) -> pl
+    if(input$clu_box) pl <- pl + geom_boxplot(fill="white")
+    if(input$clu_add=="medoid") pl <- pl + 
+      scale_linetype_manual(values=c("blank", "solid")) +
+      geom_line(size=1.5, aes(group=Station, linetype=isMedoid))
+    if(input$clu_add %in% c("mean","median","max")) pl <- pl + 
+      stat_summary(fun.y = get(input$clu_add), geom="line",
+                   size=1.5, aes(group=Cluster), linetype="solid")
+    pl <- pl + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    pl
+  })
+  
+  # clustering: map
+  output$clu_map <- renderPlot({
+    dataWithClusters() %>% dplyr::select(Name,Source,Lat,Lon,Cluster,isMedoid) %>% distinct() -> Dat
+    MapData <- map_data("world")
+    xmin<-min(Dat$Lon,na.rm=T)
+    xmax<-max(Dat$Lon,na.rm=T)
+    ymin<-min(Dat$Lat,na.rm=T)
+    ymax<-max(Dat$Lat,na.rm=T)
+    dx<-xmax-xmin
+    dy<-ymax-ymin
+    pl <- ggplot() + 
+      geom_polygon(data=MapData, aes(x=long, y=lat, group = group),
+                   colour="grey80", fill="grey30" ) +
+      geom_label_repel(data=Dat, aes(x=Lon, y=Lat, fill=Cluster, label=Cluster), 
+                       box.padding = unit(0.1, "lines"),
+                       label.padding = unit(0.1, "lines"), 
+                       size=3, col="black") +
+      coord_map(xlim = c(xmin-dx*0.05,xmax+dx*0.05),
+                ylim = c(ymin-dy*0.05,ymax+dy*0.05))
+    pl
+  },height = 800
+  )
   
   # breaks for the map
   Breaks <- reactive({

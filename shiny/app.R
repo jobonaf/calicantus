@@ -69,7 +69,8 @@ ui_about <- fluidPage(
     tags$li("Liguria: ", a("Monica Beggiato", href="mailto:monica.beggiato@arpal.gov.it"), "(ARPAL)"),
     tags$li("Lombardy: ", a("Anna Di Leo", href="mailto:a.dileo@arpalombardia.it"), "(ARPA Lombardia)"),
     tags$li("Sicily: ", a("Anna Abita", href="mailto:abita@arpa.sicilia.it"), "(ARPA Sicilia)"),
-    tags$li("Tuscany: ", a("Marco Stefanelli", href="mailto:m.stefanelli@arpat.toscana.it"), "(ARPAT)")
+    tags$li("Tuscany: ", a("Marco Stefanelli", href="mailto:m.stefanelli@arpat.toscana.it"), 
+            a("Bianca Patrizia Andreini", href="mailto:bp.andreini@arpat.toscana.it"), "(ARPAT)")
   ),
   h3("code"),
   p(code("calicantus"), " is open source and available", a("here", href="https://github.com/jobonaf/calicantus"))

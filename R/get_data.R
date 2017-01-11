@@ -71,7 +71,8 @@ get_dbqaemr <- function(config,day) {
   lat <- ana$LAT[idx]
   lon <- ana$LON[idx]
   nome <- ana$NOME_STAZIONE[idx]
-  Dat <- data.frame(nome=nome,lat=lat,lon=lon,PM10=PM10)
+  id <- ana$ID_STAZIONE[idx]
+  Dat <- data.frame(id=id,nome=nome,lat=lat,lon=lon,PM10=PM10)
   check <- nrow(Dat)>0
   write.table(Dat,file=paste0("ARPAE_PM10_",day,".csv"),sep=",",col.names = T,row.names = F)
   return(check)

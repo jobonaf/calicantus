@@ -11,7 +11,9 @@ pollutants <- c("PM10")
 
 # arguments
 if(interactive()) {
-  aa <- c(1,6)
+  aa <- rep(NA,2)
+  aa[1] <- readline(prompt = "first day: how many days ago?")
+  aa[2] <- readline(prompt = "last day: how many days ago?")
 } else {
   aa <- commandArgs(trailingOnly=TRUE)
   print(aa)

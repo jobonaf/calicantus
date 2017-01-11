@@ -273,10 +273,13 @@ server <- function(input, output, session) {
                                    ". To analize a different period of interest, please change it in the 'data' tab.")),
                    sliderInput("nclu","number of clusters",2,10,5),
                    sliderInput("clu_req","data needed (%)",50,100,80,5),
+                   checkboxInput("clu_stand","standardize data before clustering?",FALSE),
+                   selectInput("clu_metr",label = "metric",choices = c("manhattan","euclidean")),
                    hr(),
                    helpText("Change here some details of the time series plot. Note that 'medoid' of a cluster is its most representative station."),
                    selectInput("clu_add",label = "line",choices = c("medoid","mean","median","none")),
                    checkboxInput("clu_box","boxplot",TRUE),
+                   checkboxInput("clu_log","logarithmic scale in y",TRUE),
                    width=3),
       mainPanel(tabsetPanel(
         tabPanel("map",   plotOutput("clu_map"))
@@ -406,7 +409,8 @@ server <- function(input, output, session) {
       dplyr::select(Day,Code,Value) %>%
       dplyr::arrange(Day) %>% distinct() %>% spread(Code,Value) ->  dat
     dat <- dat[,colSums(!is.na(dat))>nd*input$clu_req/100]
-    clu <- clara(t(dat[,-1]),k=input$nclu,stand=TRUE,samples = 50,metric="manhattan")
+    clu <- clara(t(dat[,-1]),k=input$nclu,stand=input$clu_stand,
+                 samples = 50,metric=input$clu_metr)
     Clu <- data.frame(Code=names(clu$clustering), 
                       Cluster=sprintf(clu$clustering,fmt="%02i"), 
                       isMedoid=names(clu$clustering)%in%rownames(clu$medoids))
@@ -425,19 +429,26 @@ server <- function(input, output, session) {
     Dat <- dataWithClusters() %>% 
       dplyr::mutate(col=c("odd","even")[1 + as.numeric(as.Date(as.character(Day)) - as.Date("1900-01-01")) %% 2])
     ymin <- max(1,min(Dat$Value,na.rm=T))
-    ymax <- max(Dat$Value,na.rm=T)*1.2
+    ymax <- max(Dat$Value,na.rm=T)*1.1
     ggplot(Dat, aes(x=Day, y=Value, colour=Cluster)) +
-      scale_y_log10(limits=c(ymin,ymax)) + 
       geom_crossbar(aes(x=Day, 
                         y=   ymin, 
                         ymin=ymin,
                         ymax=ymax,
                         fill = col),
                     col="transparent", width=1) +
-      scale_fill_manual(values=c("white","grey80"), guide =FALSE) -> pl
+      theme_linedraw() +
+      theme(panel.grid.major.x = element_blank(),
+            line = element_line(colour = "gray90")) +
+      scale_fill_manual(values=alpha(c("white", "#eeeeee"), c(0,.1)), guide =FALSE) -> pl
+    if(input$clu_log) {
+      pl <- pl + scale_y_log10(limits=c(ymin,ymax), expand = c(0, 0))
+    } else {
+      pl <- pl + scale_y_continuous(limits=c(ymin,ymax), expand = c(0, 0))
+    }
     if(input$clu_box) pl <- pl + geom_boxplot(fill="white")
     if(input$clu_add=="medoid") pl <- pl + 
-      scale_linetype_manual(values=c("blank", "solid")) +
+      scale_linetype_manual(values=c("blank", "solid"), guide=FALSE) +
       geom_line(size=1.5, aes(group=Station, linetype=isMedoid))
     if(input$clu_add %in% c("mean","median","max")) pl <- pl + 
       stat_summary(fun.y = get(input$clu_add), geom="line",

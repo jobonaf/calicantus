@@ -1,3 +1,7 @@
+
+# preliminar --------------------------------------------------------------
+
+
 #packages
 suppressMessages({
   pkgO <- names(sessionInfo()$otherPkgs)
@@ -29,6 +33,10 @@ suppressMessages({
 
 # credentials
 source("/home/giovanni/R/projects/calicantus/config/ui_credentials.R")
+
+
+# ui ----------------------------------------------------------------------
+
 
 # UI: map
 ui_map <- uiOutput("ui_map")
@@ -69,7 +77,7 @@ ui_about <- fluidPage(
     tags$li("Liguria: ", a("Monica Beggiato", href="mailto:monica.beggiato@arpal.gov.it"), "(ARPAL)"),
     tags$li("Lombardy: ", a("Anna Di Leo", href="mailto:a.dileo@arpalombardia.it"), "(ARPA Lombardia)"),
     tags$li("Sicily: ", a("Anna Abita", href="mailto:abita@arpa.sicilia.it"), "(ARPA Sicilia)"),
-    tags$li("Tuscany: ", a("Marco Stefanelli", href="mailto:m.stefanelli@arpat.toscana.it"), 
+    tags$li("Tuscany: ", a("Marco Stefanelli,", href="mailto:m.stefanelli@arpat.toscana.it"), 
             a("Bianca Patrizia Andreini", href="mailto:bp.andreini@arpat.toscana.it"), "(ARPAT)")
   ),
   h3("code"),
@@ -111,7 +119,9 @@ ui_menu <- function(){tagList(tabPanel("map", ui_map),
   )}
 ui <- uiOutput("page")
 
-## server
+
+# server ------------------------------------------------------------------
+
 server <- function(input, output, session) {
   USER <- reactiveValues(Logged = Logged)
   # check credentials
@@ -140,6 +150,11 @@ server <- function(input, output, session) {
     }
   })
   
+  # available data sources (could be personalized depending on user type...)
+  availableSources <- reactive({
+    aS <- system("cd /home/giovanni/R/projects/calicantus/data/sites-info/; ls metadata*csv | sed s/metadata.//g | sed s/.csv//g",intern=TRUE)
+  })
+  
   # UI: data table
   output$ui_data <- renderUI({
     sidebarLayout(
@@ -148,12 +163,16 @@ server <- function(input, output, session) {
                                   start=Sys.Date()-10,
                                   end=Sys.Date()-1,
                                   max = Sys.Date()-1),
+                   selectInput("pollutant",label = "pollutant", choices = c("PM10")),
+                   selectInput("sources",label = "sources of data", choices = availableSources(), 
+                               selected = availableSources(), multiple=TRUE, selectize=FALSE),
                    actionButton("goPeriod", label="load", icon = icon("arrow-circle-right")),
                    conditionalPanel(condition = "input.goPeriod",
                                     helpText("Please note that the table on the right side is interactive:",
                                              "you can sort it by clicking on the header,",
                                              "look for a specific value using the 'search' tool,",
-                                             "filter the data by writing in the cells below the table, and so on.")),
+                                             "filter the data by writing in the cells below the table, and so on."),
+                                    downloadButton('downloadData', 'download')),
                    width=3),
       mainPanel(dataTableOutput("df"))
     )
@@ -166,7 +185,8 @@ server <- function(input, output, session) {
                                   ff <- NULL
                                   for(d in dd) {
                                     ff <- c(ff,system(paste0("ls /home/giovanni/R/projects/calicantus/data/obs-data/",
-                                                             format(as.Date(d),"%Y/%m/%d/%Y%m%d_*.rda 2>/dev/null")),
+                                                             format(as.Date(d),"%Y/%m/%d/%Y%m%d_"),input$pollutant,
+                                                             "*.rda 2>/dev/null"),
                                                       intern=TRUE))
                                   }
                                   Dat <- NULL
@@ -175,10 +195,22 @@ server <- function(input, output, session) {
                                     load(ff[i])
                                     Dat <- bind_rows(Dat,dat)
                                   }
-                                  Dat %>% dplyr::filter(!is.na(Name) & !is.na(Lat) & !is.na(Lon))  %>%
+                                  Dat %>% dplyr::filter(!is.na(Name) & !is.na(Lat) & !is.na(Lon) & Source%in%input$sources)  %>%
                                     dplyr::mutate(Value=round(Value)) %>% dplyr::arrange(desc(Value)) -> Dat
                                   return(Dat)
                                 })
+  
+  # download data of period
+  output$downloadData <- downloadHandler(
+    filename = function() {
+      paste('data_', input$pollutant, "_",
+            paste(format(as.Date(input$daterange),"%Y%m%d"),collapse="-"), '.csv', sep='')
+    },
+    content = function(con) {
+      dataOfPeriod() %>% dplyr::arrange(Day,Source) -> data
+      write.csv(data, con, fileEncoding = "latin1")
+    }
+  )
   
   # load data of single day
   dataOfDay <- eventReactive(eventExpr = input$goDay, 

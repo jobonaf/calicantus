@@ -153,6 +153,13 @@ server <- function(input, output, session) {
   # available data sources (could be personalized depending on user type...)
   availableSources <- reactive({
     aS <- system("cd /home/giovanni/R/projects/calicantus/data/sites-info/; ls metadata*csv | sed s/metadata.//g | sed s/.csv//g",intern=TRUE)
+    aS
+  })
+  
+  # daily indicator (could be a function of the pollutant)
+  dailyInd <- reactive({
+    dI <- "daily average"
+    dI
   })
   
   # UI: data table
@@ -373,7 +380,14 @@ server <- function(input, output, session) {
     if(input$yax_ctrl) pl <- pl +
       scale_y_continuous(limits=c(quantile(dataWithPeaks()$Value,as.numeric(input$yax_percmin)*0.01,na.rm=T),
                                   quantile(dataWithPeaks()$Value,as.numeric(input$yax_percmax)*0.01,na.rm=T)))
-    pl <- pl + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    sou <- unique(dataOfPeriod()$Source)
+    pl <- pl + theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+      labs(title=paste0(input$pollutant,": ",dailyInd()),
+           subtitle=paste0("period: ",paste(unique(input$daterange),collapse=" to ")),
+           caption=paste0("data source","s"[length(sou)>1],": ",
+                          paste(sou,collapse=", "))
+           ) +
+      ylab(expression("Concentration"~(mu*g/m^3)))
     pl
   },height = function() ifelse(input$splitby=="none",600,900)
   )
@@ -386,9 +400,13 @@ server <- function(input, output, session) {
                        Exceeding=sum(Exc, na.rm=T)) %>%
       gather(key=Status,value=Stations,-Day) %>%
       dplyr::mutate(Day=as.Date(as.character(Day)))-> Dat
+    sou <- unique(dataOfPeriod()$Source)
     pl <- ggplot(data=Dat, aes(x=Day,y=Stations,fill=Status)) + geom_col() + 
-      theme_bw() + scale_fill_manual(values=c("olivedrab","orangered")) #+
-      #theme(axis.text.x = element_text(angle = 90, hjust = 1))
+      theme_bw() + scale_fill_manual(values=c("olivedrab","orangered")) +
+      labs(title=bquote(.(input$pollutant)*": number of stations with "*.(dailyInd())*" above "*.(input$threshold)~mu*g/m^3),
+           subtitle=paste0("period: ",paste(unique(input$daterange),collapse=" to ")),
+           caption=paste0("data source","s"[length(sou)>1],": ",
+                          paste(sou,collapse=", ")))
     pl
   })
   
@@ -406,6 +424,7 @@ server <- function(input, output, session) {
     dy<-ymax-ymin
     bb <- unique(round(quantile(Dat$Exceed,c(0,20,40,60,80,90,100)/100)))
     Dat %>% mutate(Exceedances=cut(Exceed,bb,include.lowest = T)) %>% dplyr::arrange(desc(Exceed))-> Dat
+    sou <- unique(dataOfPeriod()$Source)
     pl <- ggplot() + 
       geom_polygon(data=MapData, aes(x=long, y=lat, group = group),
                    colour="grey80", fill="grey30" ) +
@@ -413,7 +432,11 @@ server <- function(input, output, session) {
       scale_colour_brewer(palette = "Spectral", direction=-1) +
       scale_size_area() +
       coord_map(xlim = c(xmin-dx*0.05,xmax+dx*0.05),
-                ylim = c(ymin-dy*0.05,ymax+dy*0.05))
+                ylim = c(ymin-dy*0.05,ymax+dy*0.05)) +
+      labs(title=bquote(.(input$pollutant)*": exceedances of "*.(dailyInd())*" (threshold: "*.(input$threshold)~mu*g/m^3*")"),
+           subtitle=paste0("period: ",paste(unique(input$daterange),collapse=" to ")),
+           caption=paste0("data source","s"[length(sou)>1],": ",
+                          paste(sou,collapse=", ")))
     pl
   },height = 800
   )
@@ -472,7 +495,7 @@ server <- function(input, output, session) {
       theme_linedraw() +
       theme(panel.grid.major.x = element_blank(),
             line = element_line(colour = "gray90")) +
-      scale_fill_manual(values=alpha(c("white", "#eeeeee"), c(0,.1)), guide =FALSE) -> pl
+      scale_fill_manual(values=alpha(c("white", "#dddddd"), c(0,.1)), guide =FALSE) -> pl
     if(input$clu_log) {
       pl <- pl + scale_y_log10(limits=c(ymin,ymax), expand = c(0, 0))
     } else {
@@ -485,7 +508,15 @@ server <- function(input, output, session) {
     if(input$clu_add %in% c("mean","median","max")) pl <- pl + 
       stat_summary(fun.y = get(input$clu_add), geom="line",
                    size=1.5, aes(group=Cluster), linetype="solid")
-    pl <- pl + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    sou <- unique(dataWithClusters()$Source)
+    pl <- pl + theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+      labs(title=bquote("stations clustering based on "*.(input$pollutant)*" "*.(dailyInd())),
+           subtitle=paste0("period: ",paste(unique(input$daterange),collapse=" to "),"\n",
+                           "method: clustering around medoids (",input$clu_metr," metric)",
+                           " with data standardization"[input$clu_stand],
+                           paste0("\nlines: cluster ",input$clu_add)[input$clu_add!="none"]),
+           caption=paste0("data source","s"[length(sou)>1],": ",
+                          paste(sou,collapse=", ")))
     pl
   })
   
@@ -499,6 +530,7 @@ server <- function(input, output, session) {
     ymax<-max(Dat$Lat,na.rm=T)
     dx<-xmax-xmin
     dy<-ymax-ymin
+    sou <- unique(dataWithClusters()$Source)
     pl <- ggplot() + 
       geom_polygon(data=MapData, aes(x=long, y=lat, group = group),
                    colour="grey80", fill="grey30" ) +
@@ -507,7 +539,13 @@ server <- function(input, output, session) {
                        label.padding = unit(0.1, "lines"), 
                        size=3, col="black") +
       coord_map(xlim = c(xmin-dx*0.05,xmax+dx*0.05),
-                ylim = c(ymin-dy*0.05,ymax+dy*0.05))
+                ylim = c(ymin-dy*0.05,ymax+dy*0.05)) +
+      labs(title=bquote("stations clustering based on "*.(input$pollutant)*" "*.(dailyInd())),
+           subtitle=paste0("period: ",paste(unique(input$daterange),collapse=" to "),"\n",
+                           "method: clustering around medoids (",input$clu_metr," distance)",
+                           " with data standardization"[input$clu_stand]),
+           caption=paste0("data source","s"[length(sou)>1],": ",
+                          paste(sou,collapse=", ")))
     pl
   },height = 800
   )

@@ -5,7 +5,7 @@ source("/home/giovanni/R/projects/calicantus/R/get_data.R")
 read_data <- function(config,File,metadata,day,pollutant,clean=TRUE){
   source(config)
   cat(paste("estraggo dati",Source,day,"\n"))
-  check <- nchar(File)>0
+  check <- any(nchar(File)>0)
   if(check) {
     dat <- NULL
     if(!select.by.day) dat <- try(readFun(file = File, sep=Sep))

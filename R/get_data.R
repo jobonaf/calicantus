@@ -14,12 +14,13 @@ get_http <- function(config,FileIn,proxyconfig){
   source(config)
   source(proxyconfig)
   Sys.setenv(http_proxy=paste0("http://",proxy_usr,":",proxy_pwd,"@",proxy_addr,":",proxy_port,"/"))
-  command <- paste0("wget ",Addr,"/",Path,"/",FileIn,
+  commands <- paste0("wget ",Addr,"/",Path,"/",FileIn,
                     " --proxy-user=",proxy_usr," --proxy-password=",proxy_pwd,
                     " --no-check-certificate")
-  system(command)
-  check <- file.exists(FileIn)
-  return(check)}
+  for(command in commands) system(command)
+  check <- any(file.exists(FileIn))
+  return(check)
+}
 
 get_ssh <- function(config,FileIn){
   source(config)
@@ -94,7 +95,7 @@ get_data <- function(config,day,proxyconfig = "../config/config_proxy.R"){
                       format=Datefmt),
                "")
   FileIn <- paste0(Before, dd, After)
-  if(file.exists(FileIn)) file.remove(FileIn)
+  suppressWarnings(file.remove(FileIn))
 
   check <- switch(Type,
                   ftp  =get_ftp  (config,FileIn),
@@ -104,10 +105,12 @@ get_data <- function(config,day,proxyconfig = "../config/config_proxy.R"){
                   dbqaemr=get_dbqaemr(config,day))  
     
   if(check) {
-    FileOut <- paste(Source,Content,
-                     format(as.POSIXct(day),format="%Y%m%d"),
-                     "dat",
-                     sep=".")
+    nf <- length(FileIn)
+    FileOut <- paste0(Source,".",
+                      paste0(sprintf(1:nf,fmt="%03i"),".")[nf>1],
+                      Content,".",
+                      format(as.POSIXct(day),format="%Y%m%d"),
+                      ".dat")
     file.rename(FileIn, FileOut)
     cat(paste0("rinominato ",FileIn, " in ",FileOut,"\n"))
   } else {

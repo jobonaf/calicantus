@@ -150,9 +150,11 @@ server <- function(input, output, session) {
     }
   })
   
-  # available data sources (could be personalized depending on user type...)
+  # available data sources (personalized depending on user)
   availableSources <- reactive({
+    source("/home/giovanni/R/projects/calicantus/config/config_users.R",local=TRUE)
     aS <- system("cd /home/giovanni/R/projects/calicantus/data/sites-info/; ls metadata*csv | sed s/metadata.//g | sed s/.csv//g",intern=TRUE)
+    aS <- intersect(aS, auth_sources)
     aS
   })
   
@@ -202,7 +204,8 @@ server <- function(input, output, session) {
                                     load(ff[i])
                                     Dat <- bind_rows(Dat,dat)
                                   }
-                                  Dat %>% dplyr::filter(!is.na(Name) & !is.na(Lat) & !is.na(Lon) & Source%in%input$sources)  %>%
+                                  Dat %>% dplyr::filter(!is.na(Name) & !is.na(Lat) & !is.na(Lon) & 
+                                                          Source%in%input$sources & Source%in%availableSources())  %>%
                                     dplyr::mutate(Value=round(Value)) %>% dplyr::arrange(desc(Value)) -> Dat
                                   return(Dat)
                                 })
@@ -234,8 +237,9 @@ server <- function(input, output, session) {
                                }
                                Dat$Value <- round(Dat$Value)
                                Dat <- dplyr::arrange(Dat, Value) %>% 
-                                 filter(as.character(Day)==as.character(input$day)) %>%
-                                 filter(!is.na(Value) & !is.na(Lat) & !is.na(Lon)) %>%
+                                 dplyr::filter(as.character(Day)==as.character(input$day),
+                                        Source %in% availableSources()) %>%
+                                 dplyr::filter(!is.na(Value) & !is.na(Lat) & !is.na(Lon)) %>%
                                  mutate(ValueInterval=cut(Value
                                                           #,breaks=Breaks()
                                                           ,breaks=c(0,25,50,75,100,300)
@@ -617,7 +621,8 @@ server <- function(input, output, session) {
   # account info
   output$ui_account <- renderUI({
     fluidPage(
-      p("You are logged in with the user ",code(input$Usr))
+      p("User: ",code(input$Usr)),
+      p("Available data sources: ",code(paste(availableSources(),collapse=", ")))
     )
   })
 }

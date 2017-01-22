@@ -34,6 +34,25 @@ suppressMessages({
 # credentials
 source("/home/giovanni/R/projects/calicantus/config/ui_credentials.R")
 
+# style
+progressBarStyle <- ".progress-striped .bar {
+background-color: #149bdf;
+background-image: -webkit-gradient(linear, 0 100%, 100% 0, color-stop(0.25, rgba(255, 255, 255, 0.6)), color-stop(0.25, transparent), color-stop(0.5, transparent), color-stop(0.5, rgba(255, 255, 255, 0.6)), color-stop(0.75, rgba(255, 255, 255, 0.6)), color-stop(0.75, transparent), to(transparent));
+background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.6) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0.6) 75%, transparent 75%, transparent);
+background-image: -moz-linear-gradient(45deg, rgba(255, 255, 255, 0.6) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0.6) 75%, transparent 75%, transparent);
+background-image: -o-linear-gradient(45deg, rgba(255, 255, 255, 0.6) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0.6) 75%, transparent 75%, transparent);
+background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.6) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0.6) 75%, transparent 75%, transparent);
+-webkit-background-size: 40px 40px;
+-moz-background-size: 40px 40px;
+-o-background-size: 40px 40px;
+background-size: 40px 40px;
+}"
+
+# proxy 
+source("/home/giovanni/R/projects/calicantus/config/config_proxy.R")
+Sys.setenv(http_proxy=paste0("http://",proxy_usr,":",proxy_pwd,"@",proxy_addr,":",proxy_port,"/"))
+Sys.setenv(https_proxy=paste0("http://",proxy_usr,":",proxy_pwd,"@",proxy_addr,":",proxy_port,"/"))
+
 
 # ui ----------------------------------------------------------------------
 
@@ -183,7 +202,8 @@ server <- function(input, output, session) {
                                              "filter the data by writing in the cells below the table, and so on."),
                                     downloadButton('downloadData', 'download')),
                    width=3),
-      mainPanel(dataTableOutput("df"))
+      mainPanel(tags$head(tags$style(HTML(progressBarStyle))),
+                dataTableOutput("df"))
     )
   })
   
@@ -288,7 +308,8 @@ server <- function(input, output, session) {
                    ),
                    #actionButton("goTs", label="plot", icon = icon("arrow-circle-right")),
                    width=3),
-      mainPanel(plotOutput("ts"))
+      mainPanel(tags$head(tags$style(HTML(progressBarStyle))),
+                plotOutput("ts"))
     )
   })
   
@@ -301,8 +322,10 @@ server <- function(input, output, session) {
                    sliderInput("threshold","threshold",10,100,50,5),
                    width=3),
       mainPanel(tabsetPanel(
-        tabPanel("plot",  plotOutput("exc_plot"))
-        ,tabPanel("map",   plotOutput("exc_map"))
+        tabPanel("plot",  tags$head(tags$style(HTML(progressBarStyle))),
+                 plotOutput("exc_plot"))
+        ,tabPanel("map",   tags$head(tags$style(HTML(progressBarStyle))),
+                  plotOutput("exc_map"))
         ,tabPanel("table", dataTableOutput("exc_table"))
       ))
     )
@@ -325,8 +348,10 @@ server <- function(input, output, session) {
                    checkboxInput("clu_log","logarithmic scale in y",TRUE),
                    width=3),
       mainPanel(tabsetPanel(
-        tabPanel("map",   plotOutput("clu_map"))
-        ,tabPanel("plot",  plotOutput("clu_plot"))
+        tabPanel("map",   tags$head(tags$style(HTML(progressBarStyle))),
+                 plotOutput("clu_map"))
+        ,tabPanel("plot",  tags$head(tags$style(HTML(progressBarStyle))),
+                  plotOutput("clu_plot"))
         ,tabPanel("table", dataTableOutput("clu_table"))
       ))
     )
@@ -335,7 +360,9 @@ server <- function(input, output, session) {
   # data table
   output$df <- renderDataTable(options = list(pageLength = 10),
                                expr={
-                                 dataOfPeriod()
+                                 withProgress(message = 'Loading...', value = 1, {
+                                   dataOfPeriod()
+                                 })
                                })
   
   # peaks detection
@@ -392,7 +419,9 @@ server <- function(input, output, session) {
                           paste(sou,collapse=", "))
            ) +
       ylab(expression("Concentration"~(mu*g/m^3)))
-    pl
+    withProgress(message = 'Making plot...', value = 1, {
+      pl
+    })
   },height = function() ifelse(input$splitby=="none",600,900)
   )
   
@@ -411,7 +440,9 @@ server <- function(input, output, session) {
            subtitle=paste0("period: ",paste(unique(input$daterange),collapse=" to ")),
            caption=paste0("data source","s"[length(sou)>1],": ",
                           paste(sou,collapse=", ")))
-    pl
+    withProgress(message = 'Making plot...', value = 1, {
+      pl
+    })
   })
   
   # exceedances: map
@@ -441,7 +472,9 @@ server <- function(input, output, session) {
            subtitle=paste0("period: ",paste(unique(input$daterange),collapse=" to ")),
            caption=paste0("data source","s"[length(sou)>1],": ",
                           paste(sou,collapse=", ")))
-    pl
+    withProgress(message = 'Making plot...', value = 1, {
+      pl
+    })
   },height = 800
   )
   
@@ -521,7 +554,9 @@ server <- function(input, output, session) {
                            paste0("\nlines: cluster ",input$clu_add)[input$clu_add!="none"]),
            caption=paste0("data source","s"[length(sou)>1],": ",
                           paste(sou,collapse=", ")))
-    pl
+    withProgress(message = 'Making plot...', value = 1, {
+      pl
+    })
   })
   
   # clustering: map
@@ -550,7 +585,9 @@ server <- function(input, output, session) {
                            " with data standardization"[input$clu_stand]),
            caption=paste0("data source","s"[length(sou)>1],": ",
                           paste(sou,collapse=", ")))
-    pl
+    withProgress(message = 'Making plot...', value = 1, {
+      pl
+    })
   },height = 800
   )
   
@@ -575,7 +612,25 @@ server <- function(input, output, session) {
     leaflet() %>% 
       setView(lon0, lat0, 6) %>% 
       #fitBounds(~min(Lon, na.rm=T), ~min(Lat, na.rm=T), ~max(Lon, na.rm=T), ~max(Lat, na.rm=T)) %>%
-      addTiles()  %>% addProviderTiles("CartoDB.Positron")
+      addTiles(group = "classic")  %>% 
+      addProviderTiles("CartoDB.Positron", group = "grey minimal") %>%
+      addProviderTiles("Stamen.TonerLite", group = "toner lite") %>%
+      addProviderTiles("Esri.WorldImagery", group = "satellite") %>%
+      addProviderTiles("OpenTopoMap", group = "topographic") %>%
+      #        addWMSTiles(
+#         "http://mesonet.agron.iastate.edu/cgi-bin/wms/nexrad/n0r.cgi",
+#         layers = "nexrad-n0r-900913",
+#         options = WMSTileOptions(format = "image/png", transparent = TRUE),
+#         attribution = "Weather data © 2012 IEM Nexrad",
+#         group="nexrad"
+#       ) %>%
+    
+      # Layers control
+      addLayersControl(
+        baseGroups = c("grey minimal","classic","toner lite","topographic","satellite"),
+        #overlayGroups = c("aod"),
+        options = layersControlOptions(collapsed = TRUE)
+      )
   })
 
   # daily map: dynamic layer

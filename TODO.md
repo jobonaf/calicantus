@@ -39,3 +39,7 @@ improvements, details, etc:
 - [x] data table: selection of single day
 - [x] timeseries: x axis with days, weeks, months, wday...
 - [x] cluster analysis
+- [x] users with different access authorizations
+- [ ] add Campania http://88.45.133.130/meteoambientecampania/prodotti/aria/arpac_dati_centraline_YYYYMMDD.csv
+- [x] add Puglia http://www.arpa.puglia.it/pentaho/ViewAction?&DATAINIZIO=YYYYMMDD&DATAFINE=YYYYMMDD&INQUINANTE=PM10&type=csv&solution=ARPAPUGLIA&action=meta-aria.xaction&path=metacatalogo
+- [x] add Lazio http://www.arpalazio.net/main/aria/sci/annoincorso/chimici.php

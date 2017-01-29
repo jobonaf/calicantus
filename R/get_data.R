@@ -14,7 +14,7 @@ get_http <- function(config,FileIn,proxyconfig){
   source(config)
   source(proxyconfig)
   Sys.setenv(http_proxy=paste0("http://",proxy_usr,":",proxy_pwd,"@",proxy_addr,":",proxy_port,"/"))
-  commands <- paste0("wget ",Addr,"/",Path,"/",FileIn,
+  commands <- paste0("wget '",Addr,"/",Path,"/",FileIn,"'",
                     " --proxy-user=",proxy_usr," --proxy-password=",proxy_pwd,
                     " --no-check-certificate")
   for(command in commands) system(command)
@@ -90,11 +90,7 @@ get_metadata_dbqaemr <- function(config) {
 
 get_data <- function(config,day,proxyconfig = "../config/config_proxy.R"){
   source(config)
-  dd <- ifelse(!is.na(Datefmt) && nchar(Datefmt)>0,
-               format(as.POSIXct(day),
-                      format=Datefmt),
-               "")
-  FileIn <- paste0(Before, dd, After)
+  FileIn <- format(as.POSIXct(day), format=File)
   suppressWarnings(file.remove(FileIn))
 
   check <- switch(Type,

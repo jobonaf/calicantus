@@ -2,14 +2,14 @@ source("/home/giovanni/R/projects/calicantus/R/reading_functions.R")
 source("/home/giovanni/R/projects/calicantus/R/get_data.R")
 
 
-read_data <- function(config,File,metadata,day,pollutant,clean=TRUE){
+read_data <- function(config,filedata,metadata,day,pollutant,clean=TRUE){
   source(config)
   cat(paste("estraggo dati",Source,day,"\n"))
-  check <- any(nchar(File)>0)
+  check <- any(nchar(filedata)>0)
   if(check) {
     dat <- NULL
-    if(!select.by.day) dat <- try(readFun(file = File, sep=Sep))
-    if(select.by.day) dat <- try(readFun(file = File, sep=Sep, day=day))
+    if(!select.by.day) dat <- try(readFun(file = filedata, sep=Sep))
+    if(select.by.day) dat <- try(readFun(file = filedata, sep=Sep, day=day))
     check <- class(dat)!="try-error"
     if(check) check <- nrow(dat)>0
   }
@@ -35,7 +35,7 @@ read_data <- function(config,File,metadata,day,pollutant,clean=TRUE){
   } else {
     Dat <- NULL
   }  
-  if(clean && file.exists(File)) file.remove(File)
+  if(clean && file.exists(filedata)) file.remove(filedata)
   return(Dat)
 }
 
@@ -43,7 +43,7 @@ import_data <- function(Source,day,pollutant,path="/home/giovanni/R/projects/cal
   config <- paste0(path,"config/access.",Source,".",pollutant,".R")
   metadata <- paste0(path,"data/sites-info/metadata.",Source,".csv")
   filedata <- get_data(config = config, day = day)
-  dat <- read_data(config = config, File = filedata, 
+  dat <- read_data(config = config, filedata = filedata, 
                    metadata = metadata, day = day, pollutant = pollutant,...)
   return(dat)
 }

@@ -118,7 +118,10 @@ ui_login <- function(){
     div(id = "login",
         wellPanel(textInput("Usr", "user:", "user"),
                   passwordInput("Pwd", "password:", "password"),
-                  br(),actionButton("Login", "Log in"))),
+                  br(),actionButton("Login", "Log in"),
+                  conditionalPanel(condition = 'input.Login',
+                                   code('Sorry, user and/or password are wrong.') 
+                  ))),
     tags$style(type="text/css", "#login {font-size:12px;   text-align: left;position:absolute;top: 40%;left: 50%;margin-top: -100px;margin-left: -150px;}")
   )}
 
@@ -150,7 +153,11 @@ server <- function(input, output, session) {
           pwd <- isolate(input$Pwd)
           Id.usr <- which(ui_usr == usr)
           Id.pwd <- which(ui_pwd == pwd)
-          if (length(Id.usr)==1 & length(Id.pwd)==1 && Id.usr==Id.pwd) USER$Logged <- TRUE
+          if (length(Id.usr)==1 & length(Id.pwd)==1 && Id.usr==Id.pwd) {
+            USER$Logged <- TRUE
+          } else {
+            USER$Logged <- FALSE
+          }
     }    
   })
   observe({
@@ -177,9 +184,13 @@ server <- function(input, output, session) {
     aS
   })
   
-  # daily indicator (could be a function of the pollutant)
+  # daily indicator
   dailyInd <- reactive({
-    dI <- "daily average"
+    if(input$pollutantPeriod=="PM10") dI <- "daily average"
+    dI
+  })
+  dayInd <- reactive({
+    if(input$pollutantDay=="PM10") dI <- "daily average"
     dI
   })
   
@@ -191,7 +202,7 @@ server <- function(input, output, session) {
                                   start=Sys.Date()-10,
                                   end=Sys.Date()-1,
                                   max = Sys.Date()-1),
-                   selectInput("pollutant",label = "pollutant", choices = c("PM10")),
+                   selectInput("pollutantPeriod",label = "pollutant", choices = c("PM10")),
                    selectInput("sources",label = "sources of data", choices = availableSources(), 
                                selected = availableSources(), multiple=TRUE, selectize=FALSE),
                    actionButton("goPeriod", label="load", icon = icon("arrow-circle-right")),
@@ -214,7 +225,7 @@ server <- function(input, output, session) {
                                   ff <- NULL
                                   for(d in dd) {
                                     ff <- c(ff,system(paste0("ls /home/giovanni/R/projects/calicantus/data/obs-data/",
-                                                             format(as.Date(d),"%Y/%m/%d/%Y%m%d_"),input$pollutant,
+                                                             format(as.Date(d),"%Y/%m/%d/%Y%m%d_"),input$pollutantPeriod,
                                                              "*.rda 2>/dev/null"),
                                                       intern=TRUE))
                                   }
@@ -233,7 +244,7 @@ server <- function(input, output, session) {
   # download data of period
   output$downloadData <- downloadHandler(
     filename = function() {
-      paste('data_', input$pollutant, "_",
+      paste('data_', input$pollutantPeriod, "_",
             paste(format(as.Date(input$daterange),"%Y%m%d"),collapse="-"), '.csv', sep='')
     },
     content = function(con) {
@@ -274,6 +285,7 @@ server <- function(input, output, session) {
                    dateInput("day", "day of interest", value=Sys.Date()-1, 
                              min="2014-10-10", max = Sys.Date()-1,
                              width="50%"),
+                   selectInput("pollutantDay",label = "pollutant", choices = c("PM10")),
                    actionButton("goDay", label="plot", icon = icon("arrow-circle-right")),
                    conditionalPanel(condition = "input.goDay",
                                     helpText("Please note that the map on the right side is interactive:",
@@ -287,24 +299,27 @@ server <- function(input, output, session) {
   # UI: timeseries
   output$ui_ts <- renderUI({
     sidebarLayout(
-      sidebarPanel(helpText(paste0("Here you can plot aggregated timeseries, in the range from ",
-                                   min(as.Date(dataOfPeriod()$Day))," to ",max(as.Date(dataOfPeriod()$Day)),
-                                   ". To plot a different period of interest, please change it in the 'data' tab.")),
-                   selectInput("colorby","color by",c("data source"="Source","same color"="same")),
-                   selectInput("splitby","split by",c("data source"="Source","don't split"="none")),
-                   selectInput("geom_type","plot type",c("boxplot","violin","jitter","blank")),
-                   selectInput("timestep","time step",c("Day","Weekday","Year_Week","Year_Month")),
-                   hr(),
-                   helpText("You can emphasize one or more peaks, by plotting data measured by some stations."),
-                   selectInput("emphasis","emphasis",c("period max","daily max","data source max","none")),
-                   sliderInput("howmany","how many peaks do you want to emphasize?",1,5,1,1,ticks = FALSE),
-                   checkboxInput("emph_lines","lines for stations' concentration?",TRUE),
-                   checkboxInput("emph_labels","peaks labelled with values",FALSE),
-                   hr(),
-                   checkboxInput("yax_ctrl","change y axis",FALSE),
-                   conditionalPanel(condition = "input.yax_ctrl",
-                                    selectInput("yax_percmin","lower percentile",choices = c(0,0.1,0.5,1)),
-                                    selectInput("yax_percmax","upper percentile",choices = c(100,99.9,99.5,99))
+      sidebarPanel(helpText(paste0("Here you can plot aggregated time series.")),
+                   conditionalPanel(condition = "! input.goPeriod",
+                                    helpText("Please select the period of interest in the ",strong("data")," tab.")),
+                   conditionalPanel(condition = "input.goPeriod",
+                                    helpText("You can change the period of interest in the ",strong("data")," tab."),
+                                    selectInput("colorby","color by",c("data source"="Source","same color"="same")),
+                                    selectInput("splitby","split by",c("data source"="Source","don't split"="none")),
+                                    selectInput("geom_type","plot type",c("boxplot","violin","jitter","blank")),
+                                    selectInput("timestep","time step",c("Day","Weekday","Year_Week","Year_Month")),
+                                    hr(),
+                                    helpText("You can emphasize one or more peaks, by plotting data measured by some stations."),
+                                    selectInput("emphasis","emphasis",c("period max","daily max","data source max","none")),
+                                    sliderInput("howmany","how many peaks do you want to emphasize?",1,5,1,1,ticks = FALSE),
+                                    checkboxInput("emph_lines","lines for stations' concentration?",TRUE),
+                                    checkboxInput("emph_labels","peaks labelled with values",FALSE),
+                                    hr(),
+                                    checkboxInput("yax_ctrl","change y axis",FALSE),
+                                    conditionalPanel(condition = "input.yax_ctrl",
+                                                     selectInput("yax_percmin","lower percentile",choices = c(0,0.1,0.5,1)),
+                                                     selectInput("yax_percmax","upper percentile",choices = c(100,99.9,99.5,99))
+                                    )
                    ),
                    #actionButton("goTs", label="plot", icon = icon("arrow-circle-right")),
                    width=3),
@@ -316,10 +331,13 @@ server <- function(input, output, session) {
   # UI: exceedances
   output$ui_exc <- renderUI({
     sidebarLayout(
-      sidebarPanel(helpText(paste0("Here you can analize exceedances of a given threshold, in the period from ",
-                                   min(as.Date(dataOfPeriod()$Day))," to ",max(as.Date(dataOfPeriod()$Day)),
-                                   ". To analize a different period of interest, please change it in the 'data' tab.")),
-                   sliderInput("threshold","threshold",10,100,50,5),
+      sidebarPanel(helpText("Here you can analize exceedances of a given threshold."),
+                   conditionalPanel(condition = "! input.goPeriod",
+                                    helpText("Please select the period of interest in the ",strong("data")," tab.")),
+                   conditionalPanel(condition = "input.goPeriod",
+                                    helpText("You can change the period of interest in the ",strong("data")," tab."),
+                                    sliderInput("threshold","threshold",10,100,50,5)
+                   ),
                    width=3),
       mainPanel(tabsetPanel(
         tabPanel("plot",  tags$head(tags$style(HTML(progressBarStyle))),
@@ -334,18 +352,21 @@ server <- function(input, output, session) {
   # UI: clustering
   output$ui_clu <- renderUI({
     sidebarLayout(
-      sidebarPanel(helpText(paste0("Here you perform cluster analysis of the time series, in the period from ",
-                                   min(as.Date(dataOfPeriod()$Day))," to ",max(as.Date(dataOfPeriod()$Day)),
-                                   ". To analize a different period of interest, please change it in the 'data' tab.")),
-                   sliderInput("nclu","number of clusters",2,10,5),
-                   sliderInput("clu_req","data needed (%)",50,100,80,5),
-                   checkboxInput("clu_stand","standardize data before clustering?",FALSE),
-                   selectInput("clu_metr",label = "metric",choices = c("manhattan","euclidean")),
-                   hr(),
-                   helpText("Change here some details of the time series plot. Note that 'medoid' of a cluster is its most representative station."),
-                   selectInput("clu_add",label = "line",choices = c("medoid","mean","median","none")),
-                   checkboxInput("clu_box","boxplot",TRUE),
-                   checkboxInput("clu_log","logarithmic scale in y",TRUE),
+      sidebarPanel(helpText("Here you perform cluster analysis of the time series."),
+                   conditionalPanel(condition = "! input.goPeriod",
+                                    helpText("Please select the period of interest in the ",strong("data")," tab.")),
+                   conditionalPanel(condition = "input.goPeriod",
+                                    helpText("You can change the period of interest in the ",strong("data")," tab."),
+                                    sliderInput("nclu","number of clusters",2,10,5),
+                                    sliderInput("clu_req","data needed (%)",50,100,80,5),
+                                    checkboxInput("clu_stand","standardize data before clustering?",FALSE),
+                                    selectInput("clu_metr",label = "metric",choices = c("manhattan","euclidean")),
+                                    hr(),
+                                    helpText("Change here some details of the time series plot. Note that 'medoid' of a cluster is its most representative station."),
+                                    selectInput("clu_add",label = "line",choices = c("medoid","mean","median","none")),
+                                    checkboxInput("clu_box","boxplot",TRUE),
+                                    checkboxInput("clu_log","logarithmic scale in y",TRUE)
+                   ),
                    width=3),
       mainPanel(tabsetPanel(
         tabPanel("map",   tags$head(tags$style(HTML(progressBarStyle))),
@@ -413,7 +434,7 @@ server <- function(input, output, session) {
                                   quantile(dataWithPeaks()$Value,as.numeric(input$yax_percmax)*0.01,na.rm=T)))
     sou <- unique(dataOfPeriod()$Source)
     pl <- pl + theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-      labs(title=paste0(input$pollutant,": ",dailyInd()),
+      labs(title=paste0(input$pollutantPeriod,": ",dailyInd()),
            subtitle=paste0("period: ",paste(unique(input$daterange),collapse=" to ")),
            caption=paste0("data source","s"[length(sou)>1],": ",
                           paste(sou,collapse=", "))
@@ -436,7 +457,7 @@ server <- function(input, output, session) {
     sou <- unique(dataOfPeriod()$Source)
     pl <- ggplot(data=Dat, aes(x=Day,y=Stations,fill=Status)) + geom_col() + 
       theme_bw() + scale_fill_manual(values=c("olivedrab","orangered")) +
-      labs(title=bquote(.(input$pollutant)*": number of stations with "*.(dailyInd())*" above "*.(input$threshold)~mu*g/m^3),
+      labs(title=bquote(.(input$pollutantPeriod)*": number of stations with "*.(dailyInd())*" above "*.(input$threshold)~mu*g/m^3),
            subtitle=paste0("period: ",paste(unique(input$daterange),collapse=" to ")),
            caption=paste0("data source","s"[length(sou)>1],": ",
                           paste(sou,collapse=", ")))
@@ -468,7 +489,7 @@ server <- function(input, output, session) {
       scale_size_area() +
       coord_map(xlim = c(xmin-dx*0.05,xmax+dx*0.05),
                 ylim = c(ymin-dy*0.05,ymax+dy*0.05)) +
-      labs(title=bquote(.(input$pollutant)*": exceedances of "*.(dailyInd())*" (threshold: "*.(input$threshold)~mu*g/m^3*")"),
+      labs(title=bquote(.(input$pollutantPeriod)*": exceedances of "*.(dailyInd())*" (threshold: "*.(input$threshold)~mu*g/m^3*")"),
            subtitle=paste0("period: ",paste(unique(input$daterange),collapse=" to ")),
            caption=paste0("data source","s"[length(sou)>1],": ",
                           paste(sou,collapse=", ")))
@@ -547,7 +568,7 @@ server <- function(input, output, session) {
                    size=1.5, aes(group=Cluster), linetype="solid")
     sou <- unique(dataWithClusters()$Source)
     pl <- pl + theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-      labs(title=bquote("stations clustering based on "*.(input$pollutant)*" "*.(dailyInd())),
+      labs(title=bquote("stations clustering based on "*.(input$pollutantPeriod)*" "*.(dailyInd())),
            subtitle=paste0("period: ",paste(unique(input$daterange),collapse=" to "),"\n",
                            "method: clustering around medoids (",input$clu_metr," metric)",
                            " with data standardization"[input$clu_stand],
@@ -579,7 +600,7 @@ server <- function(input, output, session) {
                        size=3, col="black") +
       coord_map(xlim = c(xmin-dx*0.05,xmax+dx*0.05),
                 ylim = c(ymin-dy*0.05,ymax+dy*0.05)) +
-      labs(title=bquote("stations clustering based on "*.(input$pollutant)*" "*.(dailyInd())),
+      labs(title=bquote("stations clustering based on "*.(input$pollutantPeriod)*" "*.(dailyInd())),
            subtitle=paste0("period: ",paste(unique(input$daterange),collapse=" to "),"\n",
                            "method: clustering around medoids (",input$clu_metr," distance)",
                            " with data standardization"[input$clu_stand]),
@@ -595,6 +616,12 @@ server <- function(input, output, session) {
   Breaks <- reactive({
     bb <- c(0,25,50,75,100,300)
     bb
+  })
+  
+  # units
+  unitDay <- reactive({
+    if(input$pollutantDay=="PM10") uu <- "ug/m^3"
+    uu
   })
   
   # daily map: palette
@@ -616,7 +643,7 @@ server <- function(input, output, session) {
       addProviderTiles("CartoDB.Positron", group = "grey minimal") %>%
       addProviderTiles("Stamen.TonerLite", group = "toner lite") %>%
       addProviderTiles("Esri.WorldImagery", group = "satellite") %>%
-      addProviderTiles("OpenTopoMap", group = "topographic") %>%
+      addProviderTiles("Thunderforest.Landscape", group = "terrain") %>%
       #        addWMSTiles(
 #         "http://mesonet.agron.iastate.edu/cgi-bin/wms/nexrad/n0r.cgi",
 #         layers = "nexrad-n0r-900913",
@@ -627,7 +654,7 @@ server <- function(input, output, session) {
     
       # Layers control
       addLayersControl(
-        baseGroups = c("grey minimal","classic","toner lite","topographic","satellite"),
+        baseGroups = c("grey minimal","classic","toner lite","terrain","satellite"),
         #overlayGroups = c("aod"),
         options = layersControlOptions(collapsed = TRUE)
       )
@@ -645,9 +672,9 @@ server <- function(input, output, session) {
         addCircleMarkers(lng=~Lon, lat=~Lat
                          ,data=Dat
                          ,radius=6 
-                         ,color=~Pal(ValueInterval)
-                         #,color="blue"
-                         ,stroke=F, fillOpacity=1
+                         ,fillColor=~Pal(ValueInterval)
+                         ,color="black", weight=1
+                         ,stroke=T, fillOpacity=0.8
                          ,layerId=1:ns
                          ,popup= ~htmlEscape(paste0(Name,": ",Value))
         ) -> map
@@ -665,7 +692,11 @@ server <- function(input, output, session) {
     
     proxy %>% 
       clearControls() %>%
-      addLegend(position = "bottomright", pal = Pal, values = ~ValueInterval)
+      addLegend(position = "bottomright", pal = Pal, values = ~ValueInterval,
+                title = paste0(as.character(input$day),":<br>",
+                               input$pollutantDay," ",dayInd(),"<br>(",
+                               unitDay(),")")
+                )
   })
   
   # support for debug

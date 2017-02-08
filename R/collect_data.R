@@ -7,8 +7,8 @@ source("/home/giovanni/R/projects/calicantus/R/prepare_data.R")
 sources <- c("ARPAV","ARPAT","ARPAE","ARPA-Umbria",
              "ARPA-Sicilia","ARPA-Piemonte","ARPA-Lombardia",
              "ARPA-Liguria","ARPA-FVG","ARPA-Lazio",
-             "ARPA-Puglia")
-#sources <- c("ARPA-Puglia")
+             "ARPA-Puglia","ARPAC","AZO-Croatia")
+#sources <- c("AZO-Croatia")
 pollutants <- c("PM10")
 
 # arguments

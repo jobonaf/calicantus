@@ -10,7 +10,7 @@ read_data <- function(config,filedata,metadata,day,pollutant,clean=TRUE){
     dat <- NULL
     if(!select.by.day) dat <- try(readFun(file = filedata, sep=Sep))
     if(select.by.day) dat <- try(readFun(file = filedata, sep=Sep, day=day))
-    check <- class(dat)!="try-error"
+    check <- class(dat)[1]!="try-error"
     if(check) check <- nrow(dat)>0
   }
   if(check) {

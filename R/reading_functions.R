@@ -62,3 +62,34 @@ read.ArpaPuglia <- function(file,sep,day) {
   out <- dat[which(!is.na(dat$Valore)),]
   return(out)
 }
+
+
+round_awayfromzero <- function(x,digits=0) trunc(x*10^digits+sign(x)*0.5)*10^-digits
+
+read.ArpaCampania <- function(file,sep,day,poll="PM10") {
+  library("Rcpp", lib.loc="~/R/x86_64-pc-linux-gnu-library/3.2")
+  library(dplyr)
+  dat <- read.table(file,sep = sep,stringsAsFactors = F,header = T)
+  dat %>% mutate(data=substr(data_ora,1,10)) %>%
+    filter(as.POSIXct(day,tz="Africa/Algiers")==as.POSIXct(data,tz="Africa/Algiers"),
+           inquinante==poll,
+           !is.na(valore)) %>%
+    group_by(stazione, inquinante, data) %>%
+    summarize(valore=round_awayfromzero(mean(valore)), nh=n()) %>%
+    filter(nh>=18) -> out
+  out <- as.data.frame(out)
+  return(out)
+}
+
+
+read.AzoCroatia <- function(file,sep) {
+  library(RJSONIO)
+  out <- data.frame(ID=sep, VAL=NA)
+  nf <- length(file)
+  if(nf!=length(sep)) stop("IDs and files must have the same number of elements!")
+  for (i in 1:nf) {
+    tmp <- RJSONIO::fromJSON(file[i])
+    if(length(tmp)>0) out$VAL[i] <- tmp[[1]]$Podatak$vrijednost
+  }
+  return(out)
+}

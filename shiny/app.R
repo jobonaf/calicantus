@@ -53,6 +53,13 @@ source("/home/giovanni/R/projects/calicantus/config/config_proxy.R")
 Sys.setenv(http_proxy=paste0("http://",proxy_usr,":",proxy_pwd,"@",proxy_addr,":",proxy_port,"/"))
 Sys.setenv(https_proxy=paste0("http://",proxy_usr,":",proxy_pwd,"@",proxy_addr,":",proxy_port,"/"))
 
+# geographic data
+MapData <- map_data(map = "world", 
+                    region = c("Italy","Slovenia","Croatia","Serbia","San Marino","Vatican",
+                               "France","Switzerland","Austria","Germany","Bosnia and Herzegovina",
+                               "Tunisia","Malta","Montenegro","Hungary","Albania","Greece","Algeria"))
+
+
 
 # ui ----------------------------------------------------------------------
 
@@ -273,7 +280,7 @@ server <- function(input, output, session) {
                                  dplyr::filter(!is.na(Value) & !is.na(Lat) & !is.na(Lon)) %>%
                                  mutate(ValueInterval=cut(Value
                                                           #,breaks=Breaks()
-                                                          ,breaks=c(0,25,50,75,100,300)
+                                                          ,Breaks()
                                                           ,ordered_result=TRUE, include.lowest=TRUE))
                                return(Dat)
                              })
@@ -286,6 +293,7 @@ server <- function(input, output, session) {
                              min="2014-10-10", max = Sys.Date()-1,
                              width="50%"),
                    selectInput("pollutantDay",label = "pollutant", choices = c("PM10")),
+                   selectInput("scaleDay",label = "color scale", choices = c("classic","extended")),
                    actionButton("goDay", label="plot", icon = icon("arrow-circle-right")),
                    conditionalPanel(condition = "input.goDay",
                                     helpText("Please note that the map on the right side is interactive:",
@@ -304,10 +312,13 @@ server <- function(input, output, session) {
                                     helpText("Please select the period of interest in the ",strong("data")," tab.")),
                    conditionalPanel(condition = "input.goPeriod",
                                     helpText("You can change the period of interest in the ",strong("data")," tab."),
+                                    helpText("Choose the time step, both for time series plot and maps."),
+                                    selectInput("timestep","time step",c("Day","Weekday","Year_Week","Year_Month")),
+                                    hr(),
+                                    helpText("The following options affect only the time series plot, not the maps."),
                                     selectInput("colorby","color by",c("data source"="Source","same color"="same")),
                                     selectInput("splitby","split by",c("data source"="Source","don't split"="none")),
                                     selectInput("geom_type","plot type",c("boxplot","violin","jitter","blank")),
-                                    selectInput("timestep","time step",c("Day","Weekday","Year_Week","Year_Month")),
                                     hr(),
                                     helpText("You can emphasize one or more peaks, by plotting data measured by some stations."),
                                     selectInput("emphasis","emphasis",c("period max","daily max","data source max","none")),
@@ -323,8 +334,13 @@ server <- function(input, output, session) {
                    ),
                    #actionButton("goTs", label="plot", icon = icon("arrow-circle-right")),
                    width=3),
-      mainPanel(tags$head(tags$style(HTML(progressBarStyle))),
-                plotOutput("ts"))
+      mainPanel(tabsetPanel(
+        tabPanel("plot",  tags$head(tags$style(HTML(progressBarStyle))),
+                 plotOutput("ts"))
+        ,tabPanel("maps",   tags$head(tags$style(HTML(progressBarStyle))),
+                  plotOutput("ts_maps"))
+      )
+      )
     )
   })
   
@@ -446,10 +462,57 @@ server <- function(input, output, session) {
   },height = function() ifelse(input$splitby=="none",600,900)
   )
   
+  # time series: maps
+  output$ts_maps <- renderPlot({
+    dataOfPeriod() %>% 
+      dplyr::mutate(Weekday=lubridate::wday(Day,label = T),
+                    Year_Week=format(as.Date(Day),"%Y_%U"),
+                    Year_Month=format(as.Date(Day),"%Y_%m"))%>% 
+      dplyr::filter(!is.na(Value)) %>%
+      dplyr::group_by_(.dots=list(input$timestep,"Name")) %>% 
+      dplyr::summarize(Value=mean(Value,na.rm=T), 
+                       Valid=n(),Lat=first(Lat),Lon=first(Lon)) -> Dat
+    xmin<-min(Dat$Lon,na.rm=T)
+    xmax<-max(Dat$Lon,na.rm=T)
+    ymin<-min(Dat$Lat,na.rm=T)
+    ymax<-max(Dat$Lat,na.rm=T)
+    dx<-xmax-xmin
+    dy<-ymax-ymin
+    bb <- unique(round(quantile(Dat$Value,c(0,20,40,60,80,90,95,99,100)/100,na.rm=T)))
+    Dat %>% mutate(Value=cut(Value,bb,include.lowest = T))-> Dat
+    sou <- unique(dataOfPeriod()$Source)
+    pl <- ggplot() + 
+      geom_polygon(data=MapData, aes(x=long, y=lat, group = group),
+                   colour="grey80", fill="grey30" ) +
+      geom_point(data=Dat, aes(x=Lon, y=Lat, color=Value, size=Valid), shape=19) +
+      scale_colour_brewer(palette = "Spectral", direction=-1) +
+      scale_size_area(max_size=2) +
+      coord_map(xlim = c(xmin-dx*0.05,xmax+dx*0.05),
+                ylim = c(ymin-dy*0.05,ymax+dy*0.05)) +
+      labs(title=bquote(.(input$pollutantPeriod)*": "*.(dailyInd())*" ("*mu*g/m^3*")"),
+           subtitle=paste0("period: ",paste(unique(input$daterange),collapse=" to ")),
+           caption=paste0("data source","s"[length(sou)>1],": ",
+                          paste(sou,collapse=", "))) +
+      facet_wrap(input$timestep, labeller = label_both)
+    withProgress(message = 'Making plot...', value = 1, {
+      pl
+    })
+  },height = function() {
+    nd <- as.numeric(as.POSIXct(input$daterange[2])-as.POSIXct(input$daterange[1])+1)
+    hrow <- 300
+    if(input$timestep=="Day") hh <- 200+(nd%/%6+(nd%%6>0))*hrow
+    if(input$timestep=="Weekday") hh <- 200+3*hrow
+    if(input$timestep=="Year_Week") hh <- max(500,200+(nd/40)*hrow)
+    if(input$timestep=="Year_Month") hh <- max(500,200+(nd/150)*hrow)
+    hh
+  }
+  )
+  
   # exceedances: barplot
   output$exc_plot <- renderPlot({
     dataOfPeriod() %>% dplyr::mutate(Exc=Value>input$threshold,
-                                     notExc=Value<=input$threshold) %>% group_by(Day) %>%
+                                     notExc=Value<=input$threshold) %>%
+      group_by(Day) %>%
       dplyr::summarize(notExceeding=sum(notExc, na.rm=T),
                        Exceeding=sum(Exc, na.rm=T)) %>%
       gather(key=Status,value=Stations,-Day) %>%
@@ -468,10 +531,11 @@ server <- function(input, output, session) {
   
   # exceedances: map
   output$exc_map <- renderPlot({
-    dataOfPeriod() %>% dplyr::mutate(Exc=Value>input$threshold) %>% group_by(Name,Lat,Lon) %>%
+    dataOfPeriod() %>% filter(!is.na(Value)) %>%
+      dplyr::mutate(Exc=Value>input$threshold) %>% 
+      group_by(Name,Lat,Lon) %>%
       dplyr::summarize(Exceed=sum(Exc, na.rm=T),
-                       Valid=sum(!is.na(Exc))) -> Dat
-    MapData <- map_data("world")
+                       Valid=n()) -> Dat
     xmin<-min(Dat$Lon,na.rm=T)
     xmax<-max(Dat$Lon,na.rm=T)
     ymin<-min(Dat$Lat,na.rm=T)
@@ -583,7 +647,6 @@ server <- function(input, output, session) {
   # clustering: map
   output$clu_map <- renderPlot({
     dataWithClusters() %>% dplyr::select(Name,Source,Lat,Lon,Cluster,isMedoid) %>% distinct() -> Dat
-    MapData <- map_data("world")
     xmin<-min(Dat$Lon,na.rm=T)
     xmax<-max(Dat$Lon,na.rm=T)
     ymin<-min(Dat$Lat,na.rm=T)
@@ -614,7 +677,11 @@ server <- function(input, output, session) {
   
   # breaks for the map
   Breaks <- reactive({
-    bb <- c(0,25,50,75,100,300)
+    if(input$scaleDay == "classic") {
+      bb <- c(0,25,50,75,100,300)
+    }else if(input$scaleDay == "extended") {
+      bb <- c(0,25,50,75,100,150,200,250,300,400)
+    }
     bb
   })
   
@@ -626,7 +693,11 @@ server <- function(input, output, session) {
   
   # daily map: palette
   colorpal <- reactive({
-    cc <- c("steelblue","olivedrab","orange","red","purple")
+    if(input$scaleDay == "classic") {
+      cc <- c("steelblue","olivedrab","orange","red","purple")
+    }else if(input$scaleDay == "extended") {
+      cc <- c("white",rev(RColorBrewer::brewer.pal(name="Spectral",n=length(Breaks())-4)),"magenta","black")
+    }
     colorFactor(palette = cc, 
                 domain = cut(Breaks(),Breaks(),
                              ordered_result=TRUE, include.lowest=TRUE))

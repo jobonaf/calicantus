@@ -40,6 +40,13 @@ improvements, details, etc:
 - [x] timeseries: x axis with days, weeks, months, wday...
 - [x] cluster analysis
 - [x] users with different access authorizations
-- [ ] add Campania http://88.45.133.130/meteoambientecampania/prodotti/aria/arpac_dati_centraline_YYYYMMDD.csv
+- [x] add Campania http://88.45.133.130/meteoambientecampania/prodotti/aria/arpac_dati_centraline_YYYYMMDD.csv
 - [x] add Puglia http://www.arpa.puglia.it/pentaho/ViewAction?&DATAINIZIO=YYYYMMDD&DATAFINE=YYYYMMDD&INQUINANTE=PM10&type=csv&solution=ARPAPUGLIA&action=meta-aria.xaction&path=metacatalogo
 - [x] add Lazio http://www.arpalazio.net/main/aria/sci/annoincorso/chimici.php
+- [ ] Puglia: fix metadata
+- [ ] Campania: load older data, managing split at 23:00
+- [x] time series of maps
+- [ ] add Croatia
+    + data: http://iszz.azo.hr/iskzl/rs/podatak/export/json?postaja=265&polutant=5&tipPodatka=4&vrijemeOd=22.01.2017&vrijemeDo=22.01.2017
+    + coordinates: http://iszz.azo.hr/iskzl/koordinate.htm
+    + codes: http://iszz.azo.hr/iskzl/doc/servis_uputa.docx

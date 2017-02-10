@@ -48,7 +48,6 @@ improvements, details, etc:
     + data: http://iszz.azo.hr/iskzl/rs/podatak/export/json?postaja=265&polutant=5&tipPodatka=4&vrijemeOd=22.01.2017&vrijemeDo=22.01.2017
     + coordinates: http://iszz.azo.hr/iskzl/koordinate.htm
     + codes: http://iszz.azo.hr/iskzl/doc/servis_uputa.docx
-- [ ] timeseries colored by station
 - [ ] publish metadata tables
 - [ ] daily map: automatic plot without "plot" button
 - [ ] daily map: forward-backward buttons

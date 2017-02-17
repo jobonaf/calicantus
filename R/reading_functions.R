@@ -93,3 +93,14 @@ read.AzoCroatia <- function(file,sep) {
   }
   return(out)
 }
+
+read.UacerTicino <- function(file,sep) {
+  out <- data.frame(ID=sep, VAL=NA)
+  nf <- length(file)
+  if(nf!=length(sep)) stop("IDs and files must have the same number of elements!")
+  for (i in 1:nf) {
+    tmp <- read.table(file[i],comment.char = "#", blank.lines.skip = T, header = T, sep=";")
+    if(length(tmp)>0) out$VAL[i] <- tmp[1,2]
+  }
+  return(out)
+}

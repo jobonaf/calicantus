@@ -219,6 +219,8 @@ server <- function(input, output, session) {
                                              "look for a specific value using the 'search' tool,",
                                              "filter the data by writing in the cells below the table, and so on."),
                                     downloadButton('downloadData', 'download')),
+                   hr(),
+                   helpText("Data are not verified and may differ from the validated data."),
                    width=3),
       mainPanel(tags$head(tags$style(HTML(progressBarStyle))),
                 dataTableOutput("df"))
@@ -299,6 +301,8 @@ server <- function(input, output, session) {
                                     helpText("Please note that the map on the right side is interactive:",
                                              "you can zoom in and out with the mouse wheel or with the '+' and '-',",
                                              "and click on a marker to get name of the station and observed concentration.")),
+                   hr(),
+                   helpText("Data are not verified and may differ from the validated data."),
                    width=3),
       mainPanel(leafletOutput("Map", width="100%", height="800px"))
     )
@@ -452,9 +456,8 @@ server <- function(input, output, session) {
     pl <- pl + theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
       labs(title=paste0(input$pollutantPeriod,": ",dailyInd()),
            subtitle=paste0("period: ",paste(unique(input$daterange),collapse=" to ")),
-           caption=paste0("data source","s"[length(sou)>1],": ",
-                          paste(sou,collapse=", "))
-           ) +
+           caption=paste(collapse="\n",strwrap(paste0("data source","s"[length(sou)>1],": ",
+                          paste(sou,collapse=", ")),exdent=5))) +
       ylab(expression("Concentration"~(mu*g/m^3)))
     withProgress(message = 'Making plot...', value = 1, {
       pl
@@ -491,8 +494,8 @@ server <- function(input, output, session) {
                 ylim = c(ymin-dy*0.05,ymax+dy*0.05)) +
       labs(title=bquote(.(input$pollutantPeriod)*": "*.(dailyInd())*" ("*mu*g/m^3*")"),
            subtitle=paste0("period: ",paste(unique(input$daterange),collapse=" to ")),
-           caption=paste0("data source","s"[length(sou)>1],": ",
-                          paste(sou,collapse=", "))) +
+           caption=paste(collapse="\n",strwrap(paste0("data source","s"[length(sou)>1],": ",
+                          paste(sou,collapse=", ")),exdent=5))) +
       facet_wrap(input$timestep, labeller = label_both)
     withProgress(message = 'Making plot...', value = 1, {
       pl
@@ -500,7 +503,7 @@ server <- function(input, output, session) {
   },height = function() {
     nd <- as.numeric(as.POSIXct(input$daterange[2])-as.POSIXct(input$daterange[1])+1)
     hrow <- 300
-    if(input$timestep=="Day") hh <- 200+(nd%/%6+(nd%%6>0))*hrow
+    if(input$timestep=="Day") hh <- 200+(nd%/%8+(nd%%8>0))*hrow
     if(input$timestep=="Weekday") hh <- 200+3*hrow
     if(input$timestep=="Year_Week") hh <- max(500,200+(nd/40)*hrow)
     if(input$timestep=="Year_Month") hh <- max(500,200+(nd/150)*hrow)
@@ -522,8 +525,8 @@ server <- function(input, output, session) {
       theme_bw() + scale_fill_manual(values=c("olivedrab","orangered")) +
       labs(title=bquote(.(input$pollutantPeriod)*": number of stations with "*.(dailyInd())*" above "*.(input$threshold)~mu*g/m^3),
            subtitle=paste0("period: ",paste(unique(input$daterange),collapse=" to ")),
-           caption=paste0("data source","s"[length(sou)>1],": ",
-                          paste(sou,collapse=", ")))
+           caption=paste(collapse="\n",strwrap(paste0("data source","s"[length(sou)>1],": ",
+                          paste(sou,collapse=", ")),exdent=5)))
     withProgress(message = 'Making plot...', value = 1, {
       pl
     })
@@ -555,8 +558,8 @@ server <- function(input, output, session) {
                 ylim = c(ymin-dy*0.05,ymax+dy*0.05)) +
       labs(title=bquote(.(input$pollutantPeriod)*": exceedances of "*.(dailyInd())*" (threshold: "*.(input$threshold)~mu*g/m^3*")"),
            subtitle=paste0("period: ",paste(unique(input$daterange),collapse=" to ")),
-           caption=paste0("data source","s"[length(sou)>1],": ",
-                          paste(sou,collapse=", ")))
+           caption=paste(collapse="\n",strwrap(paste0("data source","s"[length(sou)>1],": ",
+                          paste(sou,collapse=", ")),exdent=5)))
     withProgress(message = 'Making plot...', value = 1, {
       pl
     })
@@ -637,8 +640,8 @@ server <- function(input, output, session) {
                            "method: clustering around medoids (",input$clu_metr," metric)",
                            " with data standardization"[input$clu_stand],
                            paste0("\nlines: cluster ",input$clu_add)[input$clu_add!="none"]),
-           caption=paste0("data source","s"[length(sou)>1],": ",
-                          paste(sou,collapse=", ")))
+           caption=paste(collapse="\n",strwrap(paste0("data source","s"[length(sou)>1],": ",
+                          paste(sou,collapse=", ")),exdent=5)))
     withProgress(message = 'Making plot...', value = 1, {
       pl
     })
@@ -658,17 +661,17 @@ server <- function(input, output, session) {
       geom_polygon(data=MapData, aes(x=long, y=lat, group = group),
                    colour="grey80", fill="grey30" ) +
       geom_label_repel(data=Dat, aes(x=Lon, y=Lat, fill=Cluster, label=Cluster), 
-                       box.padding = unit(0.1, "lines"),
-                       label.padding = unit(0.1, "lines"), 
-                       size=3, col="black") +
+                       box.padding = unit(0.08, "lines"),
+                       label.padding = unit(0.08, "lines"), 
+                       size=2.5, col="black") +
       coord_map(xlim = c(xmin-dx*0.05,xmax+dx*0.05),
                 ylim = c(ymin-dy*0.05,ymax+dy*0.05)) +
       labs(title=bquote("stations clustering based on "*.(input$pollutantPeriod)*" "*.(dailyInd())),
            subtitle=paste0("period: ",paste(unique(input$daterange),collapse=" to "),"\n",
                            "method: clustering around medoids (",input$clu_metr," distance)",
                            " with data standardization"[input$clu_stand]),
-           caption=paste0("data source","s"[length(sou)>1],": ",
-                          paste(sou,collapse=", ")))
+           caption=paste(collapse="\n",strwrap(paste0("data source","s"[length(sou)>1],": ",
+                          paste(sou,collapse=", ")),exdent=5)))
     withProgress(message = 'Making plot...', value = 1, {
       pl
     })
@@ -747,7 +750,10 @@ server <- function(input, output, session) {
                          ,color="black", weight=1
                          ,stroke=T, fillOpacity=0.8
                          ,layerId=1:ns
-                         ,popup= ~htmlEscape(paste0(Name,": ",Value))
+                         ,popup= ~paste0("station: <b>",Name,"</b><br/>",
+                                                    "value: <b>",Value,"</b><br/>",
+                                                    "data source: <b>",Source,"</b>")
+                         
         ) -> map
     }else{
       map %>% addPopups(lng=11,lat=44,popup="No valid data!") -> map

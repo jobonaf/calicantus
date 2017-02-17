@@ -16,7 +16,8 @@ get_http <- function(config,FileIn,proxyconfig){
   Sys.setenv(http_proxy=paste0("http://",proxy_usr,":",proxy_pwd,"@",proxy_addr,":",proxy_port,"/"))
   commands <- paste0("wget '",Addr,"/",Path,"/",FileIn,"'",
                     " --proxy-user=",proxy_usr," --proxy-password=",proxy_pwd,
-                    " --no-check-certificate")
+                    " --no-check-certificate",
+                    " -O '",FileIn,"'")
   for(command in commands) system(command)
   check <- any(file.exists(FileIn))
   return(check)

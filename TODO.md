@@ -49,6 +49,14 @@ improvements, details, etc:
     + coordinates: http://iszz.azo.hr/iskzl/koordinate.htm
     + codes: http://iszz.azo.hr/iskzl/doc/servis_uputa.docx
 - [ ] publish metadata tables
-- [ ] daily map: automatic plot without "plot" button
+- [x] daily map: automatic plot without "plot" button
 - [ ] daily map: forward-backward buttons
 - [ ] popup with more info
+- [x] add Ticino: http://www.oasi.ti.ch/web/rest/measure/csv?domain=air&resolution=d&parameter=PM10&from=2017-02-03&to=2017-02-10&location=auto_275
+- [x] add CAMS services 
+    + docs: http://www.regional.atmosphere.copernicus.eu/doc/Guide_Numerical_Data_CAMS_new.pdf
+    + example: http://download.regional.atmosphere.copernicus.eu/services/CAMS50?&token=__M0bChV6QsoOFqHz31VRqnpr4GhWPtcpaRy3oeZjBNSg__&grid=0.1&model=CHIMERE&package=FORECAST_PM10_SURFACE&time=0H24H&referencetime=2017-02-14T00:00:00Z&format=NETCDF&licence=yes
+- [ ] add Carinthia http://www.umwelt.ktn.gv.at/luft/tagesbericht/lt_170201.htm
+- [ ] add Serbia paste0("http://www.amskv.sepa.gov.rs/konektori/pregled_tabela_uporedni.php?",
+              paste(paste0("stanice[]=",c(2,9,16,38,41,50,51,53,57,58,59)),collapse="&"),
+              "&komponente[]=5&tipgrafikona[]=column&periodi[]=dana30&agregacija[]=24")

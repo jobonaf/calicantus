@@ -11,6 +11,7 @@ suppressMessages({
  # .libPaths(new=unique(c("/home/giovanni/R/x86_64-pc-linux-gnu-library/3.2", .libPaths())))
   library(shiny, lib.loc = "/usr/lib/R/library")
  # library("dtw", lib.loc="~/R/x86_64-pc-linux-gnu-library/3.2")
+  library(base64enc, lib.loc="/home/giovanni/R/x86_64-pc-linux-gnu-library/3.2")
   library(lubridate, lib.loc = "/usr/lib/R/library")
   library(dplyr, lib.loc = "/usr/lib/R/library")
   library(plyr, lib.loc = "/home/giovanni/R/x86_64-pc-linux-gnu-library/3.2")
@@ -28,7 +29,7 @@ suppressMessages({
   library(RColorBrewer, lib.loc = "/usr/lib/R/library")
   library(maps, lib.loc = "/usr/lib/R/library")
   library(cluster, lib.loc = "/usr/lib/R/library")
-  library(htmltools, lib.loc = "/usr/lib/R/library")
+  #library(htmltools, lib.loc = "/usr/lib/R/library")
 })
 
 # credentials
@@ -79,6 +80,9 @@ ui_exc <- uiOutput("ui_exc")
 # UI: clustering
 ui_clu <- uiOutput("ui_clu")
 
+# UI: models map
+ui_modelmap <- uiOutput("ui_modelmap")
+
 # UI: account info
 ui_account <- uiOutput("ui_account")
 
@@ -93,19 +97,7 @@ ui_about <- fluidPage(
   h3("contacts"),
   p("Platform manager: ", a("Giovanni Bonafè",  href="mailto:giovanni.bonafe@arpa.fvg.it"), "(ARPA-FVG)"),
   p("AQ data:"),
-  tags$ul(
-    tags$li("Emilia-Romagna: ", a("Marco Deserti", href="mailto:mdeserti@arpae.it"), "(Arpae Emilia-Romagna)"),
-    tags$li("Veneto: ", a("Max Ferrario", href="mailto:mferrario@arpa.veneto.it"), "(ARPAV)"),
-    tags$li("Umbria: ", a("Monica Angelucci,", href="mailto:m.angelucci@arpa.umbria.it"),
-            a("Marco Vecchiocattivi", href="mailto:m.vecchiocattivi@arpa.umbria.it"), "(ARPA Umbria)"),
-    tags$li("Piedmont: ", a("Stefano Bande", href="mailto:stefano.bande@arpa.piemonte.it"), "(ARPA Piemonte)"),
-    tags$li("Friuli Venezia Giulia: ", a("Fulvio Stel", href="mailto:fulvio.stel@arpa.fvg.it"), "(ARPA-FVG)"),
-    tags$li("Liguria: ", a("Monica Beggiato", href="mailto:monica.beggiato@arpal.gov.it"), "(ARPAL)"),
-    tags$li("Lombardy: ", a("Anna Di Leo", href="mailto:a.dileo@arpalombardia.it"), "(ARPA Lombardia)"),
-    tags$li("Sicily: ", a("Anna Abita", href="mailto:abita@arpa.sicilia.it"), "(ARPA Sicilia)"),
-    tags$li("Tuscany: ", a("Marco Stefanelli,", href="mailto:m.stefanelli@arpat.toscana.it"), 
-            a("Bianca Patrizia Andreini", href="mailto:bp.andreini@arpat.toscana.it"), "(ARPAT)")
-  ),
+  tableOutput("contacts"),
   h3("code"),
   p(code("calicantus"), " is open source and available", a("here", href="https://github.com/jobonaf/calicantus"))
 )
@@ -126,25 +118,31 @@ ui_login <- function(){
         wellPanel(textInput("Usr", "user:", "user"),
                   passwordInput("Pwd", "password:", "password"),
                   br(),actionButton("Login", "Log in"),
-                  conditionalPanel(condition = 'input.Login',
-                                   code('Sorry, user and/or password are wrong.') 
+                  conditionalPanel(condition = "input.Login",
+                                   code("Wait, please. If dashboard doesn't appear,"),
+                                   br(),code("probably user and/or password are wrong.")
                   ))),
     tags$style(type="text/css", "#login {font-size:12px;   text-align: left;position:absolute;top: 40%;left: 50%;margin-top: -100px;margin-left: -150px;}")
   )}
 
 # UI: webpage with tabs
-ui_menu <- function(){tagList(tabPanel("map", ui_map),
-                              tabPanel("data", ui_data),
-                              navbarMenu("analysis"
-                                         ,tabPanel("timeseries",ui_ts)
-                                         ,tabPanel("exceedances",ui_exc)
-                                         ,tabPanel("clustering",ui_clu)
-                                         ),
-                              navbarMenu("more"
-                                         ,tabPanel("about",ui_about)
-                                         ,tabPanel("account",ui_account)
-                                         ,tabPanel("debug",ui_debug)
-                                         )
+ui_menu <- function(){
+  tagList(
+    tabPanel("data", ui_data),
+    navbarMenu("maps"
+               ,tabPanel("observed data", ui_map)
+               ,tabPanel("models", ui_modelmap)
+    ),
+    navbarMenu("analysis"
+               ,tabPanel("timeseries",ui_ts)
+               ,tabPanel("exceedances",ui_exc)
+               ,tabPanel("clustering",ui_clu)
+    ),
+    navbarMenu("more"
+               ,tabPanel("about",ui_about)
+               ,tabPanel("account",ui_account)
+               ,tabPanel("debug",ui_debug)
+    )
   )}
 ui <- uiOutput("page")
 
@@ -262,32 +260,7 @@ server <- function(input, output, session) {
     }
   )
   
-  # load data of single day
-  dataOfDay <- eventReactive(eventExpr = input$goDay, 
-                             valueExpr = {
-                               d <- as.character(input$day)
-                               ff <- system(paste0("ls /home/giovanni/R/projects/calicantus/data/obs-data/",
-                                                   format(as.Date(d),"%Y/%m/%d/%Y%m%d_*.rda 2>/dev/null")),
-                                            intern=TRUE)
-                               Dat <- NULL
-                               nf <- length(ff)
-                               for (i in 1:nf) {
-                                 load(ff[i])
-                                 Dat <- bind_rows(Dat,dat)
-                               }
-                               Dat$Value <- round(Dat$Value)
-                               Dat <- dplyr::arrange(Dat, Value) %>% 
-                                 dplyr::filter(as.character(Day)==as.character(input$day),
-                                        Source %in% availableSources()) %>%
-                                 dplyr::filter(!is.na(Value) & !is.na(Lat) & !is.na(Lon)) %>%
-                                 mutate(ValueInterval=cut(Value
-                                                          #,breaks=Breaks()
-                                                          ,Breaks()
-                                                          ,ordered_result=TRUE, include.lowest=TRUE))
-                               return(Dat)
-                             })
-
-  # UI: map
+  # UI: map of observed data
   output$ui_map <- renderUI({
     sidebarLayout(
       sidebarPanel(helpText("Here you can select the day to plot in the map."),
@@ -307,6 +280,44 @@ server <- function(input, output, session) {
       mainPanel(leafletOutput("Map", width="100%", height="800px"))
     )
   })
+  
+  # load observed data of single day
+  #   dataOfDay <- eventReactive(eventExpr = input$goDay, 
+  changeOfDay <- reactive({
+    input$goDay
+    input$day
+    })
+  dataOfDay <- eventReactive(
+    eventExpr = changeOfDay(), #ignoreNULL = FALSE,
+    valueExpr = {
+      if(is.null(input) || is.null(input$day)) {
+        d <- as.character(Sys.Date()-1)
+      } else {
+        d <- as.character(input$day)
+      }
+      ff <- system(paste0("ls /home/giovanni/R/projects/calicantus/data/obs-data/",
+                          format(as.Date(d),"%Y/%m/%d/%Y%m%d_*.rda 2>/dev/null")),
+                   intern=TRUE)
+      Dat <- NULL
+      nf <- length(ff)
+      if(nf>0) {
+        for (i in 1:nf) {
+          load(ff[i])
+          Dat <- bind_rows(Dat,dat)
+        }
+        Dat$Value <- round(Dat$Value)
+        Dat <- dplyr::arrange(Dat, Value) %>% 
+          dplyr::filter(as.character(Day)==d,
+                        Source %in% availableSources()) %>%
+          dplyr::filter(!is.na(Value) & !is.na(Lat) & !is.na(Lon)) %>%
+          mutate(ValueInterval=cut(Value
+                                   ,Breaks()
+                                   ,ordered_result=TRUE, include.lowest=TRUE))
+      } else {
+        Dat <- NULL
+      }
+      return(Dat)
+    })
   
   # UI: timeseries
   output$ui_ts <- renderUI({
@@ -678,7 +689,7 @@ server <- function(input, output, session) {
   },height = 800
   )
   
-  # breaks for the map
+  # breaks for the obs.map
   Breaks <- reactive({
     if(input$scaleDay == "classic") {
       bb <- c(0,25,50,75,100,300)
@@ -706,26 +717,18 @@ server <- function(input, output, session) {
                              ordered_result=TRUE, include.lowest=TRUE))
   })
   
-  # daily map: initialize basemap
+  # daily obs. map: initialize basemap
   output$Map <- renderLeaflet({
     lon0 <- 11
     lat0 <- 42.5
     leaflet() %>% 
       setView(lon0, lat0, 6) %>% 
-      #fitBounds(~min(Lon, na.rm=T), ~min(Lat, na.rm=T), ~max(Lon, na.rm=T), ~max(Lat, na.rm=T)) %>%
       addTiles(group = "classic")  %>% 
       addProviderTiles("CartoDB.Positron", group = "grey minimal") %>%
       addProviderTiles("Stamen.TonerLite", group = "toner lite") %>%
       addProviderTiles("Esri.WorldImagery", group = "satellite") %>%
       addProviderTiles("Thunderforest.Landscape", group = "terrain") %>%
-      #        addWMSTiles(
-#         "http://mesonet.agron.iastate.edu/cgi-bin/wms/nexrad/n0r.cgi",
-#         layers = "nexrad-n0r-900913",
-#         options = WMSTileOptions(format = "image/png", transparent = TRUE),
-#         attribution = "Weather data © 2012 IEM Nexrad",
-#         group="nexrad"
-#       ) %>%
-    
+
       # Layers control
       addLayersControl(
         baseGroups = c("grey minimal","classic","toner lite","terrain","satellite"),
@@ -734,8 +737,9 @@ server <- function(input, output, session) {
       )
   })
 
-  # daily map: dynamic layer
-  observeEvent(input$goDay,{
+  # daily obs. map: dynamic layer
+ # observeEvent(input$goDay,{
+  observe({
     Dat <- dataOfDay()
     Pal <- colorpal()
     
@@ -761,7 +765,7 @@ server <- function(input, output, session) {
     map
   })
   
-  # daily map: legend
+  # daily obs. map: legend
   observe({
     Dat <- dataOfDay()
     Pal <- colorpal()
@@ -776,10 +780,184 @@ server <- function(input, output, session) {
                 )
   })
   
+  
+  # UI: map of models
+  output$ui_modelmap <- renderUI({
+    sidebarLayout(
+      sidebarPanel(helpText("Here you can select the day to plot in the map."),
+                   dateInput("dayMod", "day of interest", value=Sys.Date(), 
+                             min=Sys.Date(), max = Sys.Date()+3,
+                             width="50%"),
+                   selectInput("pollutantDayMod",label = "pollutant",
+                               choices = list("PM10 daily average"="PM10_Mean",
+                                              "ozone daily maximum"="O3_Max",
+                                              "ozone daily maximum of 8h running mean"="O3_MaxAvg8h",
+                                              "PM2.5 daily average"="PM25_Mean")),
+                   selectInput("scaleDayMod",label = "color scale", choices = c("classic","extended"), selected = "extended"),
+                   selectInput("mapMod",label = "model",
+                               choices = c("CHIMERE","EMEP","EURAD","LOTOSEUROS","MATCH","MOCAGE","SILAM")),
+                   width=3),
+      mainPanel(leafletOutput("MapMod", width="100%", height="800px"))
+    )
+  })
+
+      # load model data of single day
+  changeOfDayMod <- reactive({
+    input$dayMod;input$mapMod;input$pollutantDayMod
+  })
+  modelOfDay <- eventReactive(
+    eventExpr = changeOfDayMod(), #ignoreNULL = FALSE,
+    valueExpr = {
+      refDay <- as.Date(format(Sys.time()-8*3600, "%Y-%m-%d"))
+      valDay <- try(as.Date(input$dayMod))
+      if(class(valDay)[1]=="try-error") valDay <- Sys.Date()
+      model <- ifelse(is.null(input) || is.null(input$mapMod), "CHIMERE", input$mapMod)
+      poll <- ifelse(is.null(input) || is.null(input$pollutantDayMod), "PM10_Mean", input$pollutantDayMod)
+      rm("r")
+      File <- paste0("/home/giovanni/R/projects/calicantus/data/mod-data/grid/",
+                     format(refDay,"%Y/%m/%d/CAMS50_ref%Y%m%d"),
+                     format(valDay,"_val%Y%m%d_"),
+                     model,"_",poll,".rda")
+      if(file.exists(File)) {
+        load(File)
+        Dat <- r
+      } else {
+        Dat <- NULL
+      }
+      return(Dat)
+    })
+  
+  
+  # breaks for the model map
+  BreaksMod <- reactive({
+    scale <- ifelse(is.null(input) || is.null(input$scaleDayMod), "classic", input$scaleDayMod)
+    poll <- ifelse(is.null(input) || is.null(input$pollutantDayMod), "PM10_Mean", input$pollutantDayMod)
+    if(scale == "classic") {
+      if(poll=="PM10_Mean")   bb <- c(25,50,75,100,150)
+      if(poll=="PM25_Mean")   bb <- c(10,25,50,75,100)
+      if(poll=="O3_Max")      bb <- c(90,120,180,240,300)
+      if(poll=="O3_MaxAvg8h") bb <- c(60,90,120,150,180)
+    }else if(scale == "extended") {
+      if(poll=="PM10_Mean")   bb <- c(25,50,75,100,150,200,250,300,400)
+      if(poll=="PM25_Mean")   bb <- c(10,25,50,75,100,150,200,250,300)
+      if(poll=="O3_Max")      bb <- c(90,120,180,210,240,270,300,350,400)
+      if(poll=="O3_MaxAvg8h") bb <- c(60,90,120,150,180,210,240,270,300)
+    }
+    bb
+  })
+  
+  # model units
+  unitDayMod <- reactive({
+    poll <- ifelse(is.null(input) || is.null(input$pollutantDayMod), "PM10_Mean", input$pollutantDayMod)
+    poll <- strsplit(poll,split = "_")[[1]][1]
+    if(poll %in% c("PM10","O3","PM25")) uu <- "ug/m^3"
+    uu
+  })
+  
+  # model units
+  modelAttribution <- reactive({
+    model <- ifelse(is.null(input) || is.null(input$mapMod), "CHIMERE", input$mapMod)
+    if(model %in% c("CHIMERE","EMEP","EURAD","LOTOSEUROS","MATCH","MOCAGE","SILAM")) {
+      att <- paste0("Generated using Copernicus Atmosphere Monitoring Service Information ",
+                    format(Sys.Date(),"%Y"))
+    }
+    att
+  })
+  
+  # daily model map: palette
+  colorpalMod <- reactive({
+    scale <- ifelse(is.null(input) || is.null(input$scaleDayMod), "classic", input$scaleDayMod)
+    if(scale == "classic") {
+      cc <- c("olivedrab","orange","red","purple")
+    }else if(scale == "extended") {
+      cc <- c(rev(RColorBrewer::brewer.pal(name="Spectral",
+                                           n=length(BreaksMod())-3)),
+              "magenta","black")
+    }
+    bb <- BreaksMod()
+    Dat <- modelOfDay()
+    if(!is.null(Dat)) {
+      rmax <- round(cellStats(modelOfDay(),"max"))
+      if(max(bb)<rmax) bb[length(bb)] <- rmax
+    }
+    colorBin(palette = cc, 
+             domain = range(bb),
+             bins = bb,
+             na.color = "transparent")
+  })
+  
+  
+  # daily models map: initialize basemap
+  output$MapMod <- renderLeaflet({
+    lon0 <- 11
+    lat0 <- 42.5
+    leaflet() %>% 
+      setView(lon0, lat0, 5) %>% 
+      addTiles(group = "classic")  %>% 
+      addProviderTiles("CartoDB.Positron", group = "grey minimal") 
+  })
+  
+  # daily models map: dynamic layer
+  observe({
+    Dat <- modelOfDay()
+    Pal <- colorpalMod()
+    
+    leafletProxy("MapMod",session) %>% clearShapes() %>% clearImages() -> map
+    if (!is.null(Dat)) {
+      map %>% 
+        addRasterImage(Dat, colors = Pal, opacity = 0.5, layerId = "model", 
+                       attribution = modelAttribution()) %>%
+        addRectangles(lng1 = Dat@extent[1],
+                      lng2 = Dat@extent[2],
+                      lat1 = Dat@extent[3],
+                      lat2 = Dat@extent[4],
+                      fill = F, stroke = T, weight = 5, color = "black", 
+                      dashArray = "10, 10")-> map
+    }else{
+      map %>% addPopups(lng=11,lat=42.5,
+                        popup="Data not available for this model.<br>Please try another one.") -> map
+    }
+    map
+  })
+  
+  # daily models map: legend
+  observe({
+    Dat <- modelOfDay()
+    Pal <- colorpalMod()
+    proxyMod <- leafletProxy("MapMod", data = Dat)
+    
+    model <- ifelse(is.null(input) || is.null(input$mapMod), "CHIMERE", input$mapMod)
+    poll <- ifelse(is.null(input) || is.null(input$pollutantDayMod), "PM10_Mean", input$pollutantDayMod)
+    poll <- switch(poll,
+                   "PM10_Mean"="PM10 daily average",
+                   "O3_Max"="O3 daily maximum",
+                   "O3_MaxAvg8h"="O3 max of 8h running mean",
+                   "PM25_Mean"="PM2.5 daily average")
+    
+    if(!is.null(Dat)) {
+      proxyMod %>% 
+        clearControls() %>%
+        addLegend(position = "bottomright", pal = Pal, values = values(Dat),
+                  title = paste0("model ",model,"<br>",
+                                 as.character(input$dayMod),":<br>",
+                                 poll,"<br>(",
+                                 unitDayMod(),")")
+        )
+    }
+  })
+  
+  
+  
   # support for debug
   output$sessionInfo <- renderPrint({sessionInfo()})
   output$uiInput <- renderPrint({input})
   output$summary <- renderPrint({summary(dataOfDay())})
+  
+  # contacts
+  output$contacts <- renderTable({
+    read.table("/home/giovanni/R/projects/calicantus/data/data-sources/contacts.csv",
+               sep=",",row.names = NULL,header = T, check.names = F)
+  })
   
   # account info
   output$ui_account <- renderUI({

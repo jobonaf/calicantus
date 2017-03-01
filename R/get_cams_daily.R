@@ -1,0 +1,6 @@
+setwd("~/R/projects/calicantus/run/cams")
+source("~/R/projects/calicantus/R/cams.R")
+nc <- get_cams(pollutant = c("PM10","O3","PM25"))
+source("~/R/projects/calicantus/R/cams_daily_synthesis.R")
+archive_cams()
+file.remove(nc)

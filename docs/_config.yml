@@ -1,7 +1,7 @@
 # Jekyll configuration
 
-name: My blog
-description: A jekyll theme
+name: calicantus
+description: functions to collect and visualize AQ data
 
 # url is currently only used only for the RSS feed in feed.xml
 url: https://jobonaf.github.io/calicantus

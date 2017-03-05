@@ -154,7 +154,22 @@ server <- function(input, output, session) {
   
   observeEvent(eventExpr = input$policy_submit,
                handlerExpr = {
-                 
+                 write.table(sep=",",row.names = F,
+                             data.frame(institution=input$institution,
+                                        name1=input$name1,
+                                        email1=input$email1,
+                                        name2=input$name2,
+                                        email2=input$email2,
+                                        access_allowed=paste(input$access_allowed,collapse="|"),
+                                        use_admin=input$use_admin,
+                                        use_tech=input$use_tech,
+                                        use_scient=input$use_scient
+                                        ),
+                             file=paste0("/home/giovanni/R/projects/calicantus/config/policy-preferences/",
+                                         format(Sys.time(),"%Y%m%d%H%M"),"_",
+                                         abbreviate(sub("[^[:alpha:]]", "", paste(input$name,input$surname)),minlength = 5),"_",
+                                         abbreviate(sub("[^[:alpha:]]", "", input$institution)),".csv"),
+                             fileEncoding="UTF-8")
                })
 }
 

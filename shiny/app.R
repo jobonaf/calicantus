@@ -1,25 +1,19 @@
 
 # preliminar --------------------------------------------------------------
 
-
 #packages
 suppressMessages({
   pkgO <- names(sessionInfo()$otherPkgs)
   pkg1 <- c(pkgO)
   pkg2 <- setdiff(pkg1,"shiny")
   if(length(pkg2)>0) lapply(paste0('package:',pkg2), detach, character.only = TRUE, unload = TRUE)
- # .libPaths(new=unique(c("/home/giovanni/R/x86_64-pc-linux-gnu-library/3.2", .libPaths())))
   library(shiny, lib.loc = "/usr/lib/R/library")
- # library("dtw", lib.loc="~/R/x86_64-pc-linux-gnu-library/3.2")
   library(base64enc, lib.loc="/home/giovanni/R/x86_64-pc-linux-gnu-library/3.2")
   library(lubridate, lib.loc = "/usr/lib/R/library")
   library(dplyr, lib.loc = "/usr/lib/R/library")
   library(plyr, lib.loc = "/home/giovanni/R/x86_64-pc-linux-gnu-library/3.2")
-#  library(shinyBS)
   library(shinyjs, lib.loc = "/usr/lib/R/library")
   library(leaflet, lib.loc = "/home/giovanni/R/x86_64-pc-linux-gnu-library/3.2")
- # library(DT, lib.loc = "/home/giovanni/R/x86_64-pc-linux-gnu-library/3.2")
-  #library(rgdal, lib.loc = "/home/giovanni/R/x86_64-pc-linux-gnu-library/3.2")
   library(raster, lib.loc = "/usr/lib/R/library")
   library(data.table, lib.loc = "/home/giovanni/R/x86_64-pc-linux-gnu-library/3.2")
   library(tidyr, lib.loc = "/usr/lib/R/library")
@@ -29,7 +23,6 @@ suppressMessages({
   library(RColorBrewer, lib.loc = "/usr/lib/R/library")
   library(maps, lib.loc = "/usr/lib/R/library")
   library(cluster, lib.loc = "/usr/lib/R/library")
-  #library(htmltools, lib.loc = "/usr/lib/R/library")
 })
 
 # credentials

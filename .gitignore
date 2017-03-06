@@ -4,6 +4,8 @@
 tmp/
 config/config*
 config/access*
+config/registrations/*
+config/policy-preferences/*
 config/ui_credentials.R
 run/
 log/

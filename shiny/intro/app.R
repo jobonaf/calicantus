@@ -111,7 +111,13 @@ ui <- navbarPage(title = "[calicantus]", inverse = TRUE,
                                                       column(6,selectInput("use_scient","workshops, scientific conferences and papers",
                                                                            c("yes","no","ask me before use")))
                                                     ),
-                                                    actionButton("policy_submit","submit",icon=icon("paper-plane"))
+                                                    actionButton("policy_submit","submit",icon=icon("paper-plane")),
+                                                    bsModal("policy_success",title = "Welcome in calicantus.",trigger = "policy_submit", size="small",
+                                                            p("Thanks for your cooperation. We will contact you soon to agree the details of data sharing.",
+                                                              "For any question, please contact",
+                                                              a("the platform manager",href="mailto:giovanni.bonafe@arpa.fvg.it"),
+                                                              ".")
+                                                    )
                                    )
                                  )
                           )
@@ -146,9 +152,7 @@ server <- function(input, output, session) {
                                         purpose=paste(input$purpose,collapse="|"),
                                         other_purpose=input$other_purpose),
                              file=paste0("/home/giovanni/R/projects/calicantus/config/registrations/",
-                                         format(Sys.time(),"%Y%m%d%H%M"),"_",
-                                         abbreviate(sub("[^[:alpha:]]", "", paste(input$name,input$surname)),minlength = 5),"_",
-                                         abbreviate(sub("[^[:alpha:]]", "", input$institution)),".csv"),
+                                         format(Sys.time(),"%Y%m%d%H%M%S"),".csv"),
                              fileEncoding="UTF-8")
                })
   
@@ -166,9 +170,7 @@ server <- function(input, output, session) {
                                         use_scient=input$use_scient
                                         ),
                              file=paste0("/home/giovanni/R/projects/calicantus/config/policy-preferences/",
-                                         format(Sys.time(),"%Y%m%d%H%M"),"_",
-                                         abbreviate(sub("[^[:alpha:]]", "", paste(input$name,input$surname)),minlength = 5),"_",
-                                         abbreviate(sub("[^[:alpha:]]", "", input$institution)),".csv"),
+                                         format(Sys.time(),"%Y%m%d%H%M%S"),".csv"),
                              fileEncoding="UTF-8")
                })
 }

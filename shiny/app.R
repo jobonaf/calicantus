@@ -8,6 +8,7 @@ suppressMessages({
   pkg2 <- setdiff(pkg1,"shiny")
   if(length(pkg2)>0) lapply(paste0('package:',pkg2), detach, character.only = TRUE, unload = TRUE)
   library(shiny, lib.loc = "/usr/lib/R/library")
+  library(shinyBS, lib.loc="/home/giovanni/R/x86_64-pc-linux-gnu-library/3.2")
   library(base64enc, lib.loc="/home/giovanni/R/x86_64-pc-linux-gnu-library/3.2")
   library(lubridate, lib.loc = "/usr/lib/R/library")
   library(dplyr, lib.loc = "/usr/lib/R/library")
@@ -79,14 +80,14 @@ ui_modelmap <- uiOutput("ui_modelmap")
 # UI: account info
 ui_account <- uiOutput("ui_account")
 
+# UI: policy
+ui_policy <- fluidPage(
+  includeMarkdown("/home/giovanni/R/projects/calicantus/shiny/intro/policy.md"),
+  tableOutput("use_policy")
+)
+
 # UI: about
 ui_about <- fluidPage(
-  h3("data policy"),
-  tags$ol(
-    tags$li("Data are not validated."),
-    tags$li("Maps and data cannot be published."),
-    tags$li("Changes in the policy will be agreed between participants.")
-  ),
   h3("contacts"),
   p("Platform manager: ", a("Giovanni Bonafè",  href="mailto:giovanni.bonafe@arpa.fvg.it"), "(ARPA-FVG)"),
   p("AQ data:"),
@@ -108,8 +109,8 @@ Logged = FALSE
 ui_login <- function(){
   tagList(
     div(id = "login",
-        wellPanel(textInput("Usr", "user:", "user"),
-                  passwordInput("Pwd", "password:", "password"),
+        wellPanel(textInput("Usr", "user:", ""),
+                  passwordInput("Pwd", "password:", ""),
                   br(),actionButton("Login", "Log in"),
                   conditionalPanel(condition = "input.Login",
                                    code("Wait, please. If dashboard doesn't appear,"),
@@ -132,10 +133,15 @@ ui_menu <- function(){
                ,tabPanel("clustering",ui_clu)
     ),
     navbarMenu("more"
+               ,tabPanel("data policy",ui_policy)
                ,tabPanel("about",ui_about)
                ,tabPanel("account",ui_account)
                ,tabPanel("debug",ui_debug)
-    )
+    ),
+    tabPanel("log out", 
+             p("Click here to log out."),
+             actionButton(inputId = "login",label = "Log out",icon = icon("sign-out"), width="120",
+                          onclick ="location.href='https://shiny.arpae.it/calicantus-intro';"))
   )}
 ui <- uiOutput("page")
 
@@ -210,6 +216,7 @@ server <- function(input, output, session) {
                                              "look for a specific value using the 'search' tool,",
                                              "filter the data by writing in the cells below the table, and so on."),
                                     downloadButton('downloadData', 'download')),
+                   bsTooltip("downloadData","Data downloaded from the platform cannot be distributed"),
                    hr(),
                    helpText("Data are not verified and may differ from the validated data."),
                    width=3),
@@ -939,7 +946,18 @@ server <- function(input, output, session) {
     }
   })
   
-  
+  # data use policy table
+  output$use_policy <- renderTable({
+    pol <- read.csv("/home/giovanni/R/projects/calicantus/data/data-sources/policy.csv",stringsAsFactors = F)
+    Pol <- data.frame(pol[,c("data_source","use_adm_support","use_tech_rep","use_scientific")])
+    colnames(Pol) <- c("data provider","support to administrators in decision making",
+                       "technical reports","scientific workshops, conferences and papers")
+    Pol[Pol=="yes"] <- "allowed"
+    Pol[Pol=="no"] <- "not allowed"
+    Pol[Pol=="req"] <- "ask the data provider"
+    Pol[Pol==""] <- "not yet defined, ask the data provider"
+    Pol
+  },striped=T,rownames=F)
   
   # support for debug
   output$sessionInfo <- renderPrint({sessionInfo()})

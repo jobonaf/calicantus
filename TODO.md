@@ -37,3 +37,5 @@ improvements, details, etc:
               paste(paste0("stanice[]=",c(2,9,16,38,41,50,51,53,57,58,59)),collapse="&"),
               "&komponente[]=5&tipgrafikona[]=column&periodi[]=dana30&agregacija[]=24")
 - [ ] CAMS: EPSgrams
+- [ ] add ozone
+- [ ] tools for models evaluation

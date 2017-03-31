@@ -3,7 +3,7 @@
 .RData
 tmp/
 config/config*
-config/access*
+config/data-access/*
 config/registrations/*
 config/policy-preferences/*
 config/ui_credentials.R

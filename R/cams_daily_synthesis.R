@@ -31,9 +31,11 @@ for(reftime in as.character(reftimes)) {
           valtime <- as.Date(reftime)+val
           for (stat in stats[[pollutant]]) {
             r <- cams2raster(dat,day=format(valtime,"%Y-%m-%d"),stat)
-            save(r,file=paste0("CAMS50_ref",format(as.Date(reftime),"%Y%m%d"),
-                               "_val",format(valtime,"%Y%m%d"),"_",model,
-                               "_",pollutant,"_",stat,".rda"))
+            if(!is.null(r)) {
+              save(r,file=paste0("CAMS50_ref",format(as.Date(reftime),"%Y%m%d"),
+                                 "_val",format(valtime,"%Y%m%d"),"_",model,
+                                 "_",pollutant,"_",stat,".rda"))
+            }
           }
         }
       }

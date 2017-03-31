@@ -13,6 +13,7 @@ suppressMessages({
   library(lubridate, lib.loc = "/usr/lib/R/library")
   library(dplyr, lib.loc = "/usr/lib/R/library")
   library(plyr, lib.loc = "/home/giovanni/R/x86_64-pc-linux-gnu-library/3.2")
+  library(geosphere, lib.loc = "/home/giovanni/R/x86_64-pc-linux-gnu-library/3.2")
   library(shinyjs, lib.loc = "/usr/lib/R/library")
   library(leaflet, lib.loc = "/home/giovanni/R/x86_64-pc-linux-gnu-library/3.2")
   library(raster, lib.loc = "/usr/lib/R/library")
@@ -28,6 +29,9 @@ suppressMessages({
 
 # credentials
 source("/home/giovanni/R/projects/calicantus/config/ui_credentials.R")
+
+# policy etc
+source("/home/giovanni/R/projects/calicantus/R/policy.R")
 
 # style
 progressBarStyle <- ".progress-striped .bar {
@@ -67,6 +71,7 @@ ui_data <- uiOutput("ui_data")
 
 # UI: time series
 ui_ts <- uiOutput("ui_ts")
+ui_tsmod <- uiOutput("ui_tsmod")
 
 # UI: exceedances
 ui_exc <- uiOutput("ui_exc")
@@ -127,10 +132,13 @@ ui_menu <- function(){
                ,tabPanel("observed data", ui_map)
                ,tabPanel("models", ui_modelmap)
     ),
-    navbarMenu("analysis"
+    navbarMenu("observations"
                ,tabPanel("timeseries",ui_ts)
                ,tabPanel("exceedances",ui_exc)
                ,tabPanel("clustering",ui_clu)
+    ),
+    navbarMenu("forecasts"
+               ,tabPanel("timeseries",ui_tsmod)
     ),
     navbarMenu("more"
                ,tabPanel("data policy",ui_policy)
@@ -138,7 +146,7 @@ ui_menu <- function(){
                ,tabPanel("account",ui_account)
                ,tabPanel("debug",ui_debug)
     ),
-    tabPanel("log out", 
+    tabPanel("logout", 
              p("Click here to log out."),
              actionButton(inputId = "login",label = "Log out",icon = icon("sign-out"), width="120",
                           onclick ="location.href='https://shiny.arpae.it/calicantus-intro';"))
@@ -215,7 +223,11 @@ server <- function(input, output, session) {
                                              "you can sort it by clicking on the header,",
                                              "look for a specific value using the 'search' tool,",
                                              "filter the data by writing in the cells below the table, and so on."),
-                                    downloadButton('downloadData', 'download')),
+                                    downloadButton('downloadData', 'download')
+                                    ,permissionButton(id="buttonPermis_obsdf", sources=availableSources()),
+                                    bsModal("modalPermis_obsdf",title = "Permissions", trigger = "buttonPermis_obsdf", 
+                                            HTML(policyByPurpose(availableSources())))
+                                    ),
                    bsTooltip("downloadData","Data downloaded from the platform cannot be distributed"),
                    hr(),
                    helpText("Data are not verified and may differ from the validated data."),
@@ -275,7 +287,14 @@ server <- function(input, output, session) {
                                              "you can zoom in and out with the mouse wheel or with the '+' and '-',",
                                              "and click on a marker to get name of the station and observed concentration.")),
                    hr(),
-                   helpText("Data are not verified and may differ from the validated data."),
+                   helpText("Data are not verified and may differ from the validated data.",
+                            "Check here below if you need to ask for any permission."),
+                   permissionButton(id="buttonPermis_obsmap", sources=availableSources()),
+                   bsModal("modalPermis_obsmap",title = "Permissions", trigger = "buttonPermis_obsmap", 
+                           HTML(policyByPurpose(availableSources()))),
+                   bsButton("buttonCite_obsmap", label = "citations", style="primary"),
+                   bsModal("modalCite_obsmap",title = "Citations", trigger = "buttonCite_obsmap", 
+                           HTML(citeHtml(pkgs = c("leaflet","base","shiny")))),
                    width=3),
       mainPanel(leafletOutput("Map", width="100%", height="800px"))
     )
@@ -322,33 +341,49 @@ server <- function(input, output, session) {
   # UI: timeseries
   output$ui_ts <- renderUI({
     sidebarLayout(
-      sidebarPanel(helpText(paste0("Here you can plot aggregated time series.")),
-                   conditionalPanel(condition = "! input.goPeriod",
-                                    helpText("Please select the period of interest in the ",strong("data")," tab.")),
-                   conditionalPanel(condition = "input.goPeriod",
-                                    helpText("You can change the period of interest in the ",strong("data")," tab."),
-                                    helpText("Choose the time step, both for time series plot and maps."),
-                                    selectInput("timestep","time step",c("Day","Weekday","Year_Week","Year_Month")),
-                                    hr(),
-                                    helpText("The following options affect only the time series plot, not the maps."),
-                                    selectInput("colorby","color by",c("data source"="Source","same color"="same")),
-                                    selectInput("splitby","split by",c("data source"="Source","don't split"="none")),
-                                    selectInput("geom_type","plot type",c("boxplot","violin","jitter","blank")),
-                                    hr(),
-                                    helpText("You can emphasize one or more peaks, by plotting data measured by some stations."),
-                                    selectInput("emphasis","emphasis",c("period max","daily max","data source max","none")),
-                                    sliderInput("howmany","how many peaks do you want to emphasize?",1,5,1,1,ticks = FALSE),
-                                    checkboxInput("emph_lines","lines for stations' concentration?",TRUE),
-                                    checkboxInput("emph_labels","peaks labelled with values",FALSE),
-                                    hr(),
-                                    checkboxInput("yax_ctrl","change y axis",FALSE),
-                                    conditionalPanel(condition = "input.yax_ctrl",
-                                                     selectInput("yax_percmin","lower percentile",choices = c(0,0.1,0.5,1)),
-                                                     selectInput("yax_percmax","upper percentile",choices = c(100,99.9,99.5,99))
-                                    )
-                   ),
-                   #actionButton("goTs", label="plot", icon = icon("arrow-circle-right")),
-                   width=3),
+      sidebarPanel(
+        helpText(paste0("Here you can plot aggregated time series.")),
+        conditionalPanel(
+          condition = "! input.goPeriod",
+          helpText("Please select the period of interest in the ",strong("data")," tab.")),
+        conditionalPanel(
+          condition = "input.goPeriod",
+          helpText("You can change the period of interest in the ",strong("data")," tab."),
+          helpText("Choose the time step, both for time series plot and maps."),
+          selectInput("timestep","time step",c("Day","Weekday","Year_Week","Year_Month")),
+          hr(),
+          bsCollapse(
+            bsCollapsePanel(
+              title = "layout", style = "default",
+              helpText("The following options affect only the time series plot, not the maps."),
+              selectInput("colorby","color by",c("data source"="Source","same color"="same")),
+              selectInput("splitby","split by",c("data source"="Source","don't split"="none")),
+              selectInput("geom_type","plot type",c("boxplot","violin","jitter","blank")),
+              hr(),
+              checkboxInput("yax_ctrl","change y axis",FALSE),
+              conditionalPanel(condition = "input.yax_ctrl",
+                               selectInput("yax_percmin","lower percentile",choices = c(0,0.1,0.5,1)),
+                               selectInput("yax_percmax","upper percentile",choices = c(100,99.9,99.5,99))
+              )
+            ),
+            bsCollapsePanel(
+              title = "emphasis", style = "default",
+              helpText("You can emphasize one or more peaks, by plotting data measured by some stations."),
+              selectInput("emphasis","emphasis",c("period max","daily max","data source max","none")),
+              sliderInput("howmany","how many peaks do you want to emphasize?",1,5,1,1,ticks = FALSE),
+              checkboxInput("emph_lines","lines for stations' concentration?",TRUE),
+              checkboxInput("emph_labels","peaks labelled with values",FALSE)
+            )
+          )
+          ,permissionButton(id="buttonPermis_obsts", sources=input$sources),
+          bsModal("modalPermis_obsts",title = "Permissions", trigger = "buttonPermis_obsts", 
+                  HTML(policyByPurpose(input$sources))),
+          bsButton("buttonCite_obsts", label = "citations", style="primary"),
+          bsModal("modalCite_obsts",title = "Citations", trigger = "buttonCite_obsts", 
+                  HTML(citeHtml(pkgs = c("ggplot2","base","shiny"))))
+        ),
+        #actionButton("goTs", label="plot", icon = icon("arrow-circle-right")),
+        width=3),
       mainPanel(tabsetPanel(
         tabPanel("plot",  tags$head(tags$style(HTML(progressBarStyle))),
                  plotOutput("ts"))
@@ -362,21 +397,31 @@ server <- function(input, output, session) {
   # UI: exceedances
   output$ui_exc <- renderUI({
     sidebarLayout(
-      sidebarPanel(helpText("Here you can analize exceedances of a given threshold."),
-                   conditionalPanel(condition = "! input.goPeriod",
-                                    helpText("Please select the period of interest in the ",strong("data")," tab.")),
-                   conditionalPanel(condition = "input.goPeriod",
-                                    helpText("You can change the period of interest in the ",strong("data")," tab."),
-                                    sliderInput("threshold","threshold",10,100,50,5)
-                   ),
-                   width=3),
-      mainPanel(tabsetPanel(
-        tabPanel("plot",  tags$head(tags$style(HTML(progressBarStyle))),
-                 plotOutput("exc_plot"))
-        ,tabPanel("map",   tags$head(tags$style(HTML(progressBarStyle))),
-                  plotOutput("exc_map"))
-        ,tabPanel("table", dataTableOutput("exc_table"))
-      ))
+      sidebarPanel(
+        helpText("Here you can analize exceedances of a given threshold."),
+        conditionalPanel(
+          condition = "! input.goPeriod",
+          helpText("Please select the period of interest in the ",strong("data")," tab.")),
+        conditionalPanel(
+          condition = "input.goPeriod",
+          helpText("You can change the period of interest in the ",strong("data")," tab."),
+          sliderInput("threshold","threshold",10,100,50,5)
+          ,permissionButton(id="buttonPermis_obsexc", sources=input$sources),
+          bsModal("modalPermis_obsexc",title = "Permissions", trigger = "buttonPermis_obsexc", 
+                  HTML(policyByPurpose(input$sources))),
+          bsButton("buttonCite_obsexc", label = "citations", style="primary"),
+          bsModal("modalCite_obsexc",title = "Citations", trigger = "buttonCite_obsexc", 
+                  HTML(citeHtml(pkgs = c("ggplot2","base","shiny","ggmap"))))
+        ),
+        width=3),
+      mainPanel(
+        tabsetPanel(
+          tabPanel("plot",  tags$head(tags$style(HTML(progressBarStyle))),
+                   plotOutput("exc_plot"))
+          ,tabPanel("map",   tags$head(tags$style(HTML(progressBarStyle))),
+                    plotOutput("exc_map"))
+          ,tabPanel("table", dataTableOutput("exc_table"))
+        ))
     )
   })
   
@@ -388,15 +433,28 @@ server <- function(input, output, session) {
                                     helpText("Please select the period of interest in the ",strong("data")," tab.")),
                    conditionalPanel(condition = "input.goPeriod",
                                     helpText("You can change the period of interest in the ",strong("data")," tab."),
-                                    sliderInput("nclu","number of clusters",2,10,5),
-                                    sliderInput("clu_req","data needed (%)",50,100,80,5),
-                                    checkboxInput("clu_stand","standardize data before clustering?",FALSE),
-                                    selectInput("clu_metr",label = "metric",choices = c("manhattan","euclidean")),
-                                    hr(),
-                                    helpText("Change here some details of the time series plot. Note that 'medoid' of a cluster is its most representative station."),
-                                    selectInput("clu_add",label = "line",choices = c("medoid","mean","median","none")),
-                                    checkboxInput("clu_box","boxplot",TRUE),
-                                    checkboxInput("clu_log","logarithmic scale in y",TRUE)
+                                    bsCollapse(
+                                      bsCollapsePanel(
+                                        title = "clustering options", style = "default",
+                                        sliderInput("nclu","number of clusters",2,10,5),
+                                        sliderInput("clu_req","data needed (%)",50,100,80,5),
+                                        checkboxInput("clu_stand","standardize data before clustering?",FALSE),
+                                        selectInput("clu_metr",label = "metric",choices = c("manhattan","euclidean"))
+                                      ),
+                                      bsCollapsePanel(
+                                        title = "layout", style = "default",
+                                        helpText("Change here some details of the time series plot. Note that 'medoid' of a cluster is its most representative station."),
+                                        selectInput("clu_add",label = "line",choices = c("medoid","mean","median","none")),
+                                        checkboxInput("clu_box","boxplot",TRUE),
+                                        checkboxInput("clu_log","logarithmic scale in y",TRUE)
+                                      )
+                                    )
+                                    ,permissionButton(id="buttonPermis_obsclu", sources=input$sources),
+                                    bsModal("modalPermis_obsclu",title = "Permissions", trigger = "buttonPermis_obsclu", 
+                                            HTML(policyByPurpose(input$sources))),
+                                    bsButton("buttonCite_obsclu", label = "citations", style="primary"),
+                                    bsModal("modalCite_obsclu",title = "Citations", trigger = "buttonCite_obsclu", 
+                                            HTML(citeHtml(pkgs = c("ggplot2","base","shiny","ggmap","ggrepel","cluster"))))
                    ),
                    width=3),
       mainPanel(tabsetPanel(
@@ -738,7 +796,7 @@ server <- function(input, output, session) {
   })
 
   # daily obs. map: dynamic layer
- # observeEvent(input$goDay,{
+  # observeEvent(input$goDay,{
   observe({
     Dat <- dataOfDay()
     Pal <- colorpal()
@@ -784,24 +842,128 @@ server <- function(input, output, session) {
   # UI: map of models
   output$ui_modelmap <- renderUI({
     sidebarLayout(
-      sidebarPanel(helpText("Here you can select the day to plot in the map."),
-                   dateInput("dayMod", "day of interest", value=Sys.Date(), 
-                             min=Sys.Date(), max = Sys.Date()+3,
-                             width="50%"),
-                   selectInput("pollutantDayMod",label = "pollutant",
-                               choices = list("PM10 daily average"="PM10_Mean",
-                                              "ozone daily maximum"="O3_Max",
-                                              "ozone daily maximum of 8h running mean"="O3_MaxAvg8h",
-                                              "PM2.5 daily average"="PM25_Mean")),
-                   selectInput("scaleDayMod",label = "color scale", choices = c("classic","extended"), selected = "extended"),
-                   selectInput("mapMod",label = "model",
-                               choices = c("CHIMERE","EMEP","EURAD","LOTOSEUROS","MATCH","MOCAGE","SILAM")),
-                   width=3),
+      sidebarPanel(
+        helpText("Here you can select the day to plot in the map."),
+        dateInput("dayMod", "day of interest", value=Sys.Date(), 
+                  min=Sys.Date(), max = Sys.Date()+3,
+                  width="50%"),
+        selectInput("pollutantDayMod",label = "pollutant",
+                    choices = list("PM10 daily average"="PM10_Mean",
+                                   "ozone daily maximum"="O3_Max",
+                                   "ozone daily maximum of 8h running mean"="O3_MaxAvg8h",
+                                   "PM2.5 daily average"="PM25_Mean")),
+        selectInput("scaleDayMod",label = "color scale", choices = c("classic","extended"), selected = "extended"),
+        selectInput("mapMod",label = "model",
+                    choices = c("CHIMERE","EMEP","EURAD","LOTOSEUROS","MATCH","MOCAGE","SILAM")),
+        bsButton("buttonLicense_modmap", label = "license", style="primary", icon=icon("external-link"),
+                 onclick ="window.open('http://macc-raq.copernicus-atmosphere.eu/doc/CAMS_data_license_final.pdf', '_blank')"),
+        bsButton("buttonCite_modmap", label = "citations", style="primary"),
+        bsModal("modalCite_modmap",title = "Citations", trigger = "buttonCite_modmap", 
+                HTML(citeHtml(files = c("/home/giovanni/R/projects/calicantus/CITATION",
+                                        "/home/giovanni/R/projects/calicantus/shiny/citations/citation_cams.R"),
+                              pkgs = c("raster","base","shiny","leaflet")))),
+        width=3),
       mainPanel(leafletOutput("MapMod", width="100%", height="800px"))
     )
   })
+  
+  
+  # UI: timeseries of models forecast
+  rangeLat <- c( 30.05,69.95)
+  rangeLon <- c(-24.95,44.95)
+  refDay <- as.Date(format(Sys.time()-8*3600, "%Y-%m-%d"))
+  File <- paste0("/home/giovanni/R/projects/calicantus/data/mod-data/timeseries/",
+                 format(refDay,"%Y/%m/%d/CAMS50_ref%Y%m%d"),
+                 "_timeseries.rda")
+  load(File) 
+  Dat$Name <- as.character(Dat$Name)
+  modelTimeseries <- reactive({
+    Dat
+  })
+  aoiCities <- eventReactive(input$plot_brush$ymin,{
+    ee <- try({aoi <- input$plot_brush}, silent = T)
+    if(class(ee)=="try-error"||is.null(input$plot_brush)) {
+      aoi <- list(xmin=rangeLon[1],
+                  xmax=rangeLon[2],
+                  ymin=rangeLat[1],
+                  ymax=rangeLat[2])
+     }
+    unique(modelTimeseries()[,c("Lon","Lat","Name")]) %>%
+      mutate(inAoi=as.numeric(Lon>=aoi$xmin &
+                                Lon<=aoi$xmax &
+                                Lat>=aoi$ymin &
+                                Lat<=aoi$ymax)) %>%
+      arrange(Name) -> dat
+    if(max(dat$inAoi)==0) dat$inAoi <- 1
+    dat
+  },ignoreNULL=F)
+  areaOfMap <- reactive({
+    cc <- subset(aoiCities(),inAoi==1)
+    xlim <- range(cc$Lon); dx <- xlim[2]-xlim[1]; xlim[1] <- xlim[1]-dx*0.3; xlim[2] <- xlim[2]+dx*0.3
+    ylim <- range(cc$Lat); dy <- ylim[2]-ylim[1]; ylim[1] <- ylim[1]-dy*0.3; ylim[2] <- ylim[2]+dy*0.3
+    list(xlim=xlim,ylim=ylim)
+  })
+  output$selectOnMap <- renderPlot({
+    cc <- aoiCities()
+    map('world',xlim=areaOfMap()$xlim,ylim=areaOfMap()$ylim,col="grey60")
+    nn <- as.numeric(cc$Name %in% input$tsmod_selCities)
+    ii <- cc$inAoi+1+nn
+    points(cc[,c("Lon","Lat")],cex=c(0.6,0.6,1)[ii],
+           col=c("grey80","olivedrab","orange")[ii],pch=19)
+  })
+  output$ui_tsmod <- renderUI({
+    sidebarLayout(
+      sidebarPanel(
+        helpText(paste0("Here you can plot models forecasts as time series on selected cities.")),
+        bsCollapse(
+          bsCollapsePanel(
+            title = "cities", style = "default",
+            plotOutput("selectOnMap", brush = "plot_brush"),
+            bsTooltip("selectOnMap","Click and drag to pre-select cities in a box. Select an empty area to go back.", placement = "right"),
+            selectInput("tsmod_selCities",label = "cities",
+                        choices = aoiCities()$Name[which(aoiCities()$inAoi==1)],
+                        selected = unique(sample(aoiCities()$Name[which(aoiCities()$inAoi==1)],3,replace=T)),
+                        multiple=T, selectize = F, size = 6),
+            bsTooltip("tsmod_selCities","Select the cities for the plot (Ctrl+click for multiple selection)", placement = "right")
+          )
+        ),
+        bsButton("buttonLicense_modts", label = "license", style="primary", icon=icon("external-link"),
+                 onclick ="window.open('http://macc-raq.copernicus-atmosphere.eu/doc/CAMS_data_license_final.pdf', '_blank')"),
+        bsButton("buttonCite_modts", label = "citations", style="primary"),
+        bsModal("modalCite_modts",title = "Citations", trigger = "buttonCite_modts", 
+                HTML(citeHtml(files = c("/home/giovanni/R/projects/calicantus/CITATION",
+                                        "/home/giovanni/R/projects/calicantus/shiny/citations/citation_cams.R"),
+                              pkgs = c("ggplot2","base","shiny","dplyr")))),
+        width=3),
+      mainPanel( 
+        tags$head(tags$style(HTML(progressBarStyle))),
+        plotOutput("tsmod")
+        )
+    )
+  })
+  pollName <- function(x) ifelse(x=="PM25","PM2.5",as.character(x))
+  output$tsmod <- renderPlot({
+    dat <- modelTimeseries() %>%
+      filter(Name %in% input$tsmod_selCities) %>%
+      mutate(Pollutant=pollName(Pollutant))
+    p <- ggplot(dat, aes(x=Time,y=Conc,col=Model,group=Model)) +
+      geom_line() + geom_point(alpha=0.5) +
+      theme_bw() +
+      facet_grid(Pollutant~Name,scales = "free_y")
+    p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+      labs(title=paste0(paste(unique(dat$Pollutant), collapse=", "),": hourly forecast"),
+           subtitle=paste0("period: ",paste(range(dat$Time),collapse=" to ")),
+           caption=paste("Generated using Copernicus Atmosphere Monitoring Service Information",
+                         format(Sys.Date(),"%Y"))) +
+      ylab(expression("Concentration"~(mu*g/m^3))) +
+      scale_x_datetime(date_labels = "%Y-%m-%d")
+    withProgress(message = 'Making plot...', value = 1, {
+      p
+    })
+  },height = 800)
+  
 
-      # load model data of single day
+  # load model data of single day
   changeOfDayMod <- reactive({
     input$dayMod;input$mapMod;input$pollutantDayMod
   })
@@ -945,6 +1107,8 @@ server <- function(input, output, session) {
         )
     }
   })
+  
+  
   
   # data use policy table
   output$use_policy <- renderTable({

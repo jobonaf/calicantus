@@ -1,0 +1,8 @@
+bibentry("Misc",
+         title = "calicantus 1.0",
+         author = "Giovanni Bonafè",
+         organization = "ARPA-FVG",
+         year         = 2017,
+         url          = "http://doi.org/10.5281/zenodo.438120",
+         mheader = "To cite 'calicantus' in publications use:",
+	)

@@ -148,7 +148,7 @@ ui_menu <- function(){
     ),
     tabPanel("logout", 
              p("Click here to log out."),
-             actionButton(inputId = "login",label = "Log out",icon = icon("sign-out"), width="120",
+             actionButton(inputId = "logout",label = "Log out",icon = icon("sign-out"), width="120",
                           onclick ="location.href='https://shiny.arpae.it/calicantus-intro';"))
   )}
 ui <- uiOutput("page")
@@ -159,15 +159,23 @@ ui <- uiOutput("page")
 server <- function(input, output, session) {
   USER <- reactiveValues(Logged = Logged)
   # check credentials
-  observe({ 
+  observeEvent(input$Login,{ 
     if (!USER$Logged && !is.null(input$Login) && input$Login>0) {
           usr <- isolate(input$Usr)
           pwd <- isolate(input$Pwd)
           Id.usr <- which(ui_usr == usr)
           Id.pwd <- which(ui_pwd == pwd)
           if (length(Id.usr)==1 & length(Id.pwd)==1 && Id.usr==Id.pwd) {
+            logfile <- paste0("/home/giovanni/R/projects/calicantus/log/web-interface.log")
+            if(!file.exists(logfile)) file.create(logfile)
+            rec <- paste0("login success: ",Sys.time()," | usr: ",input$Usr)
+            write(rec,file=logfile,append=TRUE)
             USER$Logged <- TRUE
           } else {
+            logfile <- paste0("/home/giovanni/R/projects/calicantus/log/web-interface.log")
+            if(!file.exists(logfile)) file.create(logfile)
+            rec <- paste0("login failure: ",Sys.time()," | usr: ",input$Usr," | pwd: ",input$Pwd)
+            write(rec,file=logfile,append=TRUE)
             USER$Logged <- FALSE
           }
     }    
@@ -857,6 +865,8 @@ server <- function(input, output, session) {
                     choices = c("CHIMERE","EMEP","EURAD","LOTOSEUROS","MATCH","MOCAGE","SILAM")),
         bsButton("buttonLicense_modmap", label = "license", style="primary", icon=icon("external-link"),
                  onclick ="window.open('http://macc-raq.copernicus-atmosphere.eu/doc/CAMS_data_license_final.pdf', '_blank')"),
+        bsButton("buttonInfo_modmap", label = "info", style="primary", icon=icon("external-link"),
+                 onclick ="window.open('https://atmosphere.copernicus.eu/documentation-regional-systems', '_blank')"),
         bsButton("buttonCite_modmap", label = "citations", style="primary"),
         bsModal("modalCite_modmap",title = "Citations", trigger = "buttonCite_modmap", 
                 HTML(citeHtml(files = c("/home/giovanni/R/projects/calicantus/CITATION",
@@ -929,6 +939,8 @@ server <- function(input, output, session) {
         ),
         bsButton("buttonLicense_modts", label = "license", style="primary", icon=icon("external-link"),
                  onclick ="window.open('http://macc-raq.copernicus-atmosphere.eu/doc/CAMS_data_license_final.pdf', '_blank')"),
+        bsButton("buttonInfo_modts", label = "info", style="primary", icon=icon("external-link"),
+                 onclick ="window.open('https://atmosphere.copernicus.eu/documentation-regional-systems', '_blank')"),
         bsButton("buttonCite_modts", label = "citations", style="primary"),
         bsModal("modalCite_modts",title = "Citations", trigger = "buttonCite_modts", 
                 HTML(citeHtml(files = c("/home/giovanni/R/projects/calicantus/CITATION",

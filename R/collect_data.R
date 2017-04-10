@@ -21,7 +21,7 @@ if(interactive()) {
   aa <- commandArgs(trailingOnly=TRUE)
   print(aa)
   if(length(aa)==0) aa[1] <- 1
-  if(length(aa)<=1) aa[2] <- 6
+  if(length(aa)<=1) aa[2] <- 8
 }
 by <- ifelse(as.numeric(aa[1])>as.numeric(aa[2]),"1 days","-1 days")
 days <- as.character(seq.Date(Sys.Date()-as.numeric(aa[1]),

@@ -22,6 +22,7 @@ suppressMessages({
   library(scales, lib.loc = "/home/giovanni/R/x86_64-pc-linux-gnu-library/3.2")
   library(ggplot2, lib.loc = "/home/giovanni/R/x86_64-pc-linux-gnu-library/3.2")
   library(ggrepel, lib.loc = "/home/giovanni/R/x86_64-pc-linux-gnu-library/3.2")
+  library("stringi", lib.loc="/usr/lib/R/library")
   library(RColorBrewer, lib.loc = "/usr/lib/R/library")
   library(maps, lib.loc = "/usr/lib/R/library")
   library(cluster, lib.loc = "/usr/lib/R/library")
@@ -85,6 +86,9 @@ ui_modelmap <- uiOutput("ui_modelmap")
 # UI: account info
 ui_account <- uiOutput("ui_account")
 
+# UI: obs.data availability
+ui_obsAvail <- uiOutput("ui_obsAvail")
+
 # UI: policy
 ui_policy <- fluidPage(
   includeMarkdown("/home/giovanni/R/projects/calicantus/shiny/intro/policy.md"),
@@ -133,6 +137,7 @@ ui_menu <- function(){
                ,tabPanel("models", ui_modelmap)
     ),
     navbarMenu("observations"
+               ,tabPanel("availability",ui_obsAvail)
                ,tabPanel("timeseries",ui_ts)
                ,tabPanel("exceedances",ui_exc)
                ,tabPanel("clustering",ui_clu)
@@ -206,11 +211,13 @@ server <- function(input, output, session) {
   
   # daily indicator
   dailyInd <- reactive({
-    if(input$pollutantPeriod=="PM10") dI <- "daily average"
+    if(input$pollutantPeriod %in% c("PM10","PM2.5")) dI <- "daily average"
+    if(input$pollutantPeriod %in% c("O3","NO2")) dI <- "daily maximum"
     dI
   })
   dayInd <- reactive({
-    if(input$pollutantDay=="PM10") dI <- "daily average"
+    if(input$pollutantDay %in% c("PM10","PM2.5")) dI <- "daily average"
+    if(input$pollutantDay %in% c("O3","NO2")) dI <- "daily maximum"
     dI
   })
   
@@ -222,9 +229,13 @@ server <- function(input, output, session) {
                                   start=Sys.Date()-10,
                                   end=Sys.Date()-1,
                                   max = Sys.Date()-1),
-                   selectInput("pollutantPeriod",label = "pollutant", choices = c("PM10")),
+                   selectInput("pollutantPeriod",label = "pollutant", 
+                               choices = list(`PM10 daily mean`="PM10",
+                                              `PM2.5 daily mean`="PM2.5",
+                                              `NO2 daily max`="NO2",
+                                              `O3 daily max`="O3")),
                    selectInput("sources",label = "sources of data", choices = availableSources(), 
-                               selected = availableSources(), multiple=TRUE, selectize=FALSE),
+                               selected = availableSources(), multiple=TRUE, selectize=FALSE, size = 15),
                    actionButton("goPeriod", label="load", icon = icon("arrow-circle-right")),
                    conditionalPanel(condition = "input.goPeriod",
                                     helpText("Please note that the table on the right side is interactive:",
@@ -253,7 +264,7 @@ server <- function(input, output, session) {
                                   for(d in dd) {
                                     ff <- c(ff,system(paste0("ls /home/giovanni/R/projects/calicantus/data/obs-data/",
                                                              format(as.Date(d),"%Y/%m/%d/%Y%m%d_"),input$pollutantPeriod,
-                                                             "*.rda 2>/dev/null"),
+                                                             "_*.rda 2>/dev/null"),
                                                       intern=TRUE))
                                   }
                                   Dat <- NULL
@@ -287,7 +298,11 @@ server <- function(input, output, session) {
                    dateInput("day", "day of interest", value=Sys.Date()-1, 
                              min="2014-10-10", max = Sys.Date()-1,
                              width="50%"),
-                   selectInput("pollutantDay",label = "pollutant", choices = c("PM10")),
+                   selectInput("pollutantDay",label = "pollutant", 
+                               choices = list(`PM10 daily mean`="PM10",
+                                              `PM2.5 daily mean`="PM2.5",
+                                              `NO2 daily max`="NO2",
+                                              `O3 daily max`="O3")),
                    selectInput("scaleDay",label = "color scale", choices = c("classic","extended")),
                    actionButton("goDay", label="plot", icon = icon("arrow-circle-right")),
                    conditionalPanel(condition = "input.goDay",
@@ -313,6 +328,7 @@ server <- function(input, output, session) {
   changeOfDay <- reactive({
     input$goDay
     input$day
+    input$pollutantDay
     })
   dataOfDay <- eventReactive(
     eventExpr = changeOfDay(), #ignoreNULL = FALSE,
@@ -322,9 +338,14 @@ server <- function(input, output, session) {
       } else {
         d <- as.character(input$day)
       }
-      ff <- system(paste0("ls /home/giovanni/R/projects/calicantus/data/obs-data/",
-                          format(as.Date(d),"%Y/%m/%d/%Y%m%d_*.rda 2>/dev/null")),
-                   intern=TRUE)
+#       ff <- system(paste0("ls /home/giovanni/R/projects/calicantus/data/obs-data/",
+#                           format(as.Date(d),"%Y/%m/%d/%Y%m%d"),
+#                           "_",input$pollutantDay,"_*.rda 2>/dev/null"),
+#                    intern=TRUE)
+      ff <- dir(path=paste0("/home/giovanni/R/projects/calicantus/data/obs-data/",
+                            format(as.Date(d),"%Y/%m/%d/")),
+                pattern = paste0(format(as.Date(d),"%Y%m%d"),
+                                 "_",input$pollutantDay), full.names = T)
       Dat <- NULL
       nf <- length(ff)
       if(nf>0) {
@@ -402,7 +423,16 @@ server <- function(input, output, session) {
     )
   })
   
-  # UI: exceedances
+  # default thresholds
+  dailyThr <- reactive({
+    if(input$pollutantPeriod=="PM10")  dT <- 50
+    if(input$pollutantPeriod=="PM2.5") dT <- 40
+    if(input$pollutantPeriod=="O3")    dT <- 180
+    if(input$pollutantPeriod=="NO2")   dT <- 200
+    dT
+  })
+
+    # UI: exceedances
   output$ui_exc <- renderUI({
     sidebarLayout(
       sidebarPanel(
@@ -413,7 +443,11 @@ server <- function(input, output, session) {
         conditionalPanel(
           condition = "input.goPeriod",
           helpText("You can change the period of interest in the ",strong("data")," tab."),
-          sliderInput("threshold","threshold",10,100,50,5)
+          sliderInput("threshold","threshold",
+                      min = round(dailyThr()*0.1,-1),
+                      max = dailyThr()*2,
+                      value = dailyThr(),
+                      step = 10)
           ,permissionButton(id="buttonPermis_obsexc", sources=input$sources),
           bsModal("modalPermis_obsexc",title = "Permissions", trigger = "buttonPermis_obsexc", 
                   HTML(policyByPurpose(input$sources))),
@@ -758,16 +792,22 @@ server <- function(input, output, session) {
   # breaks for the obs.map
   Breaks <- reactive({
     if(input$scaleDay == "classic") {
-      bb <- c(0,25,50,75,100,300)
+      if(input$pollutantDay=="PM10")  bb <- c(0,25,50,75,100,150)
+      if(input$pollutantDay=="PM2.5") bb <- c(0,10,25,50,75,100)
+      if(input$pollutantDay=="NO2")   bb <- c(0,25,50,75,100,150)
+      if(input$pollutantDay=="O3")    bb <- c(0,90,120,180,240,300)
     }else if(input$scaleDay == "extended") {
-      bb <- c(0,25,50,75,100,150,200,250,300,400)
+      if(input$pollutantDay=="PM10")  bb <- c(0,25,50,75,100,150,200,250,300,400)
+      if(input$pollutantDay=="PM2.5") bb <- c(0,10,25,50,75,100,150,200,250,300)
+      if(input$pollutantDay=="NO2")   bb <- c(0,25,50,75,100,150,200,250,300,400)
+      if(input$pollutantDay=="O3")    bb <- c(0,60,90,120,150,180,210,240,270,300)
     }
     bb
   })
   
   # units
   unitDay <- reactive({
-    if(input$pollutantDay=="PM10") uu <- "ug/m^3"
+    if(input$pollutantDay %in% c("PM10","PM2.5","O3","NO2")) uu <- "ug/m^3"
     uu
   })
   
@@ -798,7 +838,6 @@ server <- function(input, output, session) {
       # Layers control
       addLayersControl(
         baseGroups = c("grey minimal","classic","toner lite","terrain","satellite"),
-        #overlayGroups = c("aod"),
         options = layersControlOptions(collapsed = TRUE)
       )
   })
@@ -837,13 +876,15 @@ server <- function(input, output, session) {
     Pal <- colorpal()
     proxy <- leafletProxy("Map", data = Dat)
     
-    proxy %>% 
-      clearControls() %>%
-      addLegend(position = "bottomright", pal = Pal, values = ~ValueInterval,
-                title = paste0(as.character(input$day),":<br>",
-                               input$pollutantDay," ",dayInd(),"<br>(",
-                               unitDay(),")")
-                )
+    if (!is.null(Dat) && nrow(Dat)>0) {
+      proxy %>% 
+        clearControls() %>%
+        addLegend(position = "bottomright", pal = Pal, values = ~ValueInterval,
+                  title = paste0(as.character(input$day),":<br>",
+                                 input$pollutantDay," ",dayInd(),"<br>(",
+                                 unitDay(),")")
+        )
+    }
   })
   
   
@@ -1014,12 +1055,12 @@ server <- function(input, output, session) {
     }else if(scale == "extended") {
       if(poll=="PM10_Mean")   bb <- c(25,50,75,100,150,200,250,300,400)
       if(poll=="PM25_Mean")   bb <- c(10,25,50,75,100,150,200,250,300)
-      if(poll=="O3_Max")      bb <- c(90,120,180,210,240,270,300,350,400)
+      if(poll=="O3_Max")      bb <- c(60,90,120,150,180,210,240,270,300)
       if(poll=="O3_MaxAvg8h") bb <- c(60,90,120,150,180,210,240,270,300)
     }
     bb
   })
-  
+
   # model units
   unitDayMod <- reactive({
     poll <- ifelse(is.null(input) || is.null(input$pollutantDayMod), "PM10_Mean", input$pollutantDayMod)
@@ -1145,12 +1186,97 @@ server <- function(input, output, session) {
     read.table("/home/giovanni/R/projects/calicantus/data/data-sources/contacts.csv",
                sep=",",row.names = NULL,header = T, check.names = F)
   })
+
+  # login statistics
+  output$loginStat <- renderPlot({
+    Logins <- read.table("/home/giovanni/R/projects/calicantus/log/web-interface.log", sep="|", 
+                         fill=T, stringsAsFactors = F)[,1:2]
+    colnames(Logins) <- c("time","user")
+    Logins %>% separate(time, c("kk","time"), ": ") %>% 
+      separate(user, c("ll","user"), ": ") %>%
+      filter(kk=="login success", user!="test") %>% 
+      dplyr::select(time, user) %>%
+      mutate(day=as.Date(time)) -> Logins
+    p <- ggplot(Logins, aes(x=day, y=user)) +
+      geom_count(col="olivedrab", show.legend = F) + 
+      theme_bw() + theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+      ggtitle("web interface", subtitle = "number of accesses") + xlim(Sys.Date()-15, Sys.Date())
+    print(p)
+  })
+  
+  # users locations
+  output$usersCities <- renderPlot({
+    uu <- read.table("/home/giovanni/R/projects/calicantus/config/config_users.csv", 
+                     stringsAsFactors = F, header = T, quote = '\"', fill=T, sep=",",
+                     strip.white = T)
+    uu$isMe <- uu$user == input$Usr
+    xmin<-min(uu$lon,na.rm=T)
+    xmax<-max(uu$lon,na.rm=T)
+    ymin<-min(uu$lat,na.rm=T)
+    ymax<-max(uu$lat,na.rm=T)
+    dx<-xmax-xmin
+    dy<-ymax-ymin
+    pl <- ggplot() + 
+      geom_polygon(data=MapData, aes(x=long, y=lat, group = group),
+                   colour="grey30", fill="grey70" ) +
+      geom_label_repel(data=uu, aes(x=lon, y=lat, fill=isMe, label=user), 
+                       box.padding = unit(0.1, "lines"),
+                       label.padding = unit(0.1, "lines"), 
+                       size=4, col="steelblue", show.legend=F,
+                       segment.size=0) +
+      scale_fill_manual(values=c("white","yellow")) +
+      coord_map(xlim = c(xmin-dx*0.1,xmax+dx*0.1),
+                ylim = c(ymin-dy*0.1,ymax+dy*0.1)) +
+      theme_bw()+
+      theme(axis.title=element_blank(),
+            axis.text=element_blank(),
+            axis.ticks=element_blank())
+      
+    pl
+  })
+  
+  # data coverage
+  Files <- basename(dir(path = "/home/giovanni/R/projects/calicantus/data/obs-data/", 
+                        pattern = "rda", full.names = F, recursive = T))
+  avai <- as.data.frame(stri_split_fixed(gsub(".rda","",Files),"_",simplify=T))
+  colnames(avai) <- c("day","pollutant","data_source")
+  avai %>% mutate(day=as.Date(day,format = "%Y%m%d"), YearMonth=format(day,"%Y-%m")) -> avai
+  # all data coverage plot
+  output$availObs <- renderPlot({
+    p <- ggplot(avai, aes(x=YearMonth, y=data_source)) +
+      geom_count(col="tomato3", show.legend=F) + 
+      theme_bw() + theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+      facet_grid(pollutant~.) +
+      ggtitle("measured data availability", sub = "whole dataset")
+    print(p)
+  })
+  # recent data coverage plot
+  output$availObsRecent <- renderPlot({
+    p <- ggplot(avai, aes(x=day, y=data_source)) +
+      xlim(Sys.Date()-15,Sys.Date()) +
+      geom_count(col="steelblue", show.legend=F) + 
+      theme_bw() + theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+      facet_grid(pollutant~.) +
+      ggtitle("measured data availability", sub = "last 15 days")
+    print(p)
+  })
   
   # account info
   output$ui_account <- renderUI({
     fluidPage(
-      p("User: ",code(input$Usr)),
-      p("Available data sources: ",code(paste(availableSources(),collapse=", ")))
+      column(6,p("You are logged in as: ",strong(input$Usr)),
+             plotOutput("loginStat",height="400px")),
+      column(6,plotOutput("usersCities",height="600px"))
+    )
+  })
+  
+  # obs.data availability
+  output$ui_obsAvail <- renderUI({
+    fluidPage(
+      column(8,p("The data sources available for you are: ",
+                 strong(paste(availableSources(),collapse=", ")))),
+      column(6,plotOutput("availObs",height="800px")),
+      column(6,plotOutput("availObsRecent",height="800px"))
     )
   })
 }

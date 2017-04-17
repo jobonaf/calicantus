@@ -34,20 +34,29 @@ read.ArpaT <- function(file,day) {
   return(dat)
 }
 
-read.ArpaLazio <- function(file,sep,day) {
+read.ArpaLazio <- function(file,sep,day,stat=NULL) {
+  library(dplyr)
   dat <- NULL
   for(ff in file) {
     dd <- try(read.table(ff,head=T,check.names = F,stringsAsFactors = FALSE))
     if(class(dd)!="try-error") {
+      dd[dd<0] <- NA
+      dd$anno <- NULL
+      if(!is.null(stat) && stat=="max") {
+        Max <- function(x,nreq) ifelse(sum(!is.na(x))>=nreq,max(x,na.rm=T),NA)
+        dd %>% select(-h) %>% group_by(jd) %>% summarize_all(Max,nreq=18) -> dd
+      }
       if(is.null(dat)) {
         dat<-dd
       } else {
-        dat <- merge(x=dat,y=dd,by=c("anno","jd"),all=T)
+        dat <- merge(x=dat,y=dd,by=c("jd"),all=T)
       }
     }
   }
-  idx <- which(as.character(dat$anno)==format(as.POSIXct(day),"%Y") & dat$jd==(as.POSIXlt(day)$yday+1))
-  out <- data.frame(ID=as.character(colnames(dat)[-1:-2]), Valore=c(unlist(dat[idx[1],][-1:-2])),stringsAsFactors = F)
+  idx <- which(dat$jd==(as.POSIXlt(day)$yday+1))
+  out <- data.frame(ID=as.character(colnames(dat)[-1:-2]), 
+                    Valore=c(unlist(dat[idx[1],][-1:-2])),
+                    stringsAsFactors = F)
   return(out)
 }
 
@@ -66,17 +75,25 @@ read.ArpaPuglia <- function(file,sep,day) {
 
 round_awayfromzero <- function(x,digits=0) trunc(x*10^digits+sign(x)*0.5)*10^-digits
 
-read.ArpaCampania <- function(file,sep,day,poll="PM10") {
-  library("Rcpp", lib.loc="~/R/x86_64-pc-linux-gnu-library/3.2")
+read.ArpaCampania <- function(file,sep,day,poll,stat) {
+  #library("Rcpp", lib.loc="~/R/x86_64-pc-linux-gnu-library/3.2")
   library(dplyr)
+  library(caTools)
   dat <- read.table(file,sep = sep,stringsAsFactors = F,header = T)
   dat %>% mutate(data=substr(data_ora,1,10)) %>%
-    filter(as.POSIXct(day,tz="Africa/Algiers")==as.POSIXct(data,tz="Africa/Algiers"),
+    filter(as.POSIXct(data,tz="Africa/Algiers")==
+             as.POSIXct(day,tz="Africa/Algiers"),
            inquinante==poll,
-           !is.na(valore)) %>%
-    group_by(stazione, inquinante, data) %>%
-    summarize(valore=round_awayfromzero(mean(valore)), nh=n()) %>%
-    filter(nh>=18) -> out
+           !is.na(valore)) %>% 
+    group_by(stazione, data) -> dat
+  if(stat=="mean") {
+    dat %>% summarize(valore=round_awayfromzero(mean(valore)), nh=n()) %>%
+      filter(nh>=18) -> out
+  }
+  if(stat=="max") {
+    dat %>% summarize(valore=round_awayfromzero(max(valore)), nh=n()) %>%
+      filter(nh>=18) -> out
+  }
   out <- as.data.frame(out)
   return(out)
 }
@@ -102,5 +119,17 @@ read.UacerTicino <- function(file,sep) {
     tmp <- read.table(file[i],comment.char = "#", blank.lines.skip = T, header = T, sep=";")
     if(length(tmp)>0) out$VAL[i] <- tmp[1,2]
   }
+  return(out)
+}
+
+read.SepaSerbia <- function(file,sep,day) { 
+  library(XML)
+  dat <- readHTMLTable(file, colClasses = c("character",rep("numeric",length(sep))))[[1]]
+  colnames(dat) <- c("date",sep)
+  dat <- dat[as.Date(dat$date)==as.Date(day),-1]
+  ave <- colMeans(dat, na.rm = T)
+  valid <- colSums(!is.na(dat))
+  ave[valid<24*0.75] <- NA
+  out <- data.frame(ID=sep, VAL=ave)
   return(out)
 }

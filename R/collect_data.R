@@ -9,8 +9,8 @@ sources <- c("ARPAV","ARPAT","ARPAE","ARPA-Umbria",
              "ARPA-Liguria","ARPA-FVG","ARPA-Lazio",
              "ARPA-Puglia","ARPAC","AZO-Croatia","DT-DA-SPAAS-UACER-Ticino",
              "ARPAB")
-# sources <- c("ARPAB")
-pollutants <- c("PM10")
+#sources <- c("ARPA-Lazio")
+pollutants <- c("PM10","O3","PM2.5","NO2")
 
 # arguments
 if(interactive()) {

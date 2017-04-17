@@ -41,10 +41,14 @@ read_data <- function(config,filedata,metadata,day,pollutant,clean=TRUE){
 
 import_data <- function(Source,day,pollutant,path="/home/giovanni/R/projects/calicantus/",...) {
   config <- paste0(path,"config/data-access/access.",Source,".",pollutant,".R")
-  metadata <- paste0(path,"data/sites-info/metadata.",Source,".csv")
-  filedata <- get_data(config = config, day = day)
-  dat <- read_data(config = config, filedata = filedata, 
-                   metadata = metadata, day = day, pollutant = pollutant,...)
+  if(file.exists(config)) {
+    metadata <- paste0(path,"data/sites-info/metadata.",Source,".csv")
+    filedata <- get_data(config = config, day = day)
+    dat <- read_data(config = config, filedata = filedata, 
+                     metadata = metadata, day = day, pollutant = pollutant,...)
+  }else{
+    dat <- NULL
+  }
   return(dat)
 }
 

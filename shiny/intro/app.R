@@ -6,7 +6,7 @@ suppressMessages({
   pkg1 <- c(pkgO)
   pkg2 <- setdiff(pkg1,"shiny")
   if(length(pkg2)>0) lapply(paste0('package:',pkg2), detach, character.only = TRUE, unload = TRUE)
-  library(shinyBS, lib.loc="/home/giovanni/R/x86_64-pc-linux-gnu-library/3.2")
+  library(shinyBS, lib.loc="/home/giovanni/R/x86_64-pc-linux-gnu-library/3.4")
   library(markdown)
 })
 

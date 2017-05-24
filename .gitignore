@@ -3,12 +3,13 @@
 .RData
 tmp/
 config/config*
-config/data-access/*
+config/obs-data-access/*
 config/registrations/*
 config/policy-preferences/*
 config/ui_credentials.R
 run/
 log/
 old/
-data/
+data/obs-data/
+data/mod-data/
 *.html

@@ -2,10 +2,9 @@
 .Rhistory
 .RData
 tmp/
-config/config*
+config/config_proxy.R
 config/obs-data-access/*
 config/registrations/*
-config/policy-preferences/*
 config/ui_credentials.R
 run/
 log/

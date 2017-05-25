@@ -28,3 +28,18 @@ string_users <- function(users=read.csv(file = "/home/giovanni/R/projects/calica
     cat(out,sep="\n")
   }
 }
+
+
+# encrypt a file
+encrypt_file <- function(filein, fileout=paste0(filein,".enc")) {
+  pwd <- readline("password?")
+  command <- paste0("openssl enc -in ",filein," -aes-256-cbc -pass stdin > ",fileout)  
+  system(command, input=pwd)
+}
+
+# decrypt a file
+decrypt_file <- function(filein, fileout=paste0(filein,".dec")) {
+  pwd <- readline("password?")
+  command <- paste0("openssl enc -in ",filein," -d -aes-256-cbc -pass stdin > ",fileout)  
+  system(command, input=pwd)
+}

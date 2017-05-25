@@ -67,27 +67,20 @@ MapData <- map_data(map = "world",
 
 
 # UI: map
-ui_map <- uiOutput("ui_map")
-
+ui_map      <- uiOutput("ui_map")
 # UI: data table
-ui_data <- uiOutput("ui_data")
-
+ui_data     <- uiOutput("ui_data")
 # UI: time series
-ui_ts <- uiOutput("ui_ts")
-ui_tsmod <- uiOutput("ui_tsmod")
-
+ui_ts       <- uiOutput("ui_ts")
+ui_tsmod    <- uiOutput("ui_tsmod")
 # UI: exceedances
-ui_exc <- uiOutput("ui_exc")
-
+ui_exc      <- uiOutput("ui_exc")
 # UI: clustering
-ui_clu <- uiOutput("ui_clu")
-
+ui_clu      <- uiOutput("ui_clu")
 # UI: models map
 ui_modelmap <- uiOutput("ui_modelmap")
-
 # UI: account info
-ui_account <- uiOutput("ui_account")
-
+ui_account  <- uiOutput("ui_account")
 # UI: obs.data availability
 ui_obsAvail <- uiOutput("ui_obsAvail")
 

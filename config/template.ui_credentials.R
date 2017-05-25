@@ -1,9 +1,14 @@
-ui_usr <- vector()
-ui_pwd <- vector()
+ui_usr <- NULL
+ui_pwd <- NULL
 
-## 1
-ui_usr[1] <- "usr1"
-ui_pwd[1] <- "123456"
-## 2
-ui_usr[2] <- "usr2"
-ui_pwd[2] <- "abcdefg"
+ui_usr<-append(ui_usr,"_____"); ui_pwd<-append(ui_pwd,"________")
+ui_usr<-append(ui_usr,"_____"); ui_pwd<-append(ui_pwd,"________")
+ui_usr<-append(ui_usr,"_____"); ui_pwd<-append(ui_pwd,"________")
+ui_usr<-append(ui_usr,"_____"); ui_pwd<-append(ui_pwd,"________")
+ui_usr<-append(ui_usr,"_____"); ui_pwd<-append(ui_pwd,"________")
+ui_usr<-append(ui_usr,"_____"); ui_pwd<-append(ui_pwd,"________")
+ui_usr<-append(ui_usr,"_____"); ui_pwd<-append(ui_pwd,"________")
+ui_usr<-append(ui_usr,"_____"); ui_pwd<-append(ui_pwd,"________")
+ui_usr<-append(ui_usr,"_____"); ui_pwd<-append(ui_pwd,"________")
+ui_usr<-append(ui_usr,"_____"); ui_pwd<-append(ui_pwd,"________")
+ui_usr<-append(ui_usr,"_____"); ui_pwd<-append(ui_pwd,"________")

@@ -66,22 +66,15 @@ MapData <- map_data(map = "world",
 # ui ----------------------------------------------------------------------
 
 
-# UI: map
+ui_home     <- uiOutput("ui_home")
 ui_map      <- uiOutput("ui_map")
-# UI: data table
 ui_data     <- uiOutput("ui_data")
-# UI: time series
 ui_ts       <- uiOutput("ui_ts")
 ui_tsmod    <- uiOutput("ui_tsmod")
-# UI: exceedances
 ui_exc      <- uiOutput("ui_exc")
-# UI: clustering
 ui_clu      <- uiOutput("ui_clu")
-# UI: models map
 ui_modelmap <- uiOutput("ui_modelmap")
-# UI: account info
 ui_account  <- uiOutput("ui_account")
-# UI: obs.data availability
 ui_obsAvail <- uiOutput("ui_obsAvail")
 
 # UI: policy
@@ -126,18 +119,17 @@ ui_login <- function(){
 # UI: webpage with tabs
 ui_menu <- function(){
   tagList(
-    tabPanel("data", ui_data),
-    navbarMenu("maps"
-               ,tabPanel("observed data", ui_map)
-               ,tabPanel("models", ui_modelmap)
-    ),
+    tabPanel("home", ui_home),
     navbarMenu("observations"
+               ,tabPanel("map", ui_map)
+               ,tabPanel("data", ui_data)
                ,tabPanel("availability",ui_obsAvail)
                ,tabPanel("timeseries",ui_ts)
                ,tabPanel("exceedances",ui_exc)
                ,tabPanel("clustering",ui_clu)
     ),
     navbarMenu("forecasts"
+               ,tabPanel("models", ui_modelmap)
                ,tabPanel("timeseries",ui_tsmod)
     ),
     navbarMenu("more"
@@ -214,6 +206,11 @@ server <- function(input, output, session) {
     if(input$pollutantDay %in% c("PM10","PM2.5")) dI <- "daily average"
     if(input$pollutantDay %in% c("O3","NO2")) dI <- "daily maximum"
     dI
+  })
+  
+  # UI: home
+  output$home <- renderUI({
+    
   })
   
   # UI: data table

@@ -3,7 +3,7 @@
 .RData
 tmp/
 config/config_proxy.R
-config/obs-data-access/*
+config/obs-data-access/*.R
 config/registrations/*
 config/ui_credentials.R
 run/

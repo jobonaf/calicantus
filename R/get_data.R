@@ -1,6 +1,6 @@
 get_ftp <- function(config,FileIn){
   source(config)
-  command <- paste0("ftp -n ",Addr,"<<EOF\n",
+  command <- paste0("ftp -np ",Addr,"<<EOF\n",
                     "user ",Usr," ",Pwd,"\n",
                     "cd ./",Path,"\n",
                     "get ",FileIn,"\n",

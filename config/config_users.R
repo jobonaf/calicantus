@@ -1,19 +1,17 @@
-# authorized data sources for each category of user:
-# for Environmental Protection Agencies
-au_EnvAgency <- c("AZO-Croatia")
-# for other Public Administrations
-au_PublAdmin <- c("AZO-Croatia")
-# for Universities and Researchers
-au_Research  <- c("AZO-Croatia")
-# for Private Modellers
-au_PrivModel <- c("AZO-Croatia")
-
-
-
-if(input$Usr=="usr1") {
-  auth_sources <- c("EPA-Botswana","EPA-Namibia")
-}else if(input$Usr=="usr2"){
-  auth_sources <- c("EPA-Botswana","EPA-Kenya")
-}else{
-  auth_sources <- NULL
+authorizedSources <- function(usr){
+  userInfo <- read.csv("/home/giovanni/R/projects/calicantus/config/config_users.csv", stringsAsFactors = F,strip.white = T)
+  sourcesPolicy <- read.csv("/home/giovanni/R/projects/calicantus/data/data-sources/policy.csv", stringsAsFactors = F,strip.white = T)
+  userCategory <- userInfo$category[match(usr,userInfo$user)[1]]
+  if(is.na(userCategory)) {
+    aS <- NA
+  } else if(userCategory=="EnvAgency") {
+    aS <- sourcesPolicy$data_source
+  } else if (userCategory=="PublAdmin") {
+    aS <- sourcesPolicy$data_source[which(sourcesPolicy$user_publadmin %in% c("yes","tmp"))]
+  } else if (userCategory=="Research") {
+    aS <- sourcesPolicy$data_source[which(sourcesPolicy$user_research %in% c("yes","tmp"))]
+  } else if (userCategory=="PrivModel") {
+    aS <- sourcesPolicy$data_source[which(sourcesPolicy$user_private %in% c("yes","tmp"))]
+  }
+  return(aS)
 }

@@ -191,6 +191,7 @@ server <- function(input, output, session) {
   # available data sources (personalized depending on user)
   availableSources <- reactive({
     source("/home/giovanni/R/projects/calicantus/config/config_users.R",local=TRUE)
+    auth_sources <- authorizedSources(input$Usr)
     aS <- system("cd /home/giovanni/R/projects/calicantus/data/sites-info/; ls metadata*csv | sed s/metadata.//g | sed s/.csv//g",intern=TRUE)
     aS <- intersect(aS, auth_sources)
     aS

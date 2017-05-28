@@ -1,10 +1,12 @@
 get_ftp <- function(config,FileIn){
   source(config)
-  command <- paste0("ftp -np ",Addr,"<<EOF\n",
-                    "user ",Usr," ",Pwd,"\n",
-                    "cd ./",Path,"\n",
-                    "get ",FileIn,"\n",
-                    "bye\nEOF")
+  # command <- paste0("ftp -np ",Addr,"<<EOF\n",
+  #                   "user ",Usr," ",Pwd,"\n",
+  #                   "cd ./",Path,"\n",
+  #                   "get ",FileIn,"\n",
+  #                   "bye\nEOF")
+  command <- paste0("wget --no-proxy 'ftp://",Usr,":",gsub("@","%40",Pwd),"@",Addr,"/",Path,"/",FileIn,"'")
+  cat(command,sep="\n")
   system(command)
   check <- file.exists(FileIn)
   return(check)

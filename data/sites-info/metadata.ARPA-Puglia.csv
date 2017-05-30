@@ -1,0 +1,53 @@
+TIPO.SITO,CABINA,COMUNE,RETE,CODICE.EOI,TIPO.ZONA,TIPO.STAZIONE,LON,LAT
+M/A,Foggia - Via Rosati,Foggia,RRQA,IT2019A,Urbana,Fondo,15.5486,41.4556
+M/A,suolo Giuffreda,Monte S. Angelo,RRQA,IT1601A,Rurale,Fondo,15.9453,41.6661
+M/A,Casamassima - LaPenna,Casamassima,PROVINCIA BARI,IT1823A,Suburbana,Fondo,16.9199,40.9522
+S,Altamura - Via Santeramo,Altamura,PROVINCIA BARI,IT1818A,Suburbana,Fondo,16.5602,40.8279
+M,Martina Franca - Via Stazione,Martina Franca,ARPA,IT1680A,Urbana,Traffico,17.3319,40.7008
+M/A,San Severo - Posta del Principe,San Severo,ENPLUS,IT2141A,Rurale,Fondo,15.3877,41.6328
+I,San Severo - Azienda Russo,San Severo,ENPLUS,IT2142A,Rurale,Fondo,15.4514,41.5468
+I,Ceglie Messapica - Via Martina,Ceglie Messapica,ENEL,IT2148A,Suburbana,Fondo,17.5125,40.6492
+I,Cisternino - Via Croce,Cisternino,ENEL,IT2149A,Rurale,Fondo,17.4158,40.7428
+M/A,Molfetta - Verdi,Molfetta,RRQA,IT1603A,urbana,traffico,16.6052,41.2011
+S,Andria - Via Vaccina,Andria,PROVINCIA BARI,IT1822A,Urbana,Traffico,16.3031,41.2323
+M/A,Monopoli - ItalGreen,Monopoli,PROVINCIA BARI,IT1817A,Suburbana,Traffico,17.2895,40.9502
+M/A,Manfredonia - Via dei Mandorli,Manfredonia,RRQA,IT1598A,Suburbana,Traffico,15.9096,41.6293
+M/A,Lecce - Garigliano,Lecce ,COMUNE LECCE,IT1932A,Urbana,Traffico,18.1743,40.3645
+S,Lecce - Libertini,Lecce ,COMUNE LECCE,IT2044A,Urbana,Traffico,18.1767,40.3519
+I,Surbo- Via Croce,Lecce,ENEL,IT2150A,Rurale,Industriale,18.1208,40.4119
+A,San Pancrazio Salentino - Via Deledda,San Pancrazio Salentino,RRQA,IT1617A,Suburbana,Fondo,17.846,40.423
+S/A,Campi S.na - I.T.C. Costa,Campi. S.na,PROVINCIA LECCE,IT1666A,Suburbana,Fondo,18.0265,40.3975
+M/A,Lecce - Cerrate,Lecce ,RRQA,IT1665A,Rurale,Fondo,18.1164,40.4597
+M,Arnesano - Riesci,ARNESANO,RRQA,IT1687A,Suburbana,Fondo,18.0951,40.3463
+S,Guagnano - Villa Baldassarri,GUAGNANO,RRQA,IT1664A,Suburbana,Fondo,17.9645,40.4185
+A,Mesagne - Via Udine,Mesagne,RRQA,IT1663A,Suburbana,Fondo,17.808,40.566
+S/A,Francavilla Fontana - Via Filzi,Francavilla,PROVINCIA BRINDISI,IT2018A,Suburbana,Traffico,17.5883,40.5292
+M/A,Grottaglie - Via XXV Luglio,Grottaglie,ARPA,IT1679A,Suburbana,Fondo,17.4239,40.5378
+M/A,Barletta - Casardi,Barletta,COMUNE BARLETTA,IT2003A,Urbana,Fondo,16.2861,41.3167
+I,Galatina - I.T.C. La Porta,Galatina,PROVINCIA LECCE,IT1953A,Suburbana,Industriale,18.1747,40.1669
+A,Brindisi - Via dei Mille,Brindisi,ARPA,IT1701A,Urbana,traffico,17.9382,40.6388
+S/A,Brindisi -Via Taranto,Brindisi,RRQA,IT1618A,Urbana,Traffico,17.948,40.644
+M,Brindisi - Casale,Brindisi,ARPA,IT1702A,Urbana,Fondo,17.9436,40.6517
+S,Brindisi - Perrino,Brindisi,ENIPOWER,IT2137A,Suburbana,Fondo,17.9547,40.6314
+I,Brindisi - Terminal Passeggeri,Brindisi,ENEL/EDIPOWER,IT2139A,Suburbana,Industriale,17.9617,40.6474
+A,Torchiarolo-Don Minzoni,Torchiarolo,RRQA,IT1658A,Suburbana,Industriale,18.054,40.488
+I,torchiarolo- ENEL,Torchiarolo,ENEL,IT2151A,Suburbana,Industriale,18.0472,40.4894
+S,San Pietro Vernotico - Stadio,San Pietro Vernotico,RRQA,IT1657A,Suburbana,Industriale,18.006,40.486
+I,Brindisi - SISRI,Brindisi,ARPA,IT1704A,Suburbana,Industriale,17.9758,40.6256
+M/A,Taranto - Alto Adige,Taranto,RRQA,IT1613A,Urbana,Traffico,17.2636,40.4606
+M/A,Taranto - Talsano,Taranto,ARPA,IT1614A,Suburbana,Fondo,17.2839,40.4119
+S,Taranto - San Vito,Taranto,RRQA,IT1610A,Suburbana,Fondo,17.2253,40.4233
+I,Taranto - Machiavelli,Taranto,RRQA,IT1611A,Suburbana,Industriale,17.2258,40.4886
+I,Taranto - Archimede,Taranto,RRQA,IT1660A,Suburbana,Industriale,17.233,40.4944
+I,Statte - Via delle Sorgenti,Statte,RRQA,IT1608A,Suburbana,Industriale,17.2033,40.5625
+I,Taranto - CISI,Taranto,ARPA,IT1609A,Rurale,Industriale,17.2534,40.5209
+I,Statte - Ponte Wind,Statte,ARPA,IT1607A,Rurale,Industriale,17.1736,40.5261
+I,Massafra -Via Frappietri,Massafra,ARPA,IT2021A,Urbana,Industriale,17.1167,40.5938
+M/A,Bari - Caldarola,Bari,RRQA,IT1606A,urbana,traffico,16.8881,41.1135
+S,Bari - Cavour,Bari,COMUNE BARI,IT1621A,urbana,traffico,16.8726,41.1223
+M,Bari - Kennedy,Bari,COMUNE BARI,IT1624A,urbana,Fondo,16.8589,41.0996
+S,Bari - Carbonara,Bari,COMUNE BARI,IT2051A,Suburbana,Fondo,NA,NA
+A,Bari - CUS,Bari,COMUNE BARI,IT2058A,Suburbana,Traffico,16.8453,41.1347
+I,Modugno - EN02,Modugno,SORGENIA,IT2144A,Suburbana,Industriale,16.767,41.1374
+I,EN03 Vigili Urbani - SORGENIA,Modugno,SORGENIA,IT2145A,Urbana,Industriale,16.7817,41.0872
+I,Modugno - EN04,Modugno,SORGENIA,IT2146A,Suburbana,Industriale,16.7881,41.115

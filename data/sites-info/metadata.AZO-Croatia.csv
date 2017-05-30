@@ -1,0 +1,73 @@
+"ID","NETWORK","NAME","LAT","LON"
+14,"Mreža za praćenje kakvoće zraka Rockwool","Zajci",45.204147,14.070761
+20,"Mreža za praćenje kakvoće zraka Rockwool","Čambarelići",45.181331,14.101011
+37,"Mreža za praćenje kakvoće zraka Našicecement","Zoljan",45.472442,18.039125
+38,"Mreža za praćenje kakvoće zraka HEP Zagreb","Vrhovec",45.817961,15.94795
+39,"Mreža za praćenje kakvoće zraka grada Pule","Pula Fižela",44.862469,13.816858
+40,"Mreža za praćenje kakvoće zraka cementare Koromačno","Koromačno",44.980422,14.122108
+41,"Mjerna mreža grada Zagreba","Ksaverska cesta",45.834381,15.978156
+46,"Lokalna mjerna mreža Split","Gripe",43.507472,16.459139
+47,"Lokalna mjerna mreža Split","Visoka",43.502142,16.469339
+48,"Lokalna mjerna mreža Split","Poljud",43.523144,16.426333
+49,"Lokalna mjerna mreža Split","Žrnovnica",43.517294,16.53595
+101,"Mjerna mreža grada Zagreba","Đorđićeva ulica (Stanica za hitnu pomoć)",45.811389,15.989167
+102,"Mjerna mreža grada Zagreba","Pešćenica",45.804722,16.032778
+103,"Mjerna mreža grada Zagreba","Prilaz baruna Filipovića",45.812222,15.948611
+118,"Mjerna mreža grada Zagreba","Susedgrad (Tvornica ""Utenzilija"")",45.812222,15.873611
+119,"Mjerna mreža grada Zagreba","Siget (Dom zdravlja)",45.773611,15.984444
+121,"Mreža za praćenje kakvoće zraka Grada Velike Gorice","Velika Gorica",45.714847,16.068289
+127,"Mjerna mreža grada Umaga","Umag, Ulica Eduardo Pascali",45.432917,13.524139
+128,"Mjerna mreža grada Umaga","Umag sediment",45.433,13.524361
+133,"Mreža za praćenje kakvoće zraka Sisačko-moslavačke županije","Sisak 3",45.488956,16.373778
+137,"Mjerna mreža Grada Karlovca","Banija 18",45.498733,15.555861
+140,"Mjerna mreža Grada Karlovca","Domobranska ulica 2",45.49125,15.555489
+141,"Mjerna mreža Grada Karlovca","Dr.V.Mačeka 48",45.493667,15.546556
+151,"Mjerna mreža INA Rafinerija nafte Sisak","Sisak 2 Galdovo",45.477961,16.399617
+152,"Mreža za praćenje kakvoće zraka grada Pule","Riva 4",44.872222,13.8785
+153,"Mreža za praćenje kakvoće zraka grada Pule","Ulica Kamenjak (Dječji vrtić)",44.858889,13.83925
+155,"Državna mreža za trajno praćenje kvalitete zraka","ZAGREB-1",45.800339,15.974072
+156,"Državna mreža za trajno praćenje kvalitete zraka","ZAGREB-2",45.823717,16.035825
+157,"Državna mreža za trajno praćenje kvalitete zraka","ZAGREB-3",45.764947,16.006469
+158,"Državna mreža za trajno praćenje kvalitete zraka","RIJEKA-1",45.3275,14.446633
+159,"Državna mreža za trajno praćenje kvalitete zraka","RIJEKA-2",45.320794,14.483511
+160,"Državna mreža za trajno praćenje kvalitete zraka","OSIJEK-1",45.558792,18.698769
+161,"Državna mreža za trajno praćenje kvalitete zraka","KUTINA-1",45.479056,16.780667
+162,"Državna mreža za trajno praćenje kvalitete zraka","SISAK-1",45.458125,16.388356
+165,"Državna mreža za trajno praćenje kvalitete zraka","SLAVONSKI BROD-1",45.159472,17.9951
+168,"Mjerna mreža Cemex Hrvatska d.o.o.","Split-1",43.510653,16.449342
+173,"Mjerna mreža Cemex Hrvatska d.o.o.","AMS1 Kaštel Sućurac",43.548119,16.434961
+179,"Mjerna mreža Cemex Hrvatska d.o.o.","AMS2 Sveti Kajo",43.545906,16.467836
+180,"Mjerna mreža Termoelektrane Plomin","Ripenda",45.10975,14.138972
+189,"Mjerna mreža Termoelektrane Plomin","Sv. Katarina",45.173444,14.045333
+190,"Mjerna mreža Termoelektrane Plomin","Plomin",45.139583,14.179139
+191,"Mjerna mreža Termoelektrane Plomin","Klavar",45.134306,14.167167
+215,"Monitoring Viktor Lenac","Kostrena - Martinšćica",45.313333,14.482778
+221,"Mjerna mreža INA Rafinerija nafte Rijeka","Urinj",45.288611,14.528333
+224,"Mjerna mreža INA Rafinerija nafte Rijeka","Paveki",45.294167,14.513889
+232,"Mjerna mreža CZGO Marišćina","Viškovo - Marišćina",45.402222,14.388333
+235,"Mjerna mreža KD Čistoća","Viškovo - Viševac",45.368889,14.383889
+241,"Mjerna mreža Primorsko-goranske županije","Opatija - Gorovo",45.336667,14.306667
+243,"Mjerna mreža INA Rafinerija nafte Rijeka","Krasica",45.308333,14.551667
+245,"Mjerna mreža Primorsko-goranske županije","Krešimirova ul.",45.331667,14.425556
+246,"Mjerna mreža INA Rafinerija nafte Rijeka","Vrh Martinšćice",45.311389,14.487222
+254,"Državna mreža za trajno praćenje kvalitete zraka","SLAVONSKI BROD - privremena pokretna postaja",45.148197,18.023147
+255,"Državna mreža za trajno praćenje kvalitete zraka","KOPAČKI RIT",45.698028,18.834639
+256,"Državna mreža za trajno praćenje kvalitete zraka","DESINIĆ",46.169056,15.660639
+257,"Državna mreža za trajno praćenje kvalitete zraka","PLITVIČKA JEZERA",44.899333,15.609778
+258,"Državna mreža za trajno praćenje kvalitete zraka","PARG",45.593481,14.630464
+259,"Državna mreža za trajno praćenje kvalitete zraka","VIŠNJAN",45.291203,13.749778
+260,"Državna mreža za trajno praćenje kvalitete zraka","VELA STRAŽA (Dugi otok)",43.9915,15.058111
+261,"Državna mreža za trajno praćenje kvalitete zraka","POLAČA (Ravni kotari)",44.021094,15.516111
+262,"Državna mreža za trajno praćenje kvalitete zraka","HUM (otok Vis)",43.031333,16.115972
+263,"Državna mreža za trajno praćenje kvalitete zraka","OPUZEN (Delta Neretve)",43.008728,17.566025
+264,"Državna mreža za trajno praćenje kvalitete zraka","ŽARKOVICA (Dubrovnik)",42.644697,18.122611
+265,"Mreža za praćenje kakvoće zraka HEP Zagreb","Bijenik",45.846775,15.939175
+267,"Državna mreža za trajno praćenje kvalitete zraka","ZAGREB PPI PM2,5 - Ksaverska cesta",45.834372,15.978394
+273,"Lokalna mjerna mreža-Grad Kutina","Vatrogasni dom (K2) - Kutina",45.472778,16.785
+274,"Mjerna mreža grada Zagreba","Jakuševec",45.763728,16.018014
+275,"Državna mreža za trajno praćenje kvalitete zraka","SLAVONSKI BROD-2",45.149114,18.02345
+276,"Mjerna mreža Primorsko-goranske županije","Mlaka",45.338889,14.4125
+277,"Državna mreža za trajno praćenje kvalitete zraka","VARAŽDIN-1",46.282911,16.363803
+278,"Državna mreža za trajno praćenje kvalitete zraka","KARLOVAC-1",45.493525,15.565131
+279,"Mreža za praćenje kvalitete zraka Međunarodne zračne luke Zagreb","Pleso",45.746619,16.080225
+280,"Mjerne postaje posebne namjene Grada Zagreba","Mirogojska cesta",45.832103,15.980547

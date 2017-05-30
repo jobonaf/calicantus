@@ -1,0 +1,42 @@
+ID,NOME,TIPO,LAT,LON,UTMx,UTMy,zMSL
+35,"Alatri","Background Urbano",41.730000,13.338333,361796.35,4620828.34,445
+29,"Anagni","Background Urbano",41.750000,13.149685,346152.81,4623344.70,401
+52,"Cassino","Traffico Urbana",41.490000,13.830690,402387.75,4593625.75,41
+27,"Ceccano","Traffico Urbana",41.570000,13.337190,361361.54,4603219.43,130
+28,"Ferentino","Traffico Urbana",41.690000,13.250411,354404.30,4617077.60,316
+36,"Fontechiari","Background Rurale",41.670000,13.674472,389655.13,4613903.16,388
+62,"Frosinone Scalo","Traffico Urbana",41.620000,13.330810,360948.70,4609386.57,161
+71,"Frosinone Mazzini","Traffico Urbana",41.639666,13.348913,362490.00,4611087.00,n.d.
+23,"Aprilia 2","Background Urbano",41.595344,12.653581,304442.29,4607508.44,83
+51,"Latina-Scalo","Traffico Urbana",41.531431,12.946064,328651.22,4599790.47,18
+20,"Via Tasso","Traffico Urbana",41.464025,12.913039,325715.27,4592372.55,21
+61,"Gaeta","Background Urbano",41.223074,13.570481,380180.00,4564506.00,4
+63,"Viale De Chirico","Traffico Urbana",41.451131,12.891731,323901.00,4590984.00,21
+37,"Leonessa","Background Rurale",42.572593,12.961982,332734.73,4715366.74,948
+17,"Rieti 1","Traffico Urbana",42.404093,12.858224,323746.07,4696865.85,397
+56,"Arenula","Background Urbano",41.894020,12.475368,290561.95,4641091.74,31
+2,"Preneste","Background Urbano",41.886018,12.541614,296032.48,4640043.53,37
+3,"Francia","Traffico Urbana",41.947447,12.469588,290257.58,4647038.36,43
+5,"Magna Grecia","Traffico Urbana",41.883064,12.508939,293311.79,4639793.75,49
+8,"Cinecitta","Background Urbano",41.857720,12.568665,298187.95,4636837.40,53
+10,"Colleferro-Oberdan","Ind./Background Suburbano",41.730840,13.004350,334026.47,4621816.81,219
+11,"Colleferro-Europa","Ind./Background Suburbano",41.725010,13.009575,334446.07,4621159.44,223
+14,"Allumiere","Background Rurale",42.157741,11.908744,244610.30,4671916.67,542
+15,"Civitavecchia","Background Urbano",42.091629,11.802466,235553.95,4664898.79,26
+16,"Guidonia","Traffico Suburbano",41.995679,12.726371,311685.45,4651797.08,89
+39,"Villa Ada","Background Urbano",41.932874,12.506971,293309.33,4645329.33,50
+40,"Castel di Guido","Background Rurale",41.889438,12.266300,273200.51,4641114.82,61
+41,"Cavaliere","Background Suburbano",41.929383,12.658363,305920.41,4644808.93,48
+45,"Ciampino","Traffico Urbana",41.797880,12.607033,301187.70,4630103.46,134
+47,"Fermi","Traffico Urbana",41.864194,12.469531,289979.99,4637794.18,26
+48,"Bufalotta","Background Urbano",41.947649,12.533682,295571.25,4646905.83,41
+49,"Cipro","Background Urbano",41.906358,12.447596,288298.67,4642529.95,31
+55,"Tiburtina","Traffico Urbana",41.910257,12.548870,296711.48,4642717.74,32
+57,"Malagrotta","Background Suburbano",41.874894,12.345598,279730.00,4639293.00,n.d.
+60,"Civ. Porto","Industriale",42.097053,11.788354,234409.00,4665545.00,n.d.
+83,"Civ. Villa Albani","Traffico Urbana",42.099363,11.798061,235238.00,4665764.00,n.d.
+84,"Civ. Via Morandi","Traffico Urbana",42.086803,11.806498,235867.00,4664350.00,n.d.
+85,"Civ. Via Roma","Traffico Urbana",42.094147,11.795509,234989.00,4665200.00,n.d.
+32,"Viterbo","Traffico Urbana",42.422058,12.109125,262163.96,4700687.93,338
+59,"Acquapendente","Background Rurale",42.736649,11.876578,244320.00,4736303.00,436
+90,"Civita Castellana","Background Urbano",42.301800,12.413200,286776.00,4686526.00,146

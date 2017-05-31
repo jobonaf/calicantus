@@ -1,6 +1,8 @@
 
 # preliminar --------------------------------------------------------------
 
+options(shiny.sanitize.errors = FALSE)
+
 #packages
 suppressMessages({
   pkgO <- names(sessionInfo()$otherPkgs)
@@ -9,12 +11,14 @@ suppressMessages({
   if(length(pkg2)>0) lapply(paste0('package:',pkg2), detach, character.only = TRUE, unload = TRUE)
   lib0 <- "/usr/lib/R/library"
   lib1 <- "/home/giovanni/R/x86_64-pc-linux-gnu-library/3.4"
+  .libPaths(unique(c(.libPaths(),lib1)))
   library("shiny",        lib.loc = lib0)
   library("shinyBS",      lib.loc = lib1)
   library("base64enc",    lib.loc = lib1)
   library("lubridate",    lib.loc = lib1)
   library("dplyr",        lib.loc = lib1)
   library("plyr",         lib.loc = lib1)
+  library("sp",           lib.loc = lib1)
   library("geosphere",    lib.loc = lib1)
   library("shinyjs",      lib.loc = lib1)
   library("leaflet",      lib.loc = lib1)
@@ -28,6 +32,10 @@ suppressMessages({
   library("RColorBrewer", lib.loc = lib1)
   library("maps",         lib.loc = lib1)
   library("cluster",      lib.loc = lib0)
+  library("bitops",       lib.loc = lib1)
+  library("RCurl",        lib.loc = lib1)
+  library("markdown",     lib.loc = lib1)
+  library("yaml",         lib.loc = lib1)
 })
 
 # credentials
@@ -129,7 +137,7 @@ ui_menu <- function(){
                ,tabPanel("clustering",ui_clu)
     ),
     navbarMenu("forecasts"
-               ,tabPanel("models", ui_modelmap)
+               ,tabPanel("map", ui_modelmap)
                ,tabPanel("timeseries",ui_tsmod)
     ),
     navbarMenu("more"
@@ -184,7 +192,7 @@ server <- function(input, output, session) {
       output$page <- renderUI({
         div(class="outer",do.call(navbarPage,c(inverse=TRUE,title = "[calicantus]",ui_menu())))
       })
-      print(ui)
+      #print(ui)
     }
   })
   
@@ -211,7 +219,7 @@ server <- function(input, output, session) {
   
   # UI: home
   output$home <- renderUI({
-    
+    helpText("Nothing to declare?")
   })
   
   # UI: data table

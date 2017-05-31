@@ -1,5 +1,5 @@
 shinyUI(pageWithSidebar(
-  headerPanel("Data upload for MAP-PO"),
+  headerPanel("calicantus: data upload"),
   sidebarPanel(
     tags$body(
       h5('1) Select the local ',
@@ -20,10 +20,14 @@ shinyUI(pageWithSidebar(
                  selected=','),
     selectInput(inputId='institution',
                 label='Short code for the institution and/or project',
-                choices=list("ARPA-Liguria")),
+                choices=list("ARPA-Liguria",
+                             "test")),
     selectInput(inputId='pollutant',
                 label='Pollutant',
-                choices=list("PM10")),
+                choices=list("PM10 daily mean"="PM10",
+                             "PM2.5 daily mean"="PM2.5",
+                             "O3 daily maximum"="O3",
+                             "NO2 daily maximum"="NO2")),
     dateInput(inputId="date",
               label="Date of sampling",
               value=Sys.Date()-1,

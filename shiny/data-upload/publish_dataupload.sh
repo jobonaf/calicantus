@@ -1,0 +1,1 @@
+cp /home/giovanni/R/projects/calicantus/shiny/data-upload/*.R /home/giovanni/R/ShinyApps/data-upload/

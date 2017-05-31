@@ -1,13 +1,19 @@
 # preliminar --------------------------------------------------------------
 
+options(shiny.sanitize.errors = FALSE)
+
 #packages
 suppressMessages({
   pkgO <- names(sessionInfo()$otherPkgs)
   pkg1 <- c(pkgO)
   pkg2 <- setdiff(pkg1,"shiny")
   if(length(pkg2)>0) lapply(paste0('package:',pkg2), detach, character.only = TRUE, unload = TRUE)
-  library(shinyBS, lib.loc="/home/giovanni/R/x86_64-pc-linux-gnu-library/3.4")
-  library(markdown)
+  lib0 <- "/usr/lib/R/library"
+  lib1 <- "/home/giovanni/R/x86_64-pc-linux-gnu-library/3.4"
+  .libPaths(unique(c(.libPaths(),lib1)))
+  library("shinyBS")
+  library("markdown")
+  library("plyr")
 })
 
 # ui ----------------------------------------------------------------------
@@ -21,7 +27,7 @@ ui <- navbarPage(
                6,offset = 1,
                includeMarkdown("/home/giovanni/R/projects/calicantus/shiny/intro/info.md"),
                actionButton(inputId = "login",label = "Log in",icon = icon("sign-in"), width="120",
-                            onclick ="location.href='https://shiny.arpae.it/calicantus';"),
+                            onclick ="location.href='https://sdati.arpae.it/calicantus';"),
                actionButton(inputId = "require_registration",label = "Register",icon = icon("user-plus"), width="120"),
                actionButton(inputId = "require_participation",label = "Participate",icon = icon("database"), width="120"),
                bsTooltip("login","If you are already registered, you can log in here"),

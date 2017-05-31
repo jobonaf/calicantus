@@ -1,1 +1,1 @@
-cp /home/giovanni/R/arpa/calicantus-TEST/app.R /home/giovanni/R/arpa/calicantus/
+cp /home/giovanni/R/ShinyApps/calicantus-TEST/app.R /home/giovanni/R/ShinyApps/calicantus/

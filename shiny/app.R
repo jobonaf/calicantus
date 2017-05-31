@@ -60,8 +60,10 @@ background-size: 40px 40px;
 
 # proxy 
 source("/home/giovanni/R/projects/calicantus/config/config_proxy.R")
-Sys.setenv(http_proxy=paste0("http://",proxy_usr,":",proxy_pwd,"@",proxy_addr,":",proxy_port,"/"))
-Sys.setenv(https_proxy=paste0("http://",proxy_usr,":",proxy_pwd,"@",proxy_addr,":",proxy_port,"/"))
+if(!is.null(proxy_usr)) {
+  Sys.setenv(http_proxy=paste0("http://",proxy_usr,":",proxy_pwd,"@",proxy_addr,":",proxy_port,"/"))
+  Sys.setenv(https_proxy=paste0("http://",proxy_usr,":",proxy_pwd,"@",proxy_addr,":",proxy_port,"/"))
+}
 
 # geographic data
 MapData <- map_data(map = "world", 

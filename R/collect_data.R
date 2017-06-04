@@ -4,12 +4,15 @@ source("/home/giovanni/R/projects/calicantus/R/get_data.R")
 source("/home/giovanni/R/projects/calicantus/R/prepare_data.R")
 
 # parameters
-sources <- c("ARPAV","ARPAT","ARPAE","ARPA-Umbria",
-             "ARPA-Sicilia","ARPA-Piemonte","ARPA-Lombardia",
-             "ARPA-Liguria","ARPA-FVG","ARPA-Lazio",
-             "ARPA-Puglia","ARPAC","AZO-Croatia","DT-DA-SPAAS-UACER-Ticino",
-             "ARPAB")
-#sources <- c("ARPA-Lazio")
+# sources <- c("ARPAV","ARPAT","ARPAE","ARPA-Umbria",
+#              "ARPA-Sicilia","ARPA-Piemonte","ARPA-Lombardia",
+#              "ARPA-Liguria","ARPA-FVG","ARPA-Lazio",
+#              "ARPA-Puglia","ARPAC","AZO-Croatia","DT-DA-SPAAS-UACER-Ticino",
+#              "ARPAB")
+sources <- c("ARPA-Sicilia","ARPA-Lombardia","ARPAV","ARPA-FVG","ARPAB",
+             "ARPA-Liguria","ARPAC","ARPA-Lazio","ARPA-Umbria","ARPA-Puglia",
+             "ARPAT","AZO-Croatia","DT-DA-SPAAS-UACER-Ticino")
+#sources <- c("ARPA-Piemonte")
 pollutants <- c("PM10","O3","PM2.5","NO2")
 
 # arguments
@@ -21,7 +24,7 @@ if(interactive()) {
   aa <- commandArgs(trailingOnly=TRUE)
   print(aa)
   if(length(aa)==0) aa[1] <- 1
-  if(length(aa)<=1) aa[2] <- 8
+  if(length(aa)<=1) aa[2] <- 15
 }
 by <- ifelse(as.numeric(aa[1])>as.numeric(aa[2]),"1 days","-1 days")
 days <- as.character(seq.Date(Sys.Date()-as.numeric(aa[1]),

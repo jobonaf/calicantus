@@ -99,25 +99,40 @@ read.ArpaCampania <- function(file,sep,day,poll,stat) {
 }
 
 
-read.AzoCroatia <- function(file,sep) {
+read.AzoCroatia <- function(file,IDs, stat=NULL) {
   library(RJSONIO)
-  out <- data.frame(ID=sep, VAL=NA)
+  out <- data.frame(ID=IDs, VAL=NA)
   nf <- length(file)
-  if(nf!=length(sep)) stop("IDs and files must have the same number of elements!")
+  if(nf!=length(IDs)) stop("IDs and files must have the same number of elements!")
   for (i in 1:nf) {
     tmp <- RJSONIO::fromJSON(file[i])
-    if(length(tmp)>0) out$VAL[i] <- tmp[[1]]$Podatak$vrijednost
+    if(length(tmp)>0) {
+      if(is.null(stat)) {
+        out$VAL[i] <- tmp[[1]]$Podatak$vrijednost
+      }else if(stat=="max") {
+        mm <- max(unlist(lapply(tmp, function(x) {x$Podatak$vrijednost})), na.rm=T)
+        if(mm>=0) out$VAL[i] <- mm
+      }
+    }
   }
   return(out)
 }
 
-read.UacerTicino <- function(file,sep) {
-  out <- data.frame(ID=sep, VAL=NA)
+read.UacerTicino <- function(file,IDs, stat=NULL) {
+  out <- data.frame(ID=IDs, VAL=NA)
   nf <- length(file)
-  if(nf!=length(sep)) stop("IDs and files must have the same number of elements!")
+  if(nf!=length(IDs)) stop("IDs and files must have the same number of elements!")
   for (i in 1:nf) {
     tmp <- read.table(file[i],comment.char = "#", blank.lines.skip = T, header = T, sep=";")
-    if(length(tmp)>0) out$VAL[i] <- tmp[1,2]
+    if(length(tmp)>0) {
+      if(is.null(stat)) {
+        out$VAL[i] <- tmp[1,2]
+      }else if(stat=="max") {
+        h <- format(strptime(tmp[,1],"%d.%m.%Y %H:%M"),"%H")
+        mm <- max(tapply(tmp[,2],h,mean,na.rm=T),na.rm=T)
+        if(mm>=0) out$VAL[i] <- mm
+      }
+    }
   }
   return(out)
 }

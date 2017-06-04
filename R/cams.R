@@ -43,7 +43,7 @@ get_cams <- function(
   ncLocal <- paste0(service,"_",format(reftime,"%Y%m%d"),"_",pollutant,"_",model,"_",timerange,".nc")
   source(proxyconfig)
   Sys.setenv(http_proxy=paste0("http://",proxy_usr,":",proxy_pwd,"@",proxy_addr,":",proxy_port,"/"))
-  commands <- paste0("wget '",ncRemote,"'",
+  commands <- paste0("wget --no-proxy '",ncRemote,"'",
                     " --proxy-user=",proxy_usr," --proxy-password=",proxy_pwd,
                     " --no-check-certificate",
                     " -O '",ncLocal,"'")

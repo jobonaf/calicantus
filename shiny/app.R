@@ -33,16 +33,15 @@ suppressMessages({
   library("maps",         lib.loc = lib1)
   library("cluster",      lib.loc = lib0)
   library("bitops",       lib.loc = lib1)
-  library("RCurl",        lib.loc = lib1)
+  #library("RCurl",        lib.loc = lib1)
   library("markdown",     lib.loc = lib1)
   library("yaml",         lib.loc = lib1)
 })
 
-# credentials
+# scripts
 source("/home/giovanni/R/projects/calicantus/config/ui_credentials.R")
-
-# policy etc
 source("/home/giovanni/R/projects/calicantus/R/policy.R")
+source("/home/giovanni/R/projects/calicantus/shiny/forms/forms.R")
 
 # style
 progressBarStyle <- ".progress-striped .bar {
@@ -220,8 +219,27 @@ server <- function(input, output, session) {
   })
   
   # UI: home
-  output$home <- renderUI({
-    helpText("Nothing to declare?")
+  output$ui_home <- renderUI({
+    fluidPage(
+      column(4,
+             wellPanel(
+               helpText("Welcome back to ",em("calicantus"),
+                        ". Due to a server crash, the platform has been out of service for a few weeks.",
+                        "Now it's online again, but some features have not yet been restored.",
+                        "Please contact the ",
+                        a("platform manager",href="mailto:giovanni.bonafe@arpa.fvg.it"),
+                        " if you find a bug. Thanks for your cooperation.")
+             ),
+             wellPanel(
+               helpText("If you want to participate to ",em("calicantus"),
+                        "as data provider, please click ",em("Participate"),
+                        a("on these page",
+                          href="http://sdati.arpae.it/calicantus-intro",
+                          target="_blank"),
+                        ".")
+             )
+      )
+    )
   })
   
   # UI: data table
@@ -1254,13 +1272,14 @@ server <- function(input, output, session) {
     print(p)
   })
   # recent data coverage plot
+  nd <- 30
   output$availObsRecent <- renderPlot({
     p <- ggplot(avai, aes(x=day, y=data_source)) +
-      xlim(Sys.Date()-15,Sys.Date()) +
+      xlim(Sys.Date()-nd,Sys.Date()) +
       geom_count(col="steelblue", show.legend=F) + 
       theme_bw() + theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
       facet_grid(pollutant~.) +
-      ggtitle("measured data availability", sub = "last 15 days")
+      ggtitle("measured data availability", sub = paste0("last ",nd," days"))
     print(p)
   })
   

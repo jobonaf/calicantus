@@ -2,7 +2,7 @@ source("/home/giovanni/R/projects/calicantus/R/reading_functions.R")
 source("/home/giovanni/R/projects/calicantus/R/get_data.R")
 
 
-read_data <- function(config,filedata,metadata,day,pollutant,clean=TRUE){
+read_data <- function(config,filedata,metadata,day,pollutant,clean=!interactive()){
   source(config)
   cat(paste("estraggo dati",Source,day,"\n"))
   check <- any(nchar(filedata)>0)

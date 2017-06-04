@@ -1,10 +1,5 @@
 get_ftp <- function(config,FileIn){
   source(config)
-  # command <- paste0("ftp -np ",Addr,"<<EOF\n",
-  #                   "user ",Usr," ",Pwd,"\n",
-  #                   "cd ./",Path,"\n",
-  #                   "get ",FileIn,"\n",
-  #                   "bye\nEOF")
   command <- paste0("wget --no-proxy 'ftp://",Usr,":",gsub("@","%40",Pwd),"@",Addr,"/",Path,"/",FileIn,"'")
   cat(command,sep="\n")
   system(command)
@@ -15,11 +10,17 @@ get_ftp <- function(config,FileIn){
 get_http <- function(config,FileIn,proxyconfig){
   source(config)
   source(proxyconfig)
-  Sys.setenv(http_proxy=paste0("http://",proxy_usr,":",proxy_pwd,"@",proxy_addr,":",proxy_port,"/"))
-  commands <- paste0("wget '",Addr,"/",Path,"/",FileIn,"'",
-                    " --proxy-user=",proxy_usr," --proxy-password=",proxy_pwd,
-                    " --no-check-certificate",
-                    " -O '",FileIn,"'")
+  if(is.null(proxy_usr)) {
+    commands <- paste0("wget --no-proxy '",Addr,"/",Path,"/",FileIn,"'",
+                       " --no-check-certificate",
+                       " -O '",FileIn,"'")
+  } else {
+    Sys.setenv(http_proxy=paste0("http://",proxy_usr,":",proxy_pwd,"@",proxy_addr,":",proxy_port,"/"))
+    commands <- paste0("wget '",Addr,"/",Path,"/",FileIn,"'",
+                       " --proxy-user=",proxy_usr," --proxy-password=",proxy_pwd,
+                       " --no-check-certificate",
+                       " -O '",FileIn,"'")
+  }
   for(command in commands) system(command)
   check <- any(file.exists(FileIn))
   return(check)
@@ -27,6 +28,9 @@ get_http <- function(config,FileIn,proxyconfig){
 
 get_ssh <- function(config,FileIn){
   source(config)
+  ## sostituire con RCurl::scp ?
+  ## forse non si puo':
+  ##  "scp" %in% curlVersion()$protocols == FALSE
   command <- paste0("sshpass -p '",Pwd,
                     "' scp ",Usr,"@",Addr,":",Path,"/",FileIn," .")
   system(command)

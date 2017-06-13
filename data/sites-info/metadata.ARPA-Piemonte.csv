@@ -1,4 +1,4 @@
-StationName,StationID,ZoneType,StationType,MeasMet_NO2,MeasMet_PM10,MeasMet_O3,MeasMet_PM2.5,LON,LAT
+NAME,ID,ZoneType,StationType,MeasMet_NO2,MeasMet_PM10,MeasMet_O3,MeasMet_PM2.5,LON,LAT
 Alba,004003800,urban,background,CHEMILUMINESCENCE,NA,UV Absorption,NA,8.033028,44.703711
 Alessandria Annunzio,006003801,urban,traffic,CHEMILUMINESCENCE,NA,NA,NA,8.612,44.906608
 Alessandria Volta,006003805,urban,background,CHEMILUMINESCENCE,BETAH,UV Absorption,BETAH,8.623197,44.920301

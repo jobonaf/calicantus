@@ -1,43 +1,36 @@
-ID,NAME,TYPE,ZONE,LAT,LON,ALT
-502505,Belluno Città,Traffico,Urbana,46.1433333333,12.2188888889,401
-502506,Area feltrina,Fondo,Suburbana,46.0308333333,11.9058333333,263
-502506,Area Feltrina,Fondo,Suburbana,46.0308333333,11.9058333333,263
-502507,Pieve di Alpago,Fondo,Rurale,46.1625,12.3611111111,615
-502808,PD Mandria,Fondo,Urbana,45.3719444444,11.8419444444,13
-502809,PD Arcella,Traffico,Urbana,45.4333333333,11.8905555556,11
-502813,PD Granze,Industriale,Urbana,45.3775,11.94,7
-502814,S.Giustina in Colle,Fondo ,Rurale,45.6013888889,11.9036111111,25
-502811,Este,Industriale,Suburbana,45.2447222222,11.7511111111,12
-502812,Parco Colli Euganei,Fondo,Rurale,45.29,11.6430555556,18
-502901,Rovigo Centro,Traffico,Urbana,45.0747222222,11.7833333333,7
-502902,Rovigo Borsea,Fondo,Urbana,45.0397222222,11.7911111111,3
-502969,Badia Polesine,Fondo,Rurale,45.1038888889,11.5533333333,7
-502604,Conegliano,Fondo,Urbana,45.8905555556,12.3080555556,72
-502608,TV Via Lancieri,Fondo,Urbana,45.6725,12.2386111111,15
-502609,Mansué,Fondo,Rurale,45.8377777778,12.2275,14
-502701,VE Parco Bissuola,Fondo,Urbana,45.4991666667,12.2622222222,1
-502706,VE - Malcontenta,Industriale,Suburbana,45.4358333333,12.2105555556,1
-502715,San Donà  di Piave,Fondo,Urbana,45.6302777778,12.5916666667,3
-502716,Spinea,Traffico,Urbana,45.4961111111,12.1575,6
-502721,VE Via Beccaria,,Urbana,45.4744444444,12.2197222222,2
-502717,Sacca Fisola,Fondo,Urbana,45.4294444444,12.3138888889,1
-502720,VE Via Tagliamento,Traffico,Urbana,45.4902777778,12.2183333333,1
-502304,Verona - C.so Milano,Traffico,Urbana,45.4452777778,10.9638888889,62
-502305,Verona - Loc. Cason,Fondo,Suburbana,45.4625,10.9122222222,91
-502310,San Bonifacio,Fondo,Urbana,45.4,11.2861111111,30
-502313,Legnago,Fondo,Urbana,45.1836111111,11.3113888889,25
-502314,Boscochiesanuova,Fondo,Rurale,45.59,11.0377777778,824
-502401,Bassano,Fondo,Urbana,45.7608333333,11.7366666667,114
-502402,Montebello,Industriale,Suburbana,45.4663888889,11.3872222222,61
-502404,Schio,Fondo,Urbana,45.7144444444,11.3686111111,190
-502409,Quartiere Italia,Fondo,Urbana,45.5605555556,11.5397222222,36
-502414,San Felice,Traffico,Urbana,45.5458333333,11.5416666667,35
-502417,Ferrovieri,Fondo,Urbana,45.5322222222,11.5222222222,34
-502415,Cima Ekar,Fondo,Rurale,45.2002777778,11.1922222222,1366
-502416,Chiampo,Industriale,Urbana,45.5322222222,11.525,200
-NA,Via G. Carli,NA,NA,45.4147222222,11.9063888889,NA
-NA,Fumane,NA,NA,45.5463888889,10.8847222222,NA
-NA,Marcon,NA,NA,45.5652777778,12.3002777778,NA
-NA,Porto Levante,NA,NA,45.0486111111,12.3636111111,NA
-NA,Viale Internato Ignoto,NA,NA,45.3980555556,11.9094444444,NA
-
+ID,NAME,StationType,ZoneType,LAT,LON,ALT
+502505,BL - Parco Citta' di Bologna,background,urban,46.14195928,12.21765248,401
+502509,BL - La Cerva,traffic,urban,46.1437614,12.21278529,403
+502506,Area Feltrina,background,suburban,46.03125713,11.90665337,263
+502507,Pieve d'Alpago,background,rural,46.16251047,12.36128358,615
+502808,PD - Mandria,background,urban,45.3709775,11.84084118,13
+502809,PD - Arcella,traffic,urban,45.43286717,11.88972806,11
+502813,PD - Granze,industrial,urban,45.37756766,11.93996288,7
+502814,S.Giustina in Colle,background,rural,45.60154776,11.90358737,25
+502811,Este,industrial,suburban,45.22692911,11.66618381,12
+502812,Parco Colli Euganei,background,rural,45.28927364,11.64254217,18
+502903,Adria,background,urban,45.04582512,12.06086934,0
+502901,RO - Largo Martiri,traffic,urban,45.07386248,11.78251027,7
+502902,RO - Borsea,background,urban,45.03875842,11.79015164,3
+502969,Badia Polesine,background,rural,45.10407177,11.55338053,7
+502604,Conegliano,background,urban,45.88973369,12.30712448,72
+502609,Mansue',background,rural,45.83687686,12.51039616,14
+502608,TV - Via Lancieri,background,urban,45.67172072,12.23780698,15
+502612,TV - S. Agnese,traffic,urban,45.65879365,12.21621538,15
+502715,S.Dona' di Piave,background,urban,45.6290925,12.59068235,3
+502723,VE - Malcontenta,industrial,suburban,45.43826013,12.20553042,2
+502701,VE - Parco Bissuola,background,urban,45.49961805,12.26124917,1
+502717,VE - Sacca Fisola,background,urban,45.42842368,12.3129303,0
+502720,VE - Via Tagliamento,traffic,urban,45.48966756,12.21763647,1
+502415,Asiago Cima Ekar,background,rural,45.84875736,11.56848899,1366
+502401,Bassano del Grappa,background,urban,45.75927327,11.73585212,114
+502416,Chiampo,industrial,urban,45.53645249,11.29378865,200
+502402,Montebello Vicentino,industrial,urban,45.46510195,11.38640789,61
+502404,Schio,background,urban,45.7135591,11.3676575,190
+502409,VI - Quartiere Italia,background,urban,45.55956112,11.53865377,36
+502414,VI - S. Felice,traffic,urban,45.54499298,11.5331811,35
+502314,Boscochiesanuova,background,rural,45.58918236,11.03685906,824
+502313,Legnago,background,urban,45.18262647,11.31051146,25
+502310,S. Bonifacio,traffic,urban,45.39883352,11.28529851,30
+502304,VR- Borgo Milano,traffic,urban,45.44521934,10.95394993,62
+502315,VR-Giarol Grande,background,suburban,45.43300874,11.0300943,49

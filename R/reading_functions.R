@@ -148,3 +148,18 @@ read.SepaSerbia <- function(file,sep,day) {
   out <- data.frame(ID=sep, VAL=ave)
   return(out)
 }
+
+read.ArpaER <- function(file, stat) {
+  library(RJSONIO)
+  library(dplyr)
+  dat <- RJSONIO::fromJSON(file)
+  dat <- do.call("bind_rows", dat$result$records)
+  if(stat=="max" & nrow(dat)>0) {
+    dat %>% group_by(station_id) %>%
+      summarize(value=max(value,na.rm=T),
+                ndata=n()) -> dat
+    dat$value[dat$ndata<18] <- NA
+  }
+  dat <- as.data.frame(dat)
+  return(dat)
+}

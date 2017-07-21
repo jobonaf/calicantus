@@ -30,6 +30,7 @@ suppressMessages({
   library("ggrepel",      lib.loc = lib1)
   library("stringi",      lib.loc = lib1)
   library("RColorBrewer", lib.loc = lib1)
+  library("rgdal",        lib.loc = lib1)
   library("maps",         lib.loc = lib1)
   library("cluster",      lib.loc = lib0)
   library("bitops",       lib.loc = lib1)
@@ -146,11 +147,7 @@ ui_menu <- function(){
                ,tabPanel("about",ui_about)
                ,tabPanel("account",ui_account)
                ,tabPanel("debug",ui_debug)
-    ),
-    tabPanel("logout", 
-             p("Click here to log out."),
-             actionButton(inputId = "logout",label = "Log out",icon = icon("sign-out"), width="120",
-                          onclick ="location.href='https://shiny.arpae.it/calicantus-intro';"))
+    )
   )}
 ui <- uiOutput("page")
 
@@ -237,7 +234,10 @@ server <- function(input, output, session) {
                           href="http://sdati.arpae.it/calicantus-intro",
                           target="_blank"),
                         ".")
-             )
+             ),
+             actionButton(inputId = "logout",label = "Log out",icon = icon("sign-out"), width="120",
+                          onclick ="location.href='https://sdati.arpae.it/calicantus-intro';"),
+             bsTooltip("logout","Click here to log out")
       )
     )
   })
@@ -915,7 +915,7 @@ server <- function(input, output, session) {
       sidebarPanel(
         helpText("Here you can select the day to plot in the map."),
         dateInput("dayMod", "day of interest", value=Sys.Date(), 
-                  min=Sys.Date(), max = Sys.Date()+3,
+                  min=Sys.Date()-10, max = Sys.Date()+3,
                   width="50%"),
         selectInput("pollutantDayMod",label = "pollutant",
                     choices = list("PM10 daily average"="PM10_Mean",
@@ -943,14 +943,15 @@ server <- function(input, output, session) {
   # UI: timeseries of models forecast
   rangeLat <- c( 30.05,69.95)
   rangeLon <- c(-24.95,44.95)
-  refDay <- as.Date(format(Sys.time()-8*3600, "%Y-%m-%d"))
-  File <- paste0("/home/giovanni/R/projects/calicantus/data/mod-data/timeseries/",
-                 format(refDay,"%Y/%m/%d/CAMS50_ref%Y%m%d"),
-                 "_timeseries.rda")
-  load(File) 
-  Dat$Name <- as.character(Dat$Name)
   modelTimeseries <- reactive({
-    Dat
+    refDays <- as.Date(format(Sys.time()-8*3600-(0:7)*3600*24, "%Y-%m-%d"))
+    Files <- paste0("/home/giovanni/R/projects/calicantus/data/mod-data/timeseries/",
+                    format(refDays,"%Y/%m/%d/CAMS50_ref%Y%m%d"),
+                    "_timeseries.rda")
+    File <- Files[which(file.exists(Files))[1]]
+    load(File)
+    Dat$Name <- as.character(Dat$Name)
+    return(Dat)
   })
   aoiCities <- eventReactive(input$plot_brush$ymin,{
     ee <- try({aoi <- input$plot_brush}, silent = T)
@@ -1046,6 +1047,7 @@ server <- function(input, output, session) {
     valueExpr = {
       refDay <- as.Date(format(Sys.time()-8*3600, "%Y-%m-%d"))
       valDay <- try(as.Date(input$dayMod))
+      if(refDay>valDay) refDay <- valDay
       if(class(valDay)[1]=="try-error") valDay <- Sys.Date()
       model <- ifelse(is.null(input) || is.null(input$mapMod), "CHIMERE", input$mapMod)
       poll <- ifelse(is.null(input) || is.null(input$pollutantDayMod), "PM10_Mean", input$pollutantDayMod)
@@ -1219,9 +1221,9 @@ server <- function(input, output, session) {
       dplyr::select(time, user) %>%
       mutate(day=as.Date(time)) -> Logins
     p <- ggplot(Logins, aes(x=day, y=user)) +
-      geom_count(col="olivedrab", show.legend = F) + 
+      geom_count(col="olivedrab", show.legend = T) + 
       theme_bw() + theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-      ggtitle("web interface", subtitle = "number of accesses") + xlim(Sys.Date()-15, Sys.Date())
+      ggtitle("web interface", subtitle = "number of accesses") + xlim(Sys.Date()-30, Sys.Date())
     print(p)
   })
   

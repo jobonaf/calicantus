@@ -31,8 +31,7 @@ get_ssh <- function(config,FileIn){
   ## sostituire con RCurl::scp ?
   ## forse non si puo':
   ##  "scp" %in% curlVersion()$protocols == FALSE
-  command <- paste0("sshpass -p '",Pwd,
-                    "' scp ",Usr,"@",Addr,":",Path,"/",FileIn," .")
+  command <- paste0(" scp ",Usr,"@",Addr,":",Path,"/",FileIn," .") # if you can use ssh keys
   system(command)
   check <- file.exists(FileIn)
   return(check)

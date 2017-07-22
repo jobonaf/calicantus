@@ -44,7 +44,7 @@ read.ArpaLazio <- function(file,sep,day,stat=NULL) {
       dd$anno <- NULL
       if(!is.null(stat) && stat=="max") {
         Max <- function(x,nreq) ifelse(sum(!is.na(x))>=nreq,max(x,na.rm=T),NA)
-        dd %>% select(-h) %>% group_by(jd) %>% summarize_all(Max,nreq=18) -> dd
+        dd %>% dplyr::select(-h) %>% dplyr::group_by(jd) %>% dplyr::summarize_all(Max,nreq=18) -> dd
       }
       if(is.null(dat)) {
         dat<-dd

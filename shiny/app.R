@@ -30,12 +30,12 @@ suppressMessages({
   library("ggrepel",      lib.loc = lib1)
   library("stringi",      lib.loc = lib1)
   library("RColorBrewer", lib.loc = lib1)
-  library("rgdal",        lib.loc = lib1)
-  library("maps",         lib.loc = lib1)
+ library("maps",         lib.loc = lib1)
   library("cluster",      lib.loc = lib0)
   library("bitops",       lib.loc = lib1)
   #library("RCurl",        lib.loc = lib1)
   library("markdown",     lib.loc = lib1)
+  library("rgdal",        lib.loc = lib0)
   library("yaml",         lib.loc = lib1)
 })
 
@@ -221,9 +221,7 @@ server <- function(input, output, session) {
       column(4,
              wellPanel(
                helpText("Welcome back to ",em("calicantus"),
-                        ". Due to a server crash, the platform has been out of service for a few weeks.",
-                        "Now it's online again, but some features have not yet been restored.",
-                        "Please contact the ",
+                        ". Please contact the ",
                         a("platform manager",href="mailto:giovanni.bonafe@arpa.fvg.it"),
                         " if you find a bug. Thanks for your cooperation.")
              ),

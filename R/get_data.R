@@ -39,8 +39,10 @@ get_ssh <- function(config,FileIn){
 
 get_local <- function(config,FileIn){
   source(config)
-  command <- paste0("cp ",Path,"/",FileIn," .")
-  system(command)
+  FileOrigin <- file.path(Path,FileIn)
+  FileDestin <- file.path(".",FileIn)
+  if(file.exists(FileDestin)) file.remove(FileDestin)
+  file.symlink(from = FileOrigin, to = FileDestin)
   check <- file.exists(FileIn)
   return(check)
 }

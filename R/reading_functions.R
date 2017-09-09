@@ -163,3 +163,71 @@ read.ArpaER <- function(file, stat) {
   dat <- as.data.frame(dat)
   return(dat)
 }
+
+read.EEA <- function(file, poll, day, sep=",",
+                     namespace="AT.0008.20.AQ",             # see unique(eea_get_metadata()$Namespace)
+                     data_source="Umweltbundesamt-Austria", # convenient name, corresponding to network_namespace
+                     filein_metadata="/home/giovanni/R/projects/calicantus/run/eea/eea_metadata.csv") {
+  library(data.table)
+  library(dplyr)
+  
+  ## read metadata
+  fread(filein_metadata) %>%
+    filter(Namespace==namespace) %>%
+    select(Countrycode,Namespace,AirQualityStationEoICode,
+           Longitude,Latitude,Altitude,AirQualityStationType,
+           AirQualityStationArea,BuildingDistance,KerbDistance) %>%
+    group_by(Countrycode,Namespace,AirQualityStationEoICode) %>%
+    summarise(LON=round(mean(Longitude,na.rm=T),6),
+              LAT=round(mean(Latitude,na.rm=T),6),
+              Altitude=round(mean(Altitude,na.rm=T)),
+              AirQualityStationType=paste(unique(AirQualityStationType),collapse = "/"),
+              AirQualityStationArea=paste(unique(AirQualityStationArea),collapse = "/"),
+              BuildingDistance=mean(BuildingDistance,na.rm=T),
+              KerbDistance=mean(KerbDistance,na.rm=T)) -> ana
+  
+  ## read data
+  fread(file,sep=sep, encoding = "Latin-1") %>%
+    filter(network_namespace==namespace,
+           pollutant==poll,
+           as.Date(as.POSIXct(value_datetime_begin))==as.Date(day),
+           value_validity>0) %>%
+    select(network_countrycode,network_name,network_namespace,
+           network_timezone,pollutant,station_code,station_name,
+           value_datetime_begin,value_datetime_end,
+           value_datetime_inserted,value_datetime_updated,
+           value_numeric,value_validity,value_verification,value_unit) %>%
+    arrange(value_datetime_updated, value_datetime_inserted) %>%
+    group_by(network_namespace,station_code,value_datetime_begin) %>%
+    summarise_all(last) %>%
+    filter(!is.na(value_datetime_end)) %>%
+    mutate(delta = difftime(as.POSIXct(value_datetime_end),
+                            as.POSIXct(value_datetime_begin),
+                            units="hours"),
+           day = format(as.POSIXct(value_datetime_begin),"%Y-%m-%d")) %>%
+    filter(!is.na(delta)) %>%
+    group_by(network_namespace,station_code, day) %>%
+    summarise(coverage = sum(delta),
+              station_name = last(station_name),
+              mean = mean(value_numeric, na.rm=T),
+              max = max(value_numeric, na.rm=T)) %>%
+    filter(coverage >= 18, coverage <= 24) %>%
+    select(-coverage) %>%
+    ungroup() -> dat
+  
+  ## expand metadata: station name
+  dat %>% select(station_code,station_name) %>% distinct() -> ana2
+  merge(ana,ana2,by.x="AirQualityStationEoICode",by.y="station_code") -> ana
+  fileout_metadata <- paste0("/home/giovanni/R/projects/calicantus/data/sites-info/metadata.",
+                             data_source,".csv")
+  if(file.exists(fileout_metadata)) {
+    oldana <- fread(fileout_metadata, encoding = "Latin-1")
+    bind_rows(ana,oldana) %>% 
+      distinct(Namespace,AirQualityStationEoICode, .keep_all=TRUE) -> ana
+  }
+  
+  ## write metadata
+  fwrite(x = ana, file = fileout_metadata)
+  
+  return(data.frame(dat))
+}

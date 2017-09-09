@@ -1,0 +1,13 @@
+AirQualityStationEoICode,Countrycode,Namespace,LON,LAT,Altitude,AirQualityStationType,AirQualityStationArea,BuildingDistance,KerbDistance,station_name
+SI0001A,SI,SI.ARSO.AQ,15.262885,46.234523,240,background,urban,,,Celje
+SI0002A,SI,SI.ARSO.AQ,15.651783,46.5589,270,traffic,urban,29,3,Maribor
+SI0003A,SI,SI.ARSO.AQ,14.512926,46.065517,299,background,urban,,,Ljubljana Bezigrad
+SI0008R,SI,SI.ARSO.AQ,14.858597,45.561106,540,background,rural,,,Iskrba
+SI0033A,SI,SI.ARSO.AQ,16.192186,46.651582,188,background,rural,,,Murska Sobota-Rakican
+SI0036A,SI,SI.ARSO.AQ,14.996477,46.131097,241,traffic,urban,15.25,10,Zagorje
+SI0038A,SI,SI.ARSO.AQ,13.713992,45.542979,56,background,urban,,,Koper
+SI0054A,SI,SI.ARSO.AQ,15.0352,46.13874,250,background,suburban,,,Trbovlje1
+SI0032R,SI,SI.ARSO.AQ,14.53358,46.29772,1740,background,rural,,,Krvavec
+SI0034A,SI,SI.ARSO.AQ,13.6524,45.95551,113,background,urban,,,Nova Gorica
+SI0037A,SI,SI.ARSO.AQ,15.08326,46.14387,290,background,urban,,,Hrastnik
+SI0059A,SI,SI.ARSO.AQ,15.627231,46.568722,280,background,urban,,,Maribor Vrbanski plato

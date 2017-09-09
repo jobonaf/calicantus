@@ -35,7 +35,7 @@ suppressMessages({
   library("bitops",       lib.loc = lib1)
   #library("RCurl",        lib.loc = lib1)
   library("markdown",     lib.loc = lib1)
-  library("rgdal",        lib.loc = lib0)
+  library("rgdal",        lib.loc = lib1)
   library("yaml",         lib.loc = lib1)
 })
 
@@ -652,7 +652,7 @@ server <- function(input, output, session) {
       dplyr::mutate(Day=as.Date(as.character(Day)))-> Dat
     sou <- unique(dataOfPeriod()$Source)
     pl <- ggplot(data=Dat, aes(x=Day,y=Stations,fill=Status)) + geom_col() + 
-      theme_bw() + scale_fill_manual(values=c("olivedrab","orangered")) +
+      theme_bw() + scale_fill_manual(values=c(notExceeding="olivedrab",Exceeding="orangered")) +
       labs(title=bquote(.(input$pollutantPeriod)*": number of stations with "*.(dailyInd())*" above "*.(input$threshold)~mu*g/m^3),
            subtitle=paste0("period: ",paste(unique(input$daterange),collapse=" to ")),
            caption=paste(collapse="\n",strwrap(paste0("data source","s"[length(sou)>1],": ",

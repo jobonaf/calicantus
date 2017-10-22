@@ -4,17 +4,13 @@ source("/home/giovanni/R/projects/calicantus/R/get_data.R")
 source("/home/giovanni/R/projects/calicantus/R/prepare_data.R")
 
 # parameters
-# sources <- c("ARPAV","ARPAT","ARPAE","ARPA-Umbria",
-#              "ARPA-Sicilia","ARPA-Piemonte","ARPA-Lombardia",
-#              "ARPA-Liguria","ARPA-FVG","ARPA-Lazio",
-#              "ARPA-Puglia","ARPAC","AZO-Croatia","DT-DA-SPAAS-UACER-Ticino",
-#              "ARPAB")
 sources <- c("ARPA-Sicilia","ARPA-Lombardia","ARPAV","ARPA-FVG","ARPAB",
              "ARPA-Liguria","ARPAC","ARPA-Lazio","ARPA-Umbria","ARPA-Puglia",
              "ARPAT","AZO-Croatia","DT-DA-SPAAS-UACER-Ticino","ARPA-Piemonte",
-             "ARPAE","ARSO-Slovenia")
-#sources <- c("ARSO-Slovenia")
+             "ARPAE","ARSO-Slovenia", "Umweltbundesamt-Austria")
+#sources <- c("SEPA-Serbia")
 pollutants <- c("PM10","O3","PM2.5","NO2")
+#pollutants <- c("PM10")
 
 # arguments
 if(interactive()) {

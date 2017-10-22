@@ -5,38 +5,13 @@ options(shiny.sanitize.errors = FALSE)
 
 #packages
 suppressMessages({
-  pkgO <- names(sessionInfo()$otherPkgs)
-  pkg1 <- c(pkgO)
-  pkg2 <- setdiff(pkg1,"shiny")
-  if(length(pkg2)>0) lapply(paste0('package:',pkg2), detach, character.only = TRUE, unload = TRUE)
-  lib0 <- "/usr/lib/R/library"
   lib1 <- "/home/giovanni/R/x86_64-pc-linux-gnu-library/3.4"
   .libPaths(unique(c(.libPaths(),lib1)))
-  library("shiny",        lib.loc = lib0)
-  library("shinyBS",      lib.loc = lib1)
-  library("base64enc",    lib.loc = lib1)
-  library("lubridate",    lib.loc = lib1)
-  library("dplyr",        lib.loc = lib1)
-  library("plyr",         lib.loc = lib1)
-  library("sp",           lib.loc = lib1)
-  library("geosphere",    lib.loc = lib1)
-  library("shinyjs",      lib.loc = lib1)
-  library("leaflet",      lib.loc = lib1)
-  library("raster",       lib.loc = lib1)
-  library("data.table",   lib.loc = lib1)
-  library("tidyr",        lib.loc = lib1)
-  library("scales",       lib.loc = lib1)
-  library("ggplot2",      lib.loc = lib1)
-  library("ggrepel",      lib.loc = lib1)
-  library("stringi",      lib.loc = lib1)
-  library("RColorBrewer", lib.loc = lib1)
- library("maps",         lib.loc = lib1)
-  library("cluster",      lib.loc = lib0)
-  library("bitops",       lib.loc = lib1)
-  #library("RCurl",        lib.loc = lib1)
-  library("markdown",     lib.loc = lib1)
-  library("rgdal",        lib.loc = lib1)
-  library("yaml",         lib.loc = lib1)
+  libs <- c("shinyBS","base64enc","lubridate","dplyr","plyr","sp","rgdal",
+            "geosphere","shinyjs","leaflet","raster","data.table","tidyr",
+            "scales","ggplot2","ggrepel","stringi","RColorBrewer","maps",
+            "cluster","bitops","RCurl","markdown","yaml")
+  lapply(libs, require, character.only=T)
 })
 
 # scripts
@@ -69,7 +44,9 @@ if(!is.null(proxy_usr)) {
 MapData <- map_data(map = "world", 
                     region = c("Italy","Slovenia","Croatia","Serbia","San Marino","Vatican",
                                "France","Switzerland","Austria","Germany","Bosnia and Herzegovina",
-                               "Tunisia","Malta","Montenegro","Hungary","Albania","Greece","Algeria"))
+                               "Tunisia","Malta","Montenegro","Hungary","Albania","Greece","Algeria",
+                               "Czech Republic", "Slovakia", "Liechtenstein","Poland","Kosovo",
+                               "Bulgaria","Romania","Turkey","Macedonia","Ukraine"))
 
 
 
@@ -357,10 +334,6 @@ server <- function(input, output, session) {
       } else {
         d <- as.character(input$day)
       }
-#       ff <- system(paste0("ls /home/giovanni/R/projects/calicantus/data/obs-data/",
-#                           format(as.Date(d),"%Y/%m/%d/%Y%m%d"),
-#                           "_",input$pollutantDay,"_*.rda 2>/dev/null"),
-#                    intern=TRUE)
       ff <- dir(path=paste0("/home/giovanni/R/projects/calicantus/data/obs-data/",
                             format(as.Date(d),"%Y/%m/%d/")),
                 pattern = paste0(format(as.Date(d),"%Y%m%d"),
@@ -393,10 +366,10 @@ server <- function(input, output, session) {
         helpText(paste0("Here you can plot aggregated time series.")),
         conditionalPanel(
           condition = "! input.goPeriod",
-          helpText("Please select the period of interest in the ",strong("data")," tab.")),
+          helpText("Please select the period of interest in ",strong("observations > data"),".")),
         conditionalPanel(
           condition = "input.goPeriod",
-          helpText("You can change the period of interest in the ",strong("data")," tab."),
+          helpText("You can change the period of interest in ",strong("observations > data"),"."),
           helpText("Choose the time step, both for time series plot and maps."),
           selectInput("timestep","time step",c("Day","Weekday","Year_Week","Year_Month")),
           hr(),
@@ -434,8 +407,12 @@ server <- function(input, output, session) {
         width=3),
       mainPanel(tabsetPanel(
         tabPanel("plot",  tags$head(tags$style(HTML(progressBarStyle))),
-                 plotOutput("ts"))
+                 downloadButton("ts_plot_PDF", label = "download (PDF)"),
+                 downloadButton("ts_plot_PNG", label = "download (PNG)"),
+                 plotOutput("ts_plot"))
         ,tabPanel("maps",   tags$head(tags$style(HTML(progressBarStyle))),
+                  downloadButton("ts_maps_PDF", label = "download (PDF)"),
+                  downloadButton("ts_maps_PNG", label = "download (PNG)"),
                   plotOutput("ts_maps"))
       )
       )
@@ -444,10 +421,14 @@ server <- function(input, output, session) {
   
   # default thresholds
   dailyThr <- reactive({
-    if(input$pollutantPeriod=="PM10")  dT <- 50
-    if(input$pollutantPeriod=="PM2.5") dT <- 40
-    if(input$pollutantPeriod=="O3")    dT <- 180
-    if(input$pollutantPeriod=="NO2")   dT <- 200
+    if(exists("input") && "pollutantPeriod"%in%names(input)) {
+      if(input$pollutantPeriod=="PM10")  dT <- 50
+      if(input$pollutantPeriod=="PM2.5") dT <- 40
+      if(input$pollutantPeriod=="O3")    dT <- 180
+      if(input$pollutantPeriod=="NO2")   dT <- 200
+    } else {
+      dT <- 50
+    }
     dT
   })
 
@@ -458,13 +439,13 @@ server <- function(input, output, session) {
         helpText("Here you can analize exceedances of a given threshold."),
         conditionalPanel(
           condition = "! input.goPeriod",
-          helpText("Please select the period of interest in the ",strong("data")," tab.")),
+          helpText("Please select the period of interest in ",strong("observations > data"),".")),
         conditionalPanel(
           condition = "input.goPeriod",
-          helpText("You can change the period of interest in the ",strong("data")," tab."),
+          helpText("You can change the period of interest in ",strong("observations > data"),"."),
           sliderInput("threshold","threshold",
                       min = round(dailyThr()*0.1,-1),
-                      max = dailyThr()*2,
+                      max = dailyThr()*3,
                       value = dailyThr(),
                       step = 10)
           ,permissionButton(id="buttonPermis_obsexc", sources=input$sources),
@@ -478,8 +459,12 @@ server <- function(input, output, session) {
       mainPanel(
         tabsetPanel(
           tabPanel("plot",  tags$head(tags$style(HTML(progressBarStyle))),
+                   downloadButton("exc_plot_PDF", label = "download (PDF)"),
+                   downloadButton("exc_plot_PNG", label = "download (PNG)"),
                    plotOutput("exc_plot"))
           ,tabPanel("map",   tags$head(tags$style(HTML(progressBarStyle))),
+                    downloadButton("exc_map_PDF", label = "download (PDF)"),
+                    downloadButton("exc_map_PNG", label = "download (PNG)"),
                     plotOutput("exc_map"))
           ,tabPanel("table", dataTableOutput("exc_table"))
         ))
@@ -491,9 +476,9 @@ server <- function(input, output, session) {
     sidebarLayout(
       sidebarPanel(helpText("Here you perform cluster analysis of the time series."),
                    conditionalPanel(condition = "! input.goPeriod",
-                                    helpText("Please select the period of interest in the ",strong("data")," tab.")),
+                                    helpText("Please select the period of interest in ",strong("observations > data"),".")),
                    conditionalPanel(condition = "input.goPeriod",
-                                    helpText("You can change the period of interest in the ",strong("data")," tab."),
+                                    helpText("You can change the period of interest in ",strong("observations > data"),"."),
                                     bsCollapse(
                                       bsCollapsePanel(
                                         title = "clustering options", style = "default",
@@ -520,8 +505,12 @@ server <- function(input, output, session) {
                    width=3),
       mainPanel(tabsetPanel(
         tabPanel("map",   tags$head(tags$style(HTML(progressBarStyle))),
+                 downloadButton("clu_map_PDF", label = "download (PDF)"),
+                 downloadButton("clu_map_PNG", label = "download (PNG)"),
                  plotOutput("clu_map"))
         ,tabPanel("plot",  tags$head(tags$style(HTML(progressBarStyle))),
+                  downloadButton("clu_plot_PDF", label = "download (PDF)"),
+                  downloadButton("clu_plot_PNG", label = "download (PNG)"),
                   plotOutput("clu_plot"))
         ,tabPanel("table", dataTableOutput("clu_table"))
       ))
@@ -561,7 +550,7 @@ server <- function(input, output, session) {
   })
   
   # plot time series
-  output$ts <- renderPlot({
+  tsPlot <- reactive({
     Aes <- aes_string(x=input$timestep, y="Value", group=input$timestep)
     if(input$colorby!="same") Aes <- modifyList(Aes, aes_string(col=input$colorby))
     pl <- ggplot(data = dataWithPeaks(), Aes) + theme_bw()
@@ -592,11 +581,18 @@ server <- function(input, output, session) {
     withProgress(message = 'Making plot...', value = 1, {
       pl
     })
+  })
+  # render the plot
+  output$ts_plot <- renderPlot({
+    print(tsPlot())
   },height = function() ifelse(input$splitby=="none",600,900)
   )
+  # save the plot
+  output$ts_plot_PDF <- downloadHandler("timeseries_plot.pdf",function(file){ggsave(file,tsPlot(),width=12,height=9)})
+  output$ts_plot_PNG <- downloadHandler("timeseries_plot.png",function(file){ggsave(file,tsPlot(),width=12,height=9)})
   
   # time series: maps
-  output$ts_maps <- renderPlot({
+  tsMaps <- reactive({
     dataOfPeriod() %>% 
       dplyr::mutate(Weekday=lubridate::wday(Day,label = T),
                     Year_Week=format(as.Date(Day),"%Y_%U"),
@@ -630,6 +626,10 @@ server <- function(input, output, session) {
     withProgress(message = 'Making plot...', value = 1, {
       pl
     })
+  })
+  # render the plot
+  output$ts_maps <- renderPlot({
+    print(tsMaps())
   },height = function() {
     nd <- as.numeric(as.POSIXct(input$daterange[2])-as.POSIXct(input$daterange[1])+1)
     hrow <- 300
@@ -640,9 +640,12 @@ server <- function(input, output, session) {
     hh
   }
   )
+  # save the plot
+  output$ts_maps_PDF <- downloadHandler("timeseries_maps.pdf",function(file){ggsave(file,tsMaps(),width=12,height=12)})
+  output$ts_maps_PNG <- downloadHandler("timeseries_maps.png",function(file){ggsave(file,tsMaps(),width=12,height=12)})
   
   # exceedances: barplot
-  output$exc_plot <- renderPlot({
+  excPlot <- reactive({
     dataOfPeriod() %>% dplyr::mutate(Exc=Value>input$threshold,
                                      notExc=Value<=input$threshold) %>%
       group_by(Day) %>%
@@ -661,9 +664,16 @@ server <- function(input, output, session) {
       pl
     })
   })
+  # render the plot
+  output$exc_plot <- renderPlot({
+    print(excPlot())
+  })
+  # save the plot
+  output$exc_plot_PDF <- downloadHandler("exceedances_barplot.pdf",function(file){ggsave(file,excPlot(),width=9,height=5)})
+  output$exc_plot_PNG <- downloadHandler("exceedances_barplot.png",function(file){ggsave(file,excPlot(),width=9,height=5)})
   
   # exceedances: map
-  output$exc_map <- renderPlot({
+  excMap <- reactive({
     dataOfPeriod() %>% filter(!is.na(Value)) %>%
       dplyr::mutate(Exc=Value>input$threshold) %>% 
       group_by(Name,Lat,Lon) %>%
@@ -676,7 +686,7 @@ server <- function(input, output, session) {
     dx<-xmax-xmin
     dy<-ymax-ymin
     bb <- unique(round(quantile(Dat$Exceed,c(0,20,40,60,80,90,100)/100)))
-    Dat %>% mutate(Exceedances=cut(Exceed,bb,include.lowest = T)) %>% dplyr::arrange(desc(Exceed))-> Dat
+    Dat %>% mutate(Exceedances=cut(Exceed,bb,include.lowest = T)) %>% dplyr::arrange(Exceed)-> Dat
     sou <- unique(dataOfPeriod()$Source)
     pl <- ggplot() + 
       geom_polygon(data=MapData, aes(x=long, y=lat, group = group),
@@ -693,8 +703,14 @@ server <- function(input, output, session) {
     withProgress(message = 'Making plot...', value = 1, {
       pl
     })
-  },height = 800
-  )
+  })
+  # render the plot
+  output$exc_map <- renderPlot({
+    print(excMap())
+  },height = 800)
+  # save the plot
+  output$exc_map_PDF <- downloadHandler("exceedances_map.pdf",function(file){ggsave(file,excMap(),width=10,height=12)})
+  output$exc_map_PNG <- downloadHandler("exceedances_map.png",function(file){ggsave(file,excMap(),width=10,height=12)})
   
   # exceedances: table
   output$exc_table <- renderDataTable({
@@ -735,17 +751,13 @@ server <- function(input, output, session) {
   })
   
   # clustering: plot
-  output$clu_plot <- renderPlot({
+  cluPlot <- reactive({
     Dat <- dataWithClusters() %>% 
       dplyr::mutate(col=c("odd","even")[1 + as.numeric(as.Date(as.character(Day)) - as.Date("1900-01-01")) %% 2])
     ymin <- max(1,min(Dat$Value,na.rm=T))
     ymax <- max(Dat$Value,na.rm=T)*1.1
     ggplot(Dat, aes(x=Day, y=Value, colour=Cluster)) +
-      geom_crossbar(aes(x=Day, 
-                        y=   ymin, 
-                        ymin=ymin,
-                        ymax=ymax,
-                        fill = col),
+      geom_crossbar(aes(x=Day, y=ymin, ymin=ymin, ymax=ymax, fill = col),
                     col="transparent", width=1) +
       theme_linedraw() +
       theme(panel.grid.major.x = element_blank(),
@@ -776,9 +788,17 @@ server <- function(input, output, session) {
       pl
     })
   })
+  # render the plot
+  output$clu_plot <- renderPlot({
+    print(cluPlot())
+  })
+  # save the plot
+  output$clu_plot_PDF <- downloadHandler("cluster_timeseries.pdf",function(file){ggsave(file,cluPlot(),width=12,height=9)})
+  output$clu_plot_PNG <- downloadHandler("cluster_timeseries.png",function(file){ggsave(file,cluPlot(),width=12,height=9)})
+  
   
   # clustering: map
-  output$clu_map <- renderPlot({
+  cluMap <- reactive({
     dataWithClusters() %>% dplyr::select(Name,Source,Lat,Lon,Cluster,isMedoid) %>% distinct() -> Dat
     xmin<-min(Dat$Lon,na.rm=T)
     xmax<-max(Dat$Lon,na.rm=T)
@@ -805,8 +825,14 @@ server <- function(input, output, session) {
     withProgress(message = 'Making plot...', value = 1, {
       pl
     })
-  },height = 800
-  )
+  })
+  # render the plot
+  output$clu_map <- renderPlot({
+    print(cluMap())
+  },height = 800)
+  # save the plot
+  output$clu_map_PDF <- downloadHandler("cluster_map.pdf",function(file){ggsave(file,cluMap(),width=10,height=12)})
+  output$clu_map_PNG <- downloadHandler("cluster_map.png",function(file){ggsave(file,cluMap(),width=10,height=12)})
   
   # breaks for the obs.map
   Breaks <- reactive({
@@ -1010,12 +1036,14 @@ server <- function(input, output, session) {
         width=3),
       mainPanel( 
         tags$head(tags$style(HTML(progressBarStyle))),
+        downloadButton("tsmod_PDF", label = "download (PDF)"),
+        downloadButton("tsmod_PNG", label = "download (PNG)"),
         plotOutput("tsmod")
         )
     )
   })
   pollName <- function(x) ifelse(x=="PM25","PM2.5",as.character(x))
-  output$tsmod <- renderPlot({
+  tsMod <- reactive({
     dat <- modelTimeseries() %>%
       filter(Name %in% input$tsmod_selCities) %>%
       mutate(Pollutant=pollName(Pollutant))
@@ -1033,7 +1061,14 @@ server <- function(input, output, session) {
     withProgress(message = 'Making plot...', value = 1, {
       p
     })
+  })
+  # render the plot
+  output$tsmod <- renderPlot({
+    print(tsMod())
   },height = 800)
+  # save the plot
+  output$tsmod_PDF <- downloadHandler("timeseries_models.pdf",function(file){ggsave(file,tsMod(),width=12,height=12)})
+  output$tsmod_PNG <- downloadHandler("timeseries_models.png",function(file){ggsave(file,tsMod(),width=12,height=12)})
   
 
   # load model data of single day
@@ -1209,19 +1244,31 @@ server <- function(input, output, session) {
   })
 
   # login statistics
+  Logins <- read.table("/home/giovanni/R/projects/calicantus/log/web-interface.log", sep="|", 
+                       fill=T, stringsAsFactors = F, flush = T)[,1:2]
+  colnames(Logins) <- c("time","user")
+  Logins %>% tidyr::separate(time, c("kk","time"), ": ") %>% 
+    tidyr::separate(user, c("ll","user"), ": ") %>%
+    dplyr::filter(kk=="login success", user!="test") %>% 
+    dplyr::select(time, user) %>%
+    dplyr::mutate(day=as.Date(time)) -> Logins
+  
   output$loginStat <- renderPlot({
-    Logins <- read.table("/home/giovanni/R/projects/calicantus/log/web-interface.log", sep="|", 
-                         fill=T, stringsAsFactors = F)[,1:2]
-    colnames(Logins) <- c("time","user")
-    Logins %>% separate(time, c("kk","time"), ": ") %>% 
-      separate(user, c("ll","user"), ": ") %>%
-      filter(kk=="login success", user!="test") %>% 
-      dplyr::select(time, user) %>%
-      mutate(day=as.Date(time)) -> Logins
     p <- ggplot(Logins, aes(x=day, y=user)) +
       geom_count(col="olivedrab", show.legend = T) + 
       theme_bw() + theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-      ggtitle("web interface", subtitle = "number of accesses") + xlim(Sys.Date()-30, Sys.Date())
+      ggtitle("web interface", subtitle = "number of accesses") + 
+      xlim(Sys.Date()-30, Sys.Date())
+    print(p)
+  })
+  
+  output$loginTrend <- renderPlot({
+    p <- ggplot(Logins %>%
+                  dplyr::mutate(week=format(day,"%Y-%V")),
+                aes(x=week)) +
+      geom_bar(fill="tomato4", show.legend = T) + 
+      theme_bw() + theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+      ggtitle("web interface", subtitle = "number of accesses")
     print(p)
   })
   
@@ -1244,14 +1291,15 @@ server <- function(input, output, session) {
                        box.padding = unit(0.1, "lines"),
                        label.padding = unit(0.1, "lines"), 
                        size=4, col="steelblue", show.legend=F,
-                       segment.size=0) +
+                       segment.size=0, max.iter = 5000, alpha = 0.8) +
       scale_fill_manual(values=c("white","yellow")) +
-      coord_map(xlim = c(xmin-dx*0.1,xmax+dx*0.1),
-                ylim = c(ymin-dy*0.1,ymax+dy*0.1)) +
+      coord_map(xlim = c(xmin-2,xmax+0.8),
+                ylim = c(ymin-0.5,ymax+0.5)) +
       theme_bw()+
       theme(axis.title=element_blank(),
             axis.text=element_blank(),
-            axis.ticks=element_blank())
+            axis.ticks=element_blank()) +
+      ggtitle("web interface", subtitle = "active users")
       
     pl
   })
@@ -1286,9 +1334,12 @@ server <- function(input, output, session) {
   # account info
   output$ui_account <- renderUI({
     fluidPage(
-      column(6,p("You are logged in as: ",strong(input$Usr)),
-             plotOutput("loginStat",height="400px")),
-      column(6,plotOutput("usersCities",height="600px"))
+      p("You are logged in as: ",strong(input$Usr)),
+      column(6,
+             plotOutput("loginStat",width="100%"),
+             plotOutput("loginTrend",width="100%")),
+      column(6,
+             plotOutput("usersCities",width="100%"))
     )
   })
   

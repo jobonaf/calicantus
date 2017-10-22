@@ -97,8 +97,10 @@ get_metadata_dbqaemr <- function(config) {
 }
 
 get_data <- function(config,day,proxyconfig = "../config/config_proxy.R"){
-  source(config)
-  FileIn <- format(as.POSIXct(day), format=File)
+  day.shift <- 0
+  source(config, local = TRUE)
+  cat(paste0("applying day shift: ",day.shift),sep="\n")
+  FileIn <- format(as.POSIXct(day)+day.shift*3600*24, format=File)
   suppressWarnings(file.remove(FileIn))
 
   check <- switch(Type,

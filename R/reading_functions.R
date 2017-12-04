@@ -118,6 +118,23 @@ read.AzoCroatia <- function(file,IDs, stat=NULL) {
   return(out)
 }
 
+read.AppaTrento <- function(file,IDs, stat, sep) {
+  out <- data.frame(ID=IDs, VAL=NA)
+  nf <- length(file)
+  if(nf!=length(IDs)) stop("IDs and files must have the same number of elements!")
+  for (i in 1:nf) {
+    tmp <- try(read.table(file[i], sep=sep, header=T, fileEncoding  = "Latin1"))
+    if(class(tmp)!="try-error" && length(tmp)>0) {
+      if(stat=="mean") {
+        out$VAL[i] <- ifelse(length(tmp$Valore)>=18,mean(tmp$Valore),NA)
+      }else if(stat=="max") {
+        out$VAL[i] <- max(tmp$Valore)
+      }
+    }
+  }
+  return(out)
+}
+
 read.UacerTicino <- function(file,IDs, stat=NULL) {
   out <- data.frame(ID=IDs, VAL=NA)
   nf <- length(file)

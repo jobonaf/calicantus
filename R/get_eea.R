@@ -9,14 +9,15 @@ eea_get_metadata <- function(filein = "http://discomap.eea.europa.eu/map/fme/met
   st <- HEAD(filein)$status
   if(st==200) {
     ana <- fread(filein, sep="\t", header = T, stringsAsFactors = F, 
-                 na.strings = c("-9999","-999","-9900","-100","-99","nan"), dec=".")
+                 na.strings = c("-9999","-999","-9900","-100","-99","nan"), dec=".", 
+                 encoding = "Latin-1")
   } else {
     warning(paste("problems with",filein,"- code:",st))
   }
   if(nrow(ana)>0) {
     if(!is.null(fileout)) {
       if(file.exists(fileout)) {
-        oldana <- fread(fileout)
+        oldana <- fread(fileout, encoding = "Latin-1")
         bind_rows(ana,oldana) %>% 
           filter(!is.na(Longitude), !is.na(Latitude)) %>%
           distinct(Namespace,AirQualityStationEoICode,AirPollutantCode,Sample, .keep_all=TRUE) -> ana
@@ -47,8 +48,11 @@ eea_get_latest_data <- function(countries = c("SI", "AT", "HR"), #unique(eea_get
       st <- HEAD(filein)$status
       if(st==200) {
         fread(filein, sep=",", header = T, stringsAsFactors = F, 
-              na.strings = "-999", encoding = "Latin-1", quote = '"') %>%
+              na.strings = "-999", quote = '"', encoding="Latin-1") %>%
           filter(!is.na(value_datetime_begin)) -> dat
+        readr::guess_encoding(filein)[1,1] -> enc
+        dsn <- try(iconv(dat$station_name, from=enc, to="UTF-8"))
+        if(class(dsn)!="try-error") dat$station_name <- dsn
         if(nrow(dat)>0) {
           Dat <- bind_rows(Dat, dat)
         }
@@ -76,7 +80,7 @@ eea_get_latest_data <- function(countries = c("SI", "AT", "HR"), #unique(eea_get
 }
 
 
-eea_clean_old_data <- function(filein="eea_latest_data.csv", days=15) {
+eea_clean_old_data <- function(filein="eea_latest_data.csv", days=10) {
   library(data.table)
   dat <- fread(filein, encoding = "Latin-1")
   fTime <- Sys.time()-60*60*24*days

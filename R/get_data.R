@@ -12,17 +12,21 @@ get_http <- function(config,FileIn,proxyconfig){
   source(proxyconfig)
   if(is.null(proxy_usr)) {
     commands <- paste0("wget --no-proxy '",Addr,"/",Path,"/",FileIn,"'",
-                       " --no-check-certificate",
-                       " -O '",FileIn,"'")
+                       " --no-check-certificate"
+                       #," -O '",FileIn,"'"
+                       )
   } else {
     Sys.setenv(http_proxy=paste0("http://",proxy_usr,":",proxy_pwd,"@",proxy_addr,":",proxy_port,"/"))
+    Sys.setenv(https_proxy=paste0("https://",proxy_usr,":",proxy_pwd,"@",proxy_addr,":",proxy_port,"/"))
     commands <- paste0("wget '",Addr,"/",Path,"/",FileIn,"'",
                        " --proxy-user=",proxy_usr," --proxy-password=",proxy_pwd,
-                       " --no-check-certificate",
-                       " -O '",FileIn,"'")
+                       " --no-check-certificate"
+                       #," -O '",FileIn,"'"
+                       )
   }
+  cat(paste(commands,collapse="\n"),sep="\n")
   for(command in commands) system(command)
-  check <- any(file.exists(FileIn))
+  check <- any(file.exists(basename(FileIn)))
   return(check)
 }
 
@@ -32,6 +36,7 @@ get_ssh <- function(config,FileIn){
   ## forse non si puo':
   ##  "scp" %in% curlVersion()$protocols == FALSE
   command <- paste0(" scp ",Usr,"@",Addr,":",Path,"/",FileIn," .") # if you can use ssh keys
+  cat(command,sep="\n")
   system(command)
   check <- file.exists(FileIn)
   return(check)
@@ -96,12 +101,14 @@ get_metadata_dbqaemr <- function(config) {
   write.table(ana,file="../data/sites-info/metadata.ARPAE.csv",sep=",",col.names = T,row.names = F)
 }
 
-get_data <- function(config,day,proxyconfig = "../config/config_proxy.R"){
+get_data <- function(config,day,
+                     proxyconfig = "/home/giovanni/R/projects/calicantus/config/config_proxy.R",
+                     verbose=F){
   day.shift <- 0
   source(config, local = TRUE)
   cat(paste0("applying day shift: ",day.shift),sep="\n")
-  FileIn <- format(as.POSIXct(day)+day.shift*3600*24, format=File)
-  suppressWarnings(file.remove(FileIn))
+  FileIn <- format(as.Date(day)+day.shift, format=File)
+  if(!verbose) suppressWarnings(file.remove(FileIn))
 
   check <- switch(Type,
                   ftp  =get_ftp  (config,FileIn),
@@ -117,8 +124,8 @@ get_data <- function(config,day,proxyconfig = "../config/config_proxy.R"){
                       Content,".",
                       format(as.POSIXct(day),format="%Y%m%d"),
                       ".dat")
-    file.rename(FileIn, FileOut)
-    cat(paste0("rinominato ",FileIn, " in ",FileOut,"\n"))
+    file.rename(basename(FileIn), FileOut)
+    cat(paste0("renamed ",basename(FileIn), " in ",FileOut,"\n"))
   } else {
     FileOut <- ""
   }

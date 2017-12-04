@@ -1,19 +1,14 @@
+
 # preliminar --------------------------------------------------------------
 
 options(shiny.sanitize.errors = FALSE)
 
 #packages
 suppressMessages({
-  pkgO <- names(sessionInfo()$otherPkgs)
-  pkg1 <- c(pkgO)
-  pkg2 <- setdiff(pkg1,"shiny")
-  if(length(pkg2)>0) lapply(paste0('package:',pkg2), detach, character.only = TRUE, unload = TRUE)
-  lib0 <- "/usr/lib/R/library"
   lib1 <- "/home/giovanni/R/x86_64-pc-linux-gnu-library/3.4"
   .libPaths(unique(c(.libPaths(),lib1)))
-  library("shinyBS")
-  library("markdown")
-  library("plyr")
+  libs <- c("shinyBS","plyr","markdown")
+  lapply(libs, require, character.only=T)
 })
 
 #scripts

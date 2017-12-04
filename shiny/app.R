@@ -192,7 +192,7 @@ server <- function(input, output, session) {
     dI
   })
   
-  # UI: home
+  # UI: home------------------------------------------------------------------
   output$ui_home <- renderUI({
     fluidPage(
       column(4,
@@ -217,7 +217,7 @@ server <- function(input, output, session) {
     )
   })
   
-  # UI: data table
+  # UI: data table------------------------------------------------------------------
   output$ui_data <- renderUI({
     sidebarLayout(
       sidebarPanel(helpText("Here you select the period you are interested in."),
@@ -287,7 +287,7 @@ server <- function(input, output, session) {
     }
   )
   
-  # UI: map of observed data
+  # UI: map of observed data------------------------------------------------------------------
   output$ui_map <- renderUI({
     sidebarLayout(
       sidebarPanel(helpText("Here you can select the day to plot in the map."),
@@ -359,7 +359,7 @@ server <- function(input, output, session) {
       return(Dat)
     })
   
-  # UI: timeseries
+  # UI: timeseries------------------------------------------------------------------
   output$ui_ts <- renderUI({
     sidebarLayout(
       sidebarPanel(
@@ -432,7 +432,7 @@ server <- function(input, output, session) {
     dT
   })
 
-    # UI: exceedances
+  # UI: exceedances------------------------------------------------------------------
   output$ui_exc <- renderUI({
     sidebarLayout(
       sidebarPanel(
@@ -471,7 +471,7 @@ server <- function(input, output, session) {
     )
   })
   
-  # UI: clustering
+  # UI: clustering------------------------------------------------------------------
   output$ui_clu <- renderUI({
     sidebarLayout(
       sidebarPanel(helpText("Here you perform cluster analysis of the time series."),
@@ -517,7 +517,7 @@ server <- function(input, output, session) {
     )
   })
   
-  # data table
+  # data table------------------------------------------------------------------
   output$df <- renderDataTable(options = list(pageLength = 10),
                                expr={
                                  withProgress(message = 'Loading...', value = 1, {
@@ -525,7 +525,7 @@ server <- function(input, output, session) {
                                  })
                                })
   
-  # peaks detection
+  # peaks detection------------------------------------------------------------------
   dataWithPeaks <- reactive({
     dataOfPeriod() %>% dplyr::mutate(Station=paste0(Name," (",Source,")"),
                                      Weekday=lubridate::wday(Day,label = T),
@@ -549,7 +549,7 @@ server <- function(input, output, session) {
     Dat
   })
   
-  # plot time series
+  # plot time series------------------------------------------------------------------
   tsPlot <- reactive({
     Aes <- aes_string(x=input$timestep, y="Value", group=input$timestep)
     if(input$colorby!="same") Aes <- modifyList(Aes, aes_string(col=input$colorby))
@@ -591,7 +591,7 @@ server <- function(input, output, session) {
   output$ts_plot_PDF <- downloadHandler("timeseries_plot.pdf",function(file){ggsave(file,tsPlot(),width=12,height=9)})
   output$ts_plot_PNG <- downloadHandler("timeseries_plot.png",function(file){ggsave(file,tsPlot(),width=12,height=9)})
   
-  # time series: maps
+  # time series: maps------------------------------------------------------------------
   tsMaps <- reactive({
     dataOfPeriod() %>% 
       dplyr::mutate(Weekday=lubridate::wday(Day,label = T),
@@ -644,7 +644,7 @@ server <- function(input, output, session) {
   output$ts_maps_PDF <- downloadHandler("timeseries_maps.pdf",function(file){ggsave(file,tsMaps(),width=12,height=12)})
   output$ts_maps_PNG <- downloadHandler("timeseries_maps.png",function(file){ggsave(file,tsMaps(),width=12,height=12)})
   
-  # exceedances: barplot
+  # exceedances: barplot------------------------------------------------------------------
   excPlot <- reactive({
     dataOfPeriod() %>% dplyr::mutate(Exc=Value>input$threshold,
                                      notExc=Value<=input$threshold) %>%
@@ -672,7 +672,7 @@ server <- function(input, output, session) {
   output$exc_plot_PDF <- downloadHandler("exceedances_barplot.pdf",function(file){ggsave(file,excPlot(),width=9,height=5)})
   output$exc_plot_PNG <- downloadHandler("exceedances_barplot.png",function(file){ggsave(file,excPlot(),width=9,height=5)})
   
-  # exceedances: map
+  # exceedances: map------------------------------------------------------------------
   excMap <- reactive({
     dataOfPeriod() %>% filter(!is.na(Value)) %>%
       dplyr::mutate(Exc=Value>input$threshold) %>% 
@@ -712,7 +712,7 @@ server <- function(input, output, session) {
   output$exc_map_PDF <- downloadHandler("exceedances_map.pdf",function(file){ggsave(file,excMap(),width=10,height=12)})
   output$exc_map_PNG <- downloadHandler("exceedances_map.png",function(file){ggsave(file,excMap(),width=10,height=12)})
   
-  # exceedances: table
+  # exceedances: table------------------------------------------------------------------
   output$exc_table <- renderDataTable({
     dataOfPeriod() %>% dplyr::mutate(Exc=Value>input$threshold) %>% group_by(Name,Lat,Lon) %>%
       dplyr::summarize(Exceed=sum(Exc, na.rm=T),
@@ -722,7 +722,7 @@ server <- function(input, output, session) {
     Dat
   })
   
-  # clustering
+  # clustering------------------------------------------------------------------
   dataWithClusters <- reactive({
     ddd <- dataOfPeriod() %>% mutate(Station=paste0(Name," (",Source,")"))
     nd <- length(unique(ddd$Day))
@@ -834,6 +834,9 @@ server <- function(input, output, session) {
   output$clu_map_PDF <- downloadHandler("cluster_map.pdf",function(file){ggsave(file,cluMap(),width=10,height=12)})
   output$clu_map_PNG <- downloadHandler("cluster_map.png",function(file){ggsave(file,cluMap(),width=10,height=12)})
   
+  
+  # obs.data: daily map -----------------------------------------------------
+  
   # breaks for the obs.map
   Breaks <- reactive({
     if(input$scaleDay == "classic") {
@@ -933,13 +936,17 @@ server <- function(input, output, session) {
   })
   
   
-  # UI: map of models
+  # UI: map of models -----------------------------------------------------
+  avail_modeldays <- as.Date(substr(dir(path="/home/giovanni/R/projects/calicantus/data/mod-data/grid/",
+                                         pattern="rda",recursive = T),1,10), 
+                              format ="%Y/%m/%d")
+  maxscad <- 3
   output$ui_modelmap <- renderUI({
     sidebarLayout(
       sidebarPanel(
         helpText("Here you can select the day to plot in the map."),
         dateInput("dayMod", "day of interest", value=Sys.Date(), 
-                  min=Sys.Date()-10, max = Sys.Date()+3,
+                  min=min(avail_modeldays), max = max(avail_modeldays)+maxscad,
                   width="50%"),
         selectInput("pollutantDayMod",label = "pollutant",
                     choices = list("PM10 daily average"="PM10_Mean",
@@ -964,7 +971,7 @@ server <- function(input, output, session) {
   })
   
   
-  # UI: timeseries of models forecast
+  # UI: timeseries of models forecast -----------------------------------------------------
   rangeLat <- c( 30.05,69.95)
   rangeLon <- c(-24.95,44.95)
   modelTimeseries <- reactive({
@@ -1070,7 +1077,8 @@ server <- function(input, output, session) {
   output$tsmod_PDF <- downloadHandler("timeseries_models.pdf",function(file){ggsave(file,tsMod(),width=12,height=12)})
   output$tsmod_PNG <- downloadHandler("timeseries_models.png",function(file){ggsave(file,tsMod(),width=12,height=12)})
   
-
+  
+# daily models map -----------------------------------------------------
   # load model data of single day
   changeOfDayMod <- reactive({
     input$dayMod;input$mapMod;input$pollutantDayMod
@@ -1218,7 +1226,7 @@ server <- function(input, output, session) {
   })
   
   
-  
+  # more  -----------------------------------------------------
   # data use policy table
   output$use_policy <- renderTable({
     pol <- read.csv("/home/giovanni/R/projects/calicantus/data/data-sources/policy.csv",stringsAsFactors = F)

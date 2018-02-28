@@ -3,7 +3,7 @@ get_ftp <- function(config,FileIn){
   command <- paste0("wget --no-proxy 'ftp://",Usr,":",gsub("@","%40",Pwd),"@",Addr,"/",Path,"/",FileIn,"'")
   cat(command,sep="\n")
   system(command)
-  check <- file.exists(FileIn)
+  check <- file.exists(basename(FileIn))
   return(check)
 }
 
@@ -13,7 +13,7 @@ get_http <- function(config,FileIn,proxyconfig){
   if(is.null(proxy_usr)) {
     commands <- paste0("wget --no-proxy '",Addr,"/",Path,"/",FileIn,"'",
                        " --no-check-certificate"
-                       #," -O '",FileIn,"'"
+                       ," -O '",basename(FileIn),"'"  # to clean names with special characters
                        )
   } else {
     Sys.setenv(http_proxy=paste0("http://",proxy_usr,":",proxy_pwd,"@",proxy_addr,":",proxy_port,"/"))
@@ -21,7 +21,7 @@ get_http <- function(config,FileIn,proxyconfig){
     commands <- paste0("wget '",Addr,"/",Path,"/",FileIn,"'",
                        " --proxy-user=",proxy_usr," --proxy-password=",proxy_pwd,
                        " --no-check-certificate"
-                       #," -O '",FileIn,"'"
+                       ," -O '",basename(FileIn),"'"  # to clean names with special characters
                        )
   }
   cat(paste(commands,collapse="\n"),sep="\n")
@@ -38,7 +38,7 @@ get_ssh <- function(config,FileIn){
   command <- paste0(" scp ",Usr,"@",Addr,":",Path,"/",FileIn," .") # if you can use ssh keys
   cat(command,sep="\n")
   system(command)
-  check <- file.exists(FileIn)
+  check <- file.exists(basename(FileIn))
   return(check)
 }
 
@@ -48,7 +48,7 @@ get_local <- function(config,FileIn){
   FileDestin <- file.path(".",FileIn)
   if(file.exists(FileDestin)) file.remove(FileDestin)
   file.symlink(from = FileOrigin, to = FileDestin)
-  check <- file.exists(FileIn)
+  check <- file.exists(basename(FileIn))
   return(check)
 }
 

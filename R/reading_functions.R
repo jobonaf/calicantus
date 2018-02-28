@@ -248,3 +248,13 @@ read.EEA <- function(file, poll, day, sep=",",
   
   return(data.frame(dat))
 }
+
+
+read.ArpaFVG <- function(file,sep,day,stat) {
+  dat <- read.csv(file=file,sep=sep,header=T, stringsAsFactors = F)
+  library(dplyr)
+  dat %>% filter(day==substr(Time,1,10)) -> dat
+  if(!is.null(stat) && stat=="max") dat %>% group_by(Station) %>% 
+    summarize(Value=max(Value,na.rm=T)) -> dat
+  as.data.frame(dat)
+}

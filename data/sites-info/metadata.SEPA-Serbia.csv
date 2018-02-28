@@ -1,0 +1,5 @@
+AirQualityStationEoICode,Countrycode,Namespace,LON,LAT,Altitude,AirQualityStationType,AirQualityStationArea,BuildingDistance,KerbDistance,station_name
+RS0031A,RS,RS.SEPA.AQ,19.835704,45.238642,81,background,urban,,,Novi Sad-Liman
+RS0032A,RS,RS.SEPA.AQ,20.459113,44.82112,103,background,urban,,,Belgrade-Stari grad
+RS0033A,RS,RS.SEPA.AQ,21.919025,43.322554,198,background,urban,,,Nis-Osnovna skola Sveti Sava
+RS0034A,RS,RS.SEPA.AQ,20.454008,45.821483,78,background,urban,,,Kikinda

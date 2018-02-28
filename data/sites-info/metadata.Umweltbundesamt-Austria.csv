@@ -1,6 +1,6 @@
 AirQualityStationEoICode,Countrycode,Namespace,LON,LAT,Altitude,AirQualityStationType,AirQualityStationArea,BuildingDistance,KerbDistance,station_name
 AT0ENK1,AT,AT.0008.20.AQ,13.671123,48.391688,525,background,rural-remote/rural-regional,50,,Enzenkirchen im Sauwald
-AT0ILL1,AT,AT.0008.20.AQ,16.766409,47.770142,117,background,rural-remote/rural-regional,,,Illmitz am Neusiedler See
+AT0ILL1,AT,AT.0008.20.AQ,16.766409,47.770148,117,background,rural-remote/rural-regional,,,Illmitz am Neusiedler See
 AT0KLH1,AT,AT.0008.20.AQ,15.956372,46.760797,363,background,rural-regional,,,Klöch bei Bad Radkersburg
 AT0PIL1,AT,AT.0008.20.AQ,15.942222,48.721106,315,background,rural-remote/rural-regional,,,Pillersdorf bei Retz
 AT0SON1,AT,AT.0008.20.AQ,12.957996,47.054278,3106,background,rural-remote,,,Sonnblick
@@ -9,6 +9,7 @@ AT0ZOE2,AT,AT.0008.20.AQ,14.441398,47.838619,899,background,rural-remote,,,Zöbel
 AT10001,AT,AT.0008.20.AQ,16.52749,47.840006,160,background,suburban,50,40,Eisenstadt Laschoberstraße
 AT10002,AT,AT.0008.20.AQ,16.202292,47.325846,339,background,rural-regional,15,,Oberschützen
 AT10003,AT,AT.0008.20.AQ,17.071397,48.109438,138,background/industrial,suburban,,1200,Kittsee
+AT2F103,AT,AT.0008.20.AQ,14.266111,46.653056,455,traffic,suburban,50,40,Klagenfurt A2 Nordumfahrung 2
 AT2F202,AT,AT.0008.20.AQ,14.528951,46.841962,810,industrial,rural,36,,Klein St. Paul - Pemberg
 AT2KA21,AT,AT.0008.20.AQ,14.317592,46.623134,445,traffic/background,urban,19,4.25833333333333,Klagenfurt Völkermarkter Straße
 AT2KA61,AT,AT.0008.20.AQ,14.26752,46.652634,455,traffic,suburban,100,7,Klagenfurt A2 Nordumfahrung
@@ -20,46 +21,47 @@ AT2WO15,AT,AT.0008.20.AQ,14.843893,46.835135,451,traffic/industrial/background,u
 AT2WO35,AT,AT.0008.20.AQ,14.891772,46.708212,540,background,rural-regional,,,St. Georgen im Lavanttal - Herzogberg
 AT30065,AT,AT.0008.20.AQ,16.157323,48.200719,255,background,suburban,6,3,Purkersdorf; Tullnerbachstraße
 AT30101,AT,AT.0008.20.AQ,14.878707,48.120283,270,background,suburban/urban,,10,Amstetten
-AT30104,AT,AT.0008.20.AQ,14.547111,48.179158,295,traffic,rural-regional/rural,120,70,St. Valentin; Westautobahn
+AT30104,AT,AT.0008.20.AQ,14.532575,48.186107,280,traffic/background,rural-regional/suburban,20,155.714285714286,St. Valentin; Westautobahn
 AT30201,AT,AT.0008.20.AQ,16.206332,47.95953,274,background,suburban,50,3,Bad Vöslau; Gainfarn
 AT30202,AT,AT.0008.20.AQ,15.919426,48.106122,581,background,rural-regional/rural,,100,Forsthof am Schöpfl
 AT30301,AT,AT.0008.20.AQ,16.960267,48.143762,172,background/industrial,suburban,,70,Hainburg Krankenhaus
 AT30302,AT,AT.0008.20.AQ,16.675917,48.050542,224,background,rural-nearcity/rural,,,Stixneusiedl
-AT30401,AT,AT.0008.20.AQ,16.729962,48.334714,161,background,suburban/rural,100,400,Gänserndorf Baumschulweg
+AT30401,AT,AT.0008.20.AQ,16.729962,48.334714,161,background/industrial,suburban/rural,100,400,Gänserndorf Baumschulweg
 AT30403,AT,AT.0008.20.AQ,16.522494,48.392231,230,background,rural-nearcity,100,550,Wolkersdorf
-AT30407,AT,AT.0008.20.AQ,16.636962,48.236671,150,background,rural-nearcity,,3,Glinzendorf im Marchfeld
+AT30407,AT,AT.0008.20.AQ,16.636684,48.233755,150,background,rural-nearcity/rural-regional,,3,Groß-Enzersdorf - Glinzendorf
 AT30502,AT,AT.0008.20.AQ,15.046679,48.878613,565,background,rural-regional,100,4,Heidenreichstein Thaures
-AT30599,AT,AT.0008.20.AQ,16.327951,48.308234,181,traffic,suburban,30,13,Klosterneuburg Bahnhof Klosterneuburg-Kierling
+AT30599,AT,AT.0008.20.AQ,16.327951,48.308234,181,traffic,suburban,30,12.6,Klosterneuburg B14 (Bahnhof Klosterneuburg-Kierling)
 AT30601,AT,AT.0008.20.AQ,16.313659,48.301846,211,background,suburban,20,5,Klosterneuburg Wisentgasse (Friedhof)
-AT30902,AT,AT.0008.20.AQ,16.198362,48.386792,180,traffic/background,suburban,15,193.333333333333,Stockerau; Rudolf Diesel-Straße
-AT31204,AT,AT.0008.20.AQ,15.201507,48.213206,216,background,rural-regional/suburban,100,,Pöchlarn
+AT30902,AT,AT.0008.20.AQ,16.198362,48.386792,180,traffic/background,suburban,15,161.428571428571,Stockerau; Rudolf Diesel-Straße
+AT31204,AT,AT.0008.20.AQ,15.201507,48.213206,216,background,rural-regional/rural,100,,Pöchlarn
 AT31401,AT,AT.0008.20.AQ,16.302241,48.086104,213,background,suburban,100,,Mödling Bachgasse
 AT31402,AT,AT.0008.20.AQ,16.331497,48.125011,194,traffic,suburban,50,200,Vösendorf Kindbergstraße
 AT31406,AT,AT.0008.20.AQ,16.337217,48.083334,188,traffic/background,suburban,15,244,Biedermannsdorf Mühlengasse
-AT31413,AT,AT.0008.20.AQ,16.330285,48.083883,214,traffic/background,suburban,30,133.333333333333,Wiener Neudorf Hauptstraße
-AT31502,AT,AT.0008.20.AQ,15.854724,47.670002,890,background,rural-regional,,,Payerbach - Kreuzberg
-AT31701,AT,AT.0008.20.AQ,15.544981,48.370653,313,background,rural-nearcity/rural,,10,Dunkelsteinerwald - Unterbergern
+AT31413,AT,AT.0008.20.AQ,16.330285,48.083883,214,traffic,suburban,30,142.857142857143,Wiener Neudorf Hauptstraße
+AT31502,AT,AT.0008.20.AQ,15.857249,47.670129,890,background,rural-regional,,,Payerbach - Kreuzberg
+AT31701,AT,AT.0008.20.AQ,15.546216,48.370653,313,background,rural-nearcity/rural,,10,Dunkelsteinerwald - Unterbergern
 AT31703,AT,AT.0008.20.AQ,15.746936,48.353335,190,background,rural-regional/suburban,,,Traismauer
 AT31901,AT,AT.0008.20.AQ,16.061114,48.330317,229,background,suburban,10,3.5,Tulln Leopoldgasse
 AT31902,AT,AT.0008.20.AQ,15.906387,48.329714,200,background/industrial,rural,5,,Zwentendorf im Tullnerfeld
 AT31904,AT,AT.0008.20.AQ,15.935398,48.276496,220,background,rural,,10,Streithofen im Tullnerfeld
 AT32301,AT,AT.0008.20.AQ,15.632921,48.21196,270,background,suburban/urban,30,10,St. Pölten Eybnerstraße
-AT32302,AT,AT.0008.20.AQ,15.615751,48.205642,271,traffic/background,urban,15,7.25,St. Pölten Europaplatz HTL
+AT32302,AT,AT.0008.20.AQ,15.615751,48.205642,271,traffic/background,urban,15,8,St. Pölten Europaplatz HTL
 AT32401,AT,AT.0008.20.AQ,16.255007,47.814155,265,background,suburban,,,Wiener Neustadt
 AT32501,AT,AT.0008.20.AQ,15.619716,48.409015,195,background,urban/suburban,100,3,Krems
 AT32604,AT,AT.0008.20.AQ,14.772268,48.045047,750,background,rural-regional/rural,,,Kematen an der Ybbs
 AT32701,AT,AT.0008.20.AQ,16.47446,48.144995,155,background/industrial,suburban,100,15,Schwechat Sportplatz; Mühlgasse
 AT32702,AT,AT.0008.20.AQ,16.511387,48.147902,159,traffic/background,suburban,50,56,Mannswörth bei Schwechat; Danubiastraße/A4
 AT4S108,AT,AT.0008.20.AQ,14.574719,48.531105,918,background,rural-regional,35,20,Grünbach bei Freistadt
-AT4S125,AT,AT.0008.20.AQ,13.632661,47.716523,460,background,suburban,21.4285714285714,171.428571428571,Bad Ischl; Rettenbachstraße
-AT4S156,AT,AT.0008.20.AQ,13.039886,48.258068,350,background,suburban/urban,10,20,Braunau Zentrum; Kolpingplatz
+AT4S125,AT,AT.0008.20.AQ,13.632661,47.716523,460,background,suburban,27.1428571428571,171.428571428571,Bad Ischl; Rettenbachwaldstraße
+AT4S156,AT,AT.0008.20.AQ,13.039886,48.258068,350,background,suburban,10,20,Braunau Zentrum; Kolpingplatz
 AT4S173,AT,AT.0008.20.AQ,14.365851,48.278897,250,industrial/background,suburban,25,175,Steyregg Au; Freizeitpark
-AT4S184,AT,AT.0008.20.AQ,14.297498,48.306103,260,background,urban,20,75,Linz Stadtpark; Noßbergerstraße
-AT4S217,AT,AT.0008.20.AQ,14.436924,48.209445,255,traffic/background,rural/rural-nearcity,175,10,Enns Kristein 3 - Westautobahn
+AT4S184,AT,AT.0008.20.AQ,14.297499,48.306104,260,background,urban,20,75,Linz Stadtpark; Noßbergerstraße
+AT4S217,AT,AT.0008.20.AQ,14.436924,48.209445,255,traffic/background,rural/rural-nearcity,175,10,Enns Kristein 3 - A1 Westautobahn
 AT4S404,AT,AT.0008.20.AQ,14.238905,48.22529,274,background,suburban,35,200,Traun Tischlerstraße
-AT4S406,AT,AT.0008.20.AQ,14.03555,48.165004,316,background,urban,20,40,Wels Linzerstraße
-AT4S407,AT,AT.0008.20.AQ,13.667854,48.001014,420,background,suburban,44,350,Vöcklabruck; Untere Agergasse
-AT4S409,AT,AT.0008.20.AQ,14.441187,48.050476,306,background,suburban/urban,40,130,Steyr Münichholz
+AT4S406,AT,AT.0008.20.AQ,14.035551,48.165004,316,background,urban/suburban,20,40,Wels Linzerstraße
+AT4S407,AT,AT.0008.20.AQ,13.667854,48.001014,420,background,suburban,38,350,Vöcklabruck; Untere Agergasse
+AT4S409,AT,AT.0008.20.AQ,14.441187,48.050476,306,background,suburban,40,130,Steyr Münichholz
+AT4S415,AT,AT.0008.20.AQ,14.297772,48.323346,255,traffic/industrial,urban/suburban,76.6666666666667,20,Linz 24er Turm A7
 AT4S416,AT,AT.0008.20.AQ,14.314737,48.274426,265,background/traffic/industrial,urban,20.7692307692308,38.4615384615385,Linz Neue Welt
 AT4S418,AT,AT.0008.20.AQ,13.600841,47.971948,510,industrial/background,rural,30,400,Lenzing Winterstrasse
 AT4S431,AT,AT.0008.20.AQ,14.28295,48.30296,262,traffic/background/industrial,urban,20,4.25714285714286,Linz Römerberg B139
@@ -79,8 +81,8 @@ AT60107,AT,AT.0008.20.AQ,15.151495,47.044844,390,background,suburban/urban,30,33
 AT60114,AT,AT.0008.20.AQ,14.753317,47.192495,675,background,suburban,7.2,,Zeltweg Hauptschule
 AT60118,AT,AT.0008.20.AQ,14.67703,47.178818,715,background,suburban,35,,Judenburg; Sportplatz
 AT60119,AT,AT.0008.20.AQ,14.824863,47.21031,635,background,urban,30,,Knittelfeld Parkstraße
-AT60135,AT,AT.0008.20.AQ,15.339579,47.112789,454,industrial/background,rural/urban,14,,Straßengel Kirche
-AT60136,AT,AT.0008.20.AQ,15.353417,47.119807,375,industrial/background,rural/suburban,,,Judendorf Süd
+AT60135,AT,AT.0008.20.AQ,15.339579,47.112789,454,industrial,rural/urban,14,,Straßengel Kirche
+AT60136,AT,AT.0008.20.AQ,15.353417,47.119807,375,industrial,rural/suburban,,,Judendorf Süd
 AT60137,AT,AT.0008.20.AQ,15.016676,47.059177,900,background,rural-regional,,,Hochgössnitz
 AT60138,AT,AT.0008.20.AQ,15.414709,47.09487,352,background,suburban,,,Graz Nord Gösting
 AT60139,AT,AT.0008.20.AQ,15.404241,47.069596,370,background,suburban,9,93,Graz West - Eggenberg
@@ -106,34 +108,33 @@ AT60197,AT,AT.0008.20.AQ,15.540569,46.778341,271,background,suburban,20,5.3,Leib
 AT60198,AT,AT.0008.20.AQ,16.078914,47.047096,276,background,suburban,,105,Fürstenfeld Schillerplatz
 AT72106,AT,AT.0008.20.AQ,11.417324,47.271463,570,traffic/background,urban,14.5,6.25,Innsbruck Reichenau - Andechsstraße
 AT72110,AT,AT.0008.20.AQ,11.392712,47.262845,578,traffic/background,urban,5.44444444444445,1,Innsbruck Zentrum - Fallmerayerstraße
-AT72113,AT,AT.0008.20.AQ,11.371229,47.270423,675,background,suburban,,,Innsbruck Sadrach
+AT72113,AT,AT.0008.20.AQ,11.371229,47.270423,675,background,suburban,70,,Innsbruck Sadrach
 AT72223,AT,AT.0008.20.AQ,11.390735,47.239787,684,traffic,rural/suburban,70.5,4.4,Gärberbach A13 Brennerautobahn
 AT72227,AT,AT.0008.20.AQ,11.512518,47.278067,559,traffic/background,suburban,30,230,Hall in Tirol Untere Lend
 AT72315,AT,AT.0008.20.AQ,10.735651,47.216955,717,traffic,rural/suburban,50.5,5,Imst Inntalautobahn A12
-AT72530,AT,AT.0008.20.AQ,12.067026,47.488836,509,traffic/background,suburban,15,4,Wörgl Stelzhamerstraße
-AT72538,AT,AT.0008.20.AQ,11.910231,47.458926,601,background,rural-regional/rural,,,Kramsach Angerberg
+AT72530,AT,AT.0008.20.AQ,12.067026,47.488836,509,traffic/background,suburban,13,155,Wörgl Stelzhamerstraße
+AT72538,AT,AT.0008.20.AQ,11.910231,47.458926,601,background,rural-regional/rural,135,1,Kramsach Angerberg
 AT72550,AT,AT.0008.20.AQ,11.958205,47.468911,508,traffic,rural/rural-regional,100,5.33333333333333,Kundl A12 Inntal-Autobahn
-AT72552,AT,AT.0008.20.AQ,12.172925,47.583775,496,traffic/background,urban,7,5.4,Kufstein Zentrum Praxmarerstraße
-AT72710,AT,AT.0008.20.AQ,10.744163,47.447683,989,traffic/background,rural,17,135,Heiterwang
-AT72821,AT,AT.0008.20.AQ,11.692505,47.348937,554,traffic/background,suburban/rural,50,4.375,Vomp A12 (Inntalautobahn); Raststätte
+AT72552,AT,AT.0008.20.AQ,12.172925,47.583775,496,traffic/background,urban,5,4,Kufstein Zentrum Praxmarerstraße
+AT72710,AT,AT.0008.20.AQ,10.744163,47.447683,989,traffic/background,rural,17,4.11111111111111,Heiterwang Ort L355
+AT72821,AT,AT.0008.20.AQ,11.692505,47.348937,554,traffic/background,suburban/rural,55,4.375,Vomp A12 Inntalautobahn; Raststätte
 AT72822,AT,AT.0008.20.AQ,11.693102,47.34847,544,traffic/background,rural,8.5,55,Vomp An der Leiten
-AT72910,AT,AT.0008.20.AQ,12.765611,46.827883,672,traffic/background,urban,25,3.57142857142857,Lienz Amlacherkreuzung
-AT72912,AT,AT.0008.20.AQ,12.765958,46.819142,681,background,suburban,14,60,Lienz Tristacher-See-Straße; Tiefbrunnen
+AT72910,AT,AT.0008.20.AQ,12.765611,46.827883,672,traffic/background,urban,25,3.42857142857143,Lienz Amlacherkreuzung
+AT72912,AT,AT.0008.20.AQ,12.765958,46.819142,681,background,suburban,14,35,Lienz Tristacher-See-Straße; Tiefbrunnen
 AT80503,AT,AT.0008.20.AQ,9.926679,47.529187,1020,background,rural-remote/rural-regional,,,Sulzberg - Gmeind
-AT80706,AT,AT.0008.20.AQ,9.653198,47.410517,410,background,urban/suburban,,,Lustenau Wiesenrain
 AT80709,AT,AT.0008.20.AQ,9.640412,47.459286,405,traffic,suburban/urban,20,5,Höchst Gemeindeamt
 AT80710,AT,AT.0008.20.AQ,9.649958,47.432504,410,traffic,suburban/urban,10,5,Lustenau Zollamt
-AT80807,AT,AT.0008.20.AQ,9.743823,47.410426,440,background/traffic,urban,10,10,Dornbirn Stadtstraße
-AT81919,AT,AT.0008.20.AQ,9.597244,47.23918,460,traffic/background,urban,2.77777777777778,5,Feldkirch Bärenkreuzung
-AT82708,AT,AT.0008.20.AQ,9.82484,47.15631,580,background,suburban/urban,,5,Bludenz Herrengasse
-AT82801,AT,AT.0008.20.AQ,10.03973,47.12841,940,traffic/background,rural,50,16,Wald am Arlberg S16
-AT900KE,AT,AT.0008.20.AQ,16.475801,48.156812,156,industrial/background,suburban,34,8,Kaiser-Ebersdorf
+AT80807,AT,AT.0008.20.AQ,9.743823,47.410426,440,background/traffic,urban/suburban,8.66666666666667,11,Dornbirn Stadtstraße
+AT81919,AT,AT.0008.20.AQ,9.597244,47.23918,460,traffic,urban,2.77777777777778,5,Feldkirch Bärenkreuzung
+AT82801,AT,AT.0008.20.AQ,10.03973,47.12841,940,traffic,rural,50,17.5,Wald am Arlberg S16
+AT900KE,AT,AT.0008.20.AQ,16.475801,48.156812,156,industrial/background,suburban,34,58.6666666666667,Kaiser-Ebersdorf
 AT900ZA,AT,AT.0008.20.AQ,16.357431,48.249086,208,background,urban/suburban,0.75,146,Hohe Warte
-AT90A23,AT,AT.0008.20.AQ,16.434568,48.20305,162,traffic/background,urban/suburban,29,162.826086956522,Wehlistraße/Südosttangente
-AT90AKC,AT,AT.0008.20.AQ,16.345693,48.21933,192,traffic/background,urban,15,102.28,AKH
-AT90FLO,AT,AT.0008.20.AQ,16.396952,48.260982,160,traffic/background,urban,8,32.4,Floridsdorf
-AT90LOB,AT,AT.0008.20.AQ,16.526099,48.162263,153,background/industrial,suburban,3,2180,Lobau
+AT90A23,AT,AT.0008.20.AQ,16.434567,48.203051,162,traffic/background,urban/suburban,29,162.5,A23 Südosttangente/Wehlistraße
+AT90AKC,AT,AT.0008.20.AQ,16.345688,48.219337,192,traffic/background,urban,15,102.28,AKH
+AT90FLO,AT,AT.0008.20.AQ,16.396952,48.260982,160,traffic/background,urban,8,44.2,Floridsdorf
+AT90LOB,AT,AT.0008.20.AQ,16.526035,48.162237,153,background/industrial,suburban,3,2180,Lobau
 AT90MBA,AT,AT.0008.20.AQ,16.300899,48.18861,194,traffic,urban,0.75,3.14285714285714,Hietzinger Kai
+AT90TAB,AT,AT.0008.20.AQ,16.381304,48.217236,161,traffic,urban,6,4.5,Taborstraße
 AT9BELG,AT,AT.0008.20.AQ,16.362157,48.174646,219,traffic/background,urban,15.3333333333333,4.57142857142857,Belgradplatz
 AT9GAUD,AT,AT.0008.20.AQ,16.339878,48.18743,177,traffic/background,urban,11,54.4444444444445,Gaudenzdorf
 AT9JAEG,AT,AT.0008.20.AQ,16.29801,48.270589,502,background,suburban,,,Hermannskogel
@@ -146,13 +147,13 @@ AT2KA41,AT,AT.0008.20.AQ,14.289254,46.629474,550,background,suburban,,,Klagenfur
 AT2M121,AT,AT.0008.20.AQ,13.70522,46.557774,574,industrial/background,suburban/rural,17,2.66666666666667,Arnoldstein Gailitz Waldsiedlungsstraße
 AT2VL52,AT,AT.0008.20.AQ,13.910316,46.691566,1896,background,rural-regional/rural-remote,,,Gerlitzen Steinturm
 AT30103,AT,AT.0008.20.AQ,14.866668,48.179735,465,background,rural-regional/rural,,,Kollmitzberg
-AT30603,AT,AT.0008.20.AQ,16.433332,48.086103,172,background,rural-nearcity/suburban,,,Himberg; Alter Markt
 AT30701,AT,AT.0008.20.AQ,15.942769,48.528893,230,background,rural-regional,,,Ziersdorf
 AT30801,AT,AT.0008.20.AQ,15.500264,48.724432,556,background,rural-regional,,10,Irnfritz - Rothweinsdorf
 AT31102,AT,AT.0008.20.AQ,15.32194,47.858605,886,background,rural-remote/rural-regional,100,,Annaberg; Joachimsberg
 AT31301,AT,AT.0008.20.AQ,16.580561,48.578609,250,background,suburban/rural,50,,Mistelbach Steinhübel
 AT32101,AT,AT.0008.20.AQ,16.29308,47.60833,738,background,rural-regional,,,Wiesmath
 AT4S235,AT,AT.0008.20.AQ,13.720757,47.815842,1602,background,rural-remote/rural,,,Feuerkogel (Höllengebirge)
+AT52055,AT,AT.0008.20.AQ,13.233065,47.650431,1012,background,rural-regional/rural,,,St. Koloman Kleinhorn
 AT60018,AT,AT.0008.20.AQ,15.438063,47.076534,450,background,urban,,,Graz Schloßberg
 AT60036,AT,AT.0008.20.AQ,15.493646,47.066984,477,background,suburban,,,Graz Lustbühel
 AT60150,AT,AT.0008.20.AQ,15.360833,47.405269,1615,background,rural-remote,,,Rennfeld
@@ -161,11 +162,14 @@ AT60185,AT,AT.0008.20.AQ,15.956398,46.760126,358,background,rural-regional,,,Klö
 AT60189,AT,AT.0008.20.AQ,13.636408,47.359304,1847,background,rural-remote,,,Hochwurzen
 AT60190,AT,AT.0008.20.AQ,15.367765,46.651958,785,background/industrial,rural-regional,,,Arnfels - Remschnigg
 AT60196,AT,AT.0008.20.AQ,14.330008,47.040275,1754,background,rural-regional/rural-remote,,,Grebenzen bei St. Lambrecht
+AT72123,AT,AT.0008.20.AQ,11.377029,47.305857,1934,background,rural-regional/rural-nearcity,,,Innsbruck Nordkette (Seegrube)
 AT72705,AT,AT.0008.20.AQ,10.682255,47.469918,878,background,rural-regional,30,2,Höfen Lärchbichl
+AT80706,AT,AT.0008.20.AQ,9.653235,47.410492,410,background,urban/suburban,,,Lustenau Wiesenrain
+AT82708,AT,AT.0008.20.AQ,9.82484,47.15631,580,background,suburban/urban,,66.6666666666667,Bludenz Herrengasse
 AT90LAA,AT,AT.0008.20.AQ,16.392868,48.161224,250,background,urban/suburban,24,23.7777777777778,Laaer Berg
 AT2M226,AT,AT.0008.20.AQ,14.39849,46.609315,425,background,rural,21,6,Ebenthal Zell
 AT2WO25,AT,AT.0008.20.AQ,14.822216,46.76389,430,industrial/background,urban/suburban,19,5.5,St. Andrä i. L. Volksschule
-AT4S415,AT,AT.0008.20.AQ,14.297772,48.323346,255,traffic/background/industrial,urban/suburban,74,19.5454545454545,Linz 24er Turm A7
-AT72519,AT,AT.0008.20.AQ,11.872388,47.429931,520,industrial/background,rural,10,1.22222222222222,Brixlegg Innweg
-AT90TAB,AT,AT.0008.20.AQ,16.381359,48.217307,161,traffic,urban,5.54545454545455,4.36363636363636,Taborstraße
-AT52055,AT,AT.0008.20.AQ,13.233065,47.650431,1012,background,rural-regional/rural,,,St. Koloman Kleinhorn
+AT72519,AT,AT.0008.20.AQ,11.872388,47.429931,520,industrial/background,rural,10,1.11111111111111,Brixlegg Innweg
+AT72619,AT,AT.0008.20.AQ,10.185693,46.968081,1583,background,rural,5,40,Galtür Volksschule
+AT4S245,AT,AT.0008.20.AQ,13.615046,47.974139,485,industrial,rural,,,Lenzing Hauptstraße
+AT30603,AT,AT.0008.20.AQ,16.433332,48.086103,172,background,rural-nearcity/suburban,,,Himberg; Alter Markt

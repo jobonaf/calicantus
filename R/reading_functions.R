@@ -258,3 +258,93 @@ read.ArpaFVG <- function(file,sep,day,stat) {
     summarize(Value=max(Value,na.rm=T)) -> dat
   as.data.frame(dat)
 }
+
+
+read.ArpaT_OpenData <- function(file,poll) {
+  library("RJSONIO")
+  dat <- RJSONIO::fromJSON(file,simplify = T)
+  as.data.frame(dat, stringsAsFactors = F)->dat
+  dat <- t(dat)
+  rownames(dat)<-rep(NULL,nrow(dat))
+  dat <- as.data.frame(dat, stringsAsFactors = F)
+  
+  library(dplyr)
+  dat %>% 
+    transmute_(Day="DATA_OSSERVAZIONE",
+               Value=gsub("\\.", "dot", poll),
+               Name="NOME_STAZIONE") %>%
+    mutate(Value=as.numeric(Value),
+           Day=as.Date(Day, format = "%d-%b-%y")) %>%
+    filter(!is.na(Value))-> dat
+  return(dat)
+}
+
+
+
+## NON FUNZIONA PERCHE' ACCEDE SOLO A POCHI DATI
+## !!!
+## L'ACCESSO ALTERNATIVO SEMBREREBBE LENTO
+## "https://www.dati.lombardia.it/api/views/nicp-bhqi/rows.json?accessType=DOWNLOAD"
+read.ArpaLombardia <- function(file="https://www.dati.lombardia.it/resource/2tw8-h2cp.json",
+                               day,poll,
+                               file_ana="https://www.dati.lombardia.it/resource/t4f9-i4k5.json") {
+  dat <- RJSONIO::fromJSON(file,simplify = T)
+  as.data.frame(dat, stringsAsFactors = F)->dat
+  dat <- t(dat)
+  rownames(dat)<-rep(NULL,nrow(dat))
+  dat <- as.data.frame(dat, stringsAsFactors = F)
+
+  ana <- RJSONIO::fromJSON(file_ana, depth = 0, simplify = T)
+  ana <- lapply(X = ana, 
+                FUN = function(x)unlist(x[c("idsensore",
+                                            "idstazione",
+                                            "lat","lng",
+                                            "nomestazione",
+                                            "nometiposensore")]))
+  as.data.frame(ana, stringsAsFactors = F)->ana
+  ana <- t(ana)
+  rownames(ana)<-rep(NULL,nrow(ana))
+  ana <- as.data.frame(ana, stringsAsFactors = F)
+  
+  library(dplyr)
+  Dat <- left_join(dat,ana)
+  
+  NomeTipoSensore <- switch(poll,
+                            "PM10"="PM10 (SM2005)",
+                            "NO2"="Biossido di Azoto",
+                            "PM2.5"="Particelle sospese PM2.5",
+                            "O3"="Ozono")
+  
+  Dat %>% filter(nometiposensore==NomeTipoSensore,
+                 substr(data,1,10)==day)
+}
+
+
+get_metadata.AppaBolzano <- function() {
+  ana <- RJSONIO::fromJSON("http://dati.retecivica.bz.it/services/airquality/stations")$features
+  ana <- lapply(X = ana, 
+                FUN = function(x) sapply(X = x$properties, 
+                                         FUN = function(x) ifelse(is.null(x),NA,x)))
+  as.data.frame(ana, stringsAsFactors = F)->ana
+  ana <- t(ana)
+  rownames(ana)<-rep(NULL,nrow(ana))
+  ana <- as.data.frame(ana, stringsAsFactors = F)
+  library(dplyr)
+  ana %>% mutate(LON=as.numeric(LONG),
+                 LAT=as.numeric(LAT)) %>%
+    select(-LONG)
+}
+
+read.AppaBolzano <- function(file, day) {
+  dat <-  RJSONIO::fromJSON(file, simplify = T)
+  as.data.frame(dat, stringsAsFactors = F)->dat
+  dat <- t(dat)
+  rownames(dat)<-rep(NULL,nrow(dat))
+  dat <- as.data.frame(dat, stringsAsFactors = F)
+  
+  library(dplyr)
+  dat %>% transmute(Value=as.numeric(VALUE),
+                    Day=substring(DATE,1,10),
+                    SCODE=SCODE) %>%
+    filter(Value>=0, Day==day)
+}

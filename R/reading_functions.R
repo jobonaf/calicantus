@@ -280,34 +280,17 @@ read.ArpaT_OpenData <- function(file,poll) {
 }
 
 
-
-## NON FUNZIONA PERCHE' ACCEDE SOLO A POCHI DATI
-## !!!
-## L'ACCESSO ALTERNATIVO SEMBREREBBE LENTO
-## "https://www.dati.lombardia.it/api/views/nicp-bhqi/rows.json?accessType=DOWNLOAD"
-read.ArpaLombardia <- function(file="https://www.dati.lombardia.it/resource/2tw8-h2cp.json",
-                               day,poll,
+## qui e nel download devo usare RSocrata, se no c'è un limite a 1000 righe!!
+read.ArpaLombardia <- function(file,poll,stat,token,path,
                                file_ana="https://www.dati.lombardia.it/resource/t4f9-i4k5.json") {
-  dat <- RJSONIO::fromJSON(file,simplify = T)
-  as.data.frame(dat, stringsAsFactors = F)->dat
-  dat <- t(dat)
-  rownames(dat)<-rep(NULL,nrow(dat))
-  dat <- as.data.frame(dat, stringsAsFactors = F)
-
-  ana <- RJSONIO::fromJSON(file_ana, depth = 0, simplify = T)
-  ana <- lapply(X = ana, 
-                FUN = function(x)unlist(x[c("idsensore",
-                                            "idstazione",
-                                            "lat","lng",
-                                            "nomestazione",
-                                            "nometiposensore")]))
-  as.data.frame(ana, stringsAsFactors = F)->ana
-  ana <- t(ana)
-  rownames(ana)<-rep(NULL,nrow(ana))
-  ana <- as.data.frame(ana, stringsAsFactors = F)
+  library("RSocrata")
+  ana <- read.socrata(url = file_ana, app_token = token)
+  cat(paste(path,file,sep="/"), sep="\n")
+  dat <- read.socrata(url = paste(path,file,sep="/"), app_token = token)
   
   library(dplyr)
-  Dat <- left_join(dat,ana)
+  Dat <- left_join(dat,ana) %>% 
+    mutate(valore=as.numeric(valore))
   
   NomeTipoSensore <- switch(poll,
                             "PM10"="PM10 (SM2005)",
@@ -316,11 +299,31 @@ read.ArpaLombardia <- function(file="https://www.dati.lombardia.it/resource/2tw8
                             "O3"="Ozono")
   
   Dat %>% filter(nometiposensore==NomeTipoSensore,
-                 substr(data,1,10)==day)
+                 stato=="VA",
+                 valore>=0) -> Dat
+  if(stat=="max")  Dat %>% 
+    group_by(idstazione) %>%
+    summarize(valore=max(valore,na.rm=T),
+              valid=n()) %>%
+    filter(valid>=18) -> Dat
+  as.data.frame(Dat)
+}
+
+get_metadata.ArpaLombardia <- function(file_ana="https://www.dati.lombardia.it/resource/t4f9-i4k5.json") {
+  library("RSocrata")
+  source("/home/giovanni/R/projects/calicantus/config/obs-data-access/access.ARPA-Lombardia.O3.R", local = T)
+  ana <- read.socrata(url = file_ana, app_token = Pwd)
+  library(dplyr)
+  ana %>% transmute(idStazione=idstazione,
+                    LAT=as.numeric(lat),
+                    LON=as.numeric(lng),
+                    Height=as.numeric(quota),
+                    NAME=gsub(" \\$","",nomestazione)) %>%
+    distinct()
 }
 
 
-get_metadata.AppaBolzano <- function() {
+get_metadata.AppaBolzano <- function(fix=T) {
   ana <- RJSONIO::fromJSON("http://dati.retecivica.bz.it/services/airquality/stations")$features
   ana <- lapply(X = ana, 
                 FUN = function(x) sapply(X = x$properties, 
@@ -332,7 +335,18 @@ get_metadata.AppaBolzano <- function() {
   library(dplyr)
   ana %>% mutate(LON=as.numeric(LONG),
                  LAT=as.numeric(LAT)) %>%
-    select(-LONG)
+    select(-LONG) -> ana
+  sx2dc <- function(x) {
+    x <- x*10000
+    s <- x %% 100
+    x <- (x-s) /100
+    m <- x %% 100
+    x <- (x-m) /100
+    x + (m/60) + (s/3600)
+  }
+  if(fix) ana %>% mutate(LON=sx2dc(LON), 
+                         LAT=sx2dc(LAT)) -> ana
+  ana
 }
 
 read.AppaBolzano <- function(file, day) {
@@ -347,4 +361,18 @@ read.AppaBolzano <- function(file, day) {
                     Day=substring(DATE,1,10),
                     SCODE=SCODE) %>%
     filter(Value>=0, Day==day)
+}
+
+read.ArpaVda <- function(file,sep,stat) {
+  library(tidyr)
+  library(dplyr)
+  read.table(file,sep=sep,header=T) %>%
+    gather(key=ID,value=Value,-date) %>%
+    mutate(Value=as.numeric(as.character(Value)),
+           date=as.POSIXct(date),
+           day=format(date,format="%Y%m%d")) -> dat
+  out <- NULL
+  if(stat=="mean") dat %>% group_by(day,ID) %>% summarize(Value=mean(Value, na.rm=T)) -> out
+  if(stat=="max")  dat %>% group_by(day,ID) %>% summarize(Value=max(Value, na.rm=T)) -> out
+  return(as.data.frame(out))
 }

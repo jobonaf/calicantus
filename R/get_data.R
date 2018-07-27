@@ -106,7 +106,7 @@ get_data <- function(config,day,
                      verbose=F){
   day.shift <- 0
   source(config, local = TRUE)
-  cat(paste0("applying day shift: ",day.shift),sep="\n")
+  cat(paste0("\napplying day shift: ",day.shift),sep="\n")
   FileIn <- format(as.Date(day)+day.shift, format=File)
   if(!verbose) suppressWarnings(file.remove(FileIn))
 

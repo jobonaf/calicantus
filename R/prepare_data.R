@@ -17,7 +17,7 @@ read_data <- function(config,filedata,metadata,day,pollutant,
   }
   if(check) {
     if(verbose) cat(paste0("file[s] read: ",paste(filedata,collapse=", ")), sep="\n")
-    ana <- read.csv(metadata)
+    ana <- read.csv(metadata, stringsAsFactors = FALSE)
     id.dat <- match(as.character(ana[,Id.metadata]),as.character(dat[,Id.data]))
     id.ana <- which(!is.na(id.dat))
     check <- length(id.ana)>0

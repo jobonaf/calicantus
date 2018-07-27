@@ -8,10 +8,10 @@ sources <- c("ARPA-Sicilia","ARPA-Lombardia","ARPAV","ARPA-FVG","ARPAB",
              "ARPA-Liguria","ARPAC","ARPA-Lazio","ARPA-Umbria","ARPA-Puglia",
              "ARPAT","AZO-Croatia","DT-DA-SPAAS-UACER-Ticino","ARPA-Piemonte",
              "ARPAE","ARSO-Slovenia", "Umweltbundesamt-Austria","SEPA-Serbia",
-             "APPA-Trento")
-#sources <- c("APPA-Trento")
-pollutants <- c("PM10","O3","PM2.5","NO2")
-#pollutants <- c("PM10","PM2.5")
+             "APPA-Trento","APPA-Bolzano","ExEA-Bulgaria", "ARPA-VdA")
+#sources <- c("ARPA-Liguria")
+pollutants <- c("PM10","PM2.5","NO2","O3")
+#pollutants <- c("PM10")
 
 # arguments
 if(interactive()) {

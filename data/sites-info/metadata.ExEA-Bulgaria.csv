@@ -1,0 +1,30 @@
+AirQualityStationEoICode,Countrycode,Namespace,LON,LAT,Altitude,AirQualityStationType,AirQualityStationArea,BuildingDistance,KerbDistance,station_name
+BG0013A,BG,BG.BG-ExEA.AQ,27.587239,43.223044,20,industrial,suburban,35,4,Devnya - Izvorite
+BG0038A,BG,BG.BG-ExEA.AQ,26.938439,43.268206,212,background,urban,17,5,Shumen
+BG0040A,BG,BG.BG-ExEA.AQ,23.310972,42.732292,534,background,urban,17,46,Sofia - Nadezhda
+BG0041A,BG,BG.BG-ExEA.AQ,25.59345,42.056383,103,background,urban,24,9,Dimitrovgrad - Rakovski
+BG0043A,BG,BG.BG-ExEA.AQ,23.557414,43.207978,363,traffic,urban,22,40,Vratsa - ZHP Gara
+BG0044A,BG,BG.BG-ExEA.AQ,27.375144,42.518892,6,industrial,suburban,22,12,Burgas - kv. Dolno Ezerovo
+BG0045A,BG,BG.BG-ExEA.AQ,25.964086,43.851367,41,background,urban,45,11,Ruse - Vazrazhdane
+BG0050A,BG,BG.BG-ExEA.AQ,23.296786,42.680558,581,background,urban,31,20,Sofia - Hipodruma
+BG0052A,BG,BG.BG-ExEA.AQ,23.400164,42.666508,548,background,urban,16,27,Sofia - Druzhba
+BG0055A,BG,BG.BG-ExEA.AQ,25.637389,42.432356,208,traffic,urban,42,25,Stara Zagora - Zelen Klin
+BG0056A,BG,BG.BG-ExEA.AQ,27.420967,42.456622,51,background,suburban,30,30,Burgas - kv. Meden Rudnik
+BG0057A,BG,BG.BG-ExEA.AQ,25.691211,43.126475,172,background,urban,15,2,G.Oryahovitsa
+BG0058A,BG,BG.BG-ExEA.AQ,23.097822,42.001933,414,background,suburban,28,10,Blagoevgrad
+BG0070A,BG,BG.BG-ExEA.AQ,23.243864,42.637192,1321,background,rural-nearcity,50,82,Sofia Oblast - Kopitoto
+BG0071A,BG,BG.BG-ExEA.AQ,27.720956,42.659758,27,background,urban,10,2,Nesebar
+BG0075A,BG,BG.BG-ExEA.AQ,27.915733,43.224389,83,background,urban,17,5,Varna - SOU Angel Kanchev
+BG0019A,BG,BG.BG-ExEA.AQ,24.615006,43.4118,97,traffic,urban,17,5,Pleven
+BG0026A,BG,BG.BG-ExEA.AQ,25.875406,42.146475,136,industrial,urban,1,33,Galabovo
+BG0051A,BG,BG.BG-ExEA.AQ,24.765239,42.142889,166,background,urban,35,30,Plovdiv - Kamenitsa
+BG0078A,BG,BG.BG-ExEA.AQ,24.787952,42.141186,0,traffic,urban,1,1,Plovdiv - zh.k. Trakia
+BG0080A,BG,BG.BG-ExEA.AQ,23.032191,42.610335,0,traffic,urban,14,2,Pernik - Center
+BG0066A,BG,BG.BG-ExEA.AQ,24.715742,43.136925,177,background,urban,13,11,Lovech
+BG0069A,BG,BG.BG-ExEA.AQ,26.338325,42.674006,240,traffic,urban,16,3,Sliven
+BG0076A,BG,BG.BG-ExEA.AQ,27.833081,43.552883,246,background,suburban,15,12,Dobrich - OU Han Asparuh
+BG0053R,BG,BG.BG-ExEA.AQ,24.738078,41.694342,1720,background,rural-remote,58,130,Rozhen - KFS
+BG0079A,BG,BG.BG-ExEA.AQ,23.383271,42.655488,0,traffic,urban,28,89,Sofia - Mladost
+BG0073A,BG,BG.BG-ExEA.AQ,23.268403,42.669797,615,traffic,urban,17,12,Sofia - IAOS/Pavlovo
+BG0018A,BG,BG.BG-ExEA.AQ,25.379683,41.636078,238,background,urban,,,Kardzhali - Studen Kladenets
+BG0077A,BG,BG.BG-ExEA.AQ,24.714116,41.576623,920,traffic,urban,13,1,Smolyan - Bibliotekata

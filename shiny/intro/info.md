@@ -1,4 +1,4 @@
-_Calicantus_ is a service developed to collect and visualize air quality data. Most of the Italian regional environmental agencies take part in this project and share PM10, nitrogen dioxide, ozone and PM2.5 __observed data__, every day. Also observed data from Switzerland, Croatia, Slovenia and Austria are collected daily.  
+_Calicantus_ is a service developed to collect and visualize air quality data. Most of the Italian regional environmental agencies take part in this project and share PM10, nitrogen dioxide, ozone and PM2.5 __observed data__, every day. Also observed data from Switzerland, Croatia, Slovenia, Serbia, Bulgaria and Austria are collected daily.  
 
 Through an interactive web interface, you can explore and analyze the data. Interactive maps, cluster analysis and other tools facilitate the visualization and help the interpretation of past pollution episodes and of the current situation. Furthermore, __air quality forecasts__ (for PM10, ozone and PM2.5) for today and three days ahead are shown, provided by seven chemistry-transport models of the [Copernicus Atmosphere Monitoring Service](https://atmosphere.copernicus.eu/). 
 

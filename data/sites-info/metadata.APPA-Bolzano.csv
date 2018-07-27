@@ -1,21 +1,21 @@
 "SCODE","NAME_D","NAME_I","NAME_L","FLAGS","LAT","LON"
-"RE1","Ritten - Rittner Horn / Grünwald","Renon - Corno di Renon / Grünwald",NA,NA,46.58917,11.43333
-"LA1","Latsch - Bahnhofstraße","Laces - Via Stazione",NA,NA,46.61949,10.85907
-"BZ4","Bozen 4 - C.Augusta Straße","Bolzano 4 - Via C.Augusta",NA,NA,46.48250,11.34083
-"BX1","Brixen - Villa Adele - Bahnhofstraße","Bressanone - Villa Adele - Via Stazione",NA,NA,46.71528,11.65444
-"BR1","Bruneck - Goetheparkplatz","Brunico - Parcheggio Goethe",NA,NA,46.79734,11.94403
-"BZ5","Bozen 5 - Hadrianplatz","Bolzano 5 - Piazza Adriano",NA,NA,46.49528,11.34028
+"BZ6","Bozen 6 - Amba Alagi Straße, Garten","Bolzano 6 - Via Amba Alagi giardino",NA,NA,46.50000,11.34222
+"BZ2","Bozen 2 - Verdiplatz","Bolzano 2 - Piazza Verdi",NA,NA,46.49556,11.35472
 "ME1","Meran - Trogmann Straße","Merano - Via Trogmann",NA,NA,46.66222,11.16194
+"BX1","Brixen - Villa Adele - Bahnhofstraße","Bressanone - Villa Adele - Via Stazione",NA,NA,46.71528,11.65444
+"BR1","Bruneck - Goetheparkplatz","Brunico - Parcheggio Goethe",NA,NA,46.79735,11.94404
+"ST1","Sterzing - Josef Hirn-Straße","Vipiteno - Via Josef Hirn",NA,NA,46.89472,11.42583
+"RE1","Ritten - Rittner Horn / Grünwald","Renon - Corno di Renon / Grünwald",NA,NA,46.58917,11.43333
+"LA1","Latsch - Bahnhofstraße","Laces - Via Stazione",NA,NA,46.61528,10.85722
+"BZ4","Bozen 4 - C.Augusta Straße","Bolzano 4 - Via C.Augusta",NA,NA,46.48250,11.34083
+"BZ5","Bozen 5 - Hadrianplatz","Bolzano 5 - Piazza Adriano",NA,NA,46.49547,11.33997
+"AB1","Autobahn Nord - Klausen","Autostrada Nord - Chiusa",NA,"A22",46.67436,11.61943
+"AB2","Autobahn Süd - Neumarkt","Autostrada Sud - Egna",NA,"A22",46.33181,11.27511
 "AB3","Autobahn Nord - Brixen","Autostrada Nord - Bressanone",NA,"A22",46.67917,11.62111
-"LS1","Leifers - Galizienstraße","Laives - Via Galizia",NA,NA,46.43444,11.33944
+"LS1","Leifers - Galizienstraße","Laives - Via Galizia",NA,NA,46.43484,11.34014
 "CR1","Kurtinig adW - Weinstraße","Cortina ssdV - Strada del Vino",NA,NA,46.26722,11.22722
 "BZ1","Bozen 1 - Amba Alagi Straße","Bolzano 1 - Via Amba Alagi",NA,NA,46.50000,11.34222
-"BZ2","Bozen 2 - Verdiplatz","Bolzano 2 - Piazza Verdi",NA,NA,NA,NA
 "BZ3","Bozen 3 - ","Bolzano 3 - ",NA,NA,NA,NA
-"ST1","Sterzing - Josef Hirn-Straße","Vipiteno - Via Josef Hirn",NA,NA,NA,NA
-"AB1","Autobahn Nord - Klausen","Autostrada Nord - Chiusa",NA,"A22",NA,NA
-"AB2","Autobahn Süd - Neumarkt","Autostrada Sud - Egna",NA,"A22",NA,NA
 "ML2","Autobahn Süd km 107, BrennerLEC","Autostrada Sud km 107, BrennerLEC",NA,NA,NA,NA
 "ML5","Autobahn Süd km 103, BrennerLEC","Autostrada Sud km 103, BrennerLEC",NA,NA,NA,NA
 "ML6","Bozen, Romstraße, ex-Saetta","Bolzano, via Roma, ex-Saetta",NA,NA,NA,NA
-"BZ6","Bozen 6 - Amba Alagi Straße, Garten","Bolzano 6 - Via Amba Alagi giardino",NA,NA,NA,NA

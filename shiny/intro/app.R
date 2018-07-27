@@ -22,15 +22,22 @@ ui <- navbarPage(
   tabPanel("home", 
            fluidRow(
              column(
-               6,offset = 1,
-               includeMarkdown("/home/giovanni/R/projects/calicantus/shiny/intro/info.md"),
-               actionButton(inputId = "login",label = "Log in",icon = icon("sign-in"), width="120",
-                            onclick ="location.href='https://sdati.arpae.it/calicantus';"),
-               actionButton(inputId = "require_registration",label = "Register",icon = icon("user-plus"), width="120"),
-               actionButton(inputId = "require_participation",label = "Participate",icon = icon("database"), width="120"),
+               6,offset = 0,
+               wellPanel(includeMarkdown("/home/giovanni/R/projects/calicantus/shiny/intro/info.md")),
+               bsButton(type="action", inputId = "login",label = "Log in",icon = icon("sign-in"), width="120",
+                            onclick ="location.href='https://sdati.arpae.it/calicantus';",
+                            style = "primary"),
+               bsButton(type="action", inputId = "require_registration",label = "Register",
+                        icon = icon("user-plus"), width="120",
+                        style = "primary"),
+               bsButton(type="action", inputId = "require_participation",label = "Participate",
+                        icon = icon("database"), width="120",
+                        style = "primary"),
                bsTooltip("login","If you are already registered, you can log in here"),
                bsTooltip("require_registration","If you want to register to the service, please click here and fill the form"),
-               bsTooltip("require_participation","If you want to participate as data provider, please click here and fill the form. Please note that before becoming data provider, you should be registered as end-user.")
+               bsTooltip("require_participation","If you want to participate as data provider, please click here and fill the form. Please note that before becoming data provider, you should be registered as end-user."),
+               br(),
+               includeMarkdown("/home/giovanni/R/projects/calicantus/shiny/intro/info2.md")
              ),
              column(3,offset = 0, includeMarkdown("/home/giovanni/R/projects/calicantus/shiny/intro/figs.md"))
            ),

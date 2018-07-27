@@ -1,0 +1,6 @@
+"ID","NAME","SITE","LAT","LON","HEIGHT","NO2","O3","PM10","PM25","From"
+"AOPL","Aosta - Piazza Plouves","urban background",45.7369,7.32372,580,yes,yes,yes,yes,1994
+"AOLI","Aosta - Via Liconi","urban background",45.7344,7.30426,582,yes,yes,yes,yes,2015
+"AOMF","Aosta - Mont Fleury","suburban background",45.7305,7.29903,577,yes,yes,no,no,1996
+"DOMO","Donnas - Montey","rural bakground",45.5966,7.76643,341,yes,yes,yes,no,1994
+"LTLG","La Thuile - Les Granges","rural background",45.7297,6.96684,1637,yes,yes,no,no,1994

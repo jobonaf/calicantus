@@ -82,6 +82,9 @@ guess_eoi <- function(new.coords,
     mutate(EoICode=ifelse(Dist<=max.dist,
                           eea.meta$AirQualityStationEoICode[Nearest],
                           NA)) %>%
+    mutate(Dist=ifelse(is.na(EoICode),NA,Dist),
+           Eea.Lon=ifelse(is.na(EoICode),NA,Eea.Lon),
+           Eea.Lat=ifelse(is.na(EoICode),NA,Eea.Lat)) %>%
     dplyr::select(-Nearest)
 }
 

@@ -118,6 +118,7 @@ cams_daily_stat <- function(dat,dMean=T,dMax=T,dMaxAvg8h=T) {
   DT <- subset(DT, N>=18)
   return(DT)
 }
+ctm_daily_stat <- cams_daily_stat
 
 
 cams2raster <- function(DT, day=format(Sys.Date(),"%Y-%m-%d"), 
@@ -134,6 +135,7 @@ cams2raster <- function(DT, day=format(Sys.Date(),"%Y-%m-%d"),
   }
   return(r)
 }
+ctm2raster <- cams2raster
 
 
 archive_cams <- function(Day=Sys.Date(),
@@ -157,23 +159,19 @@ archive_cams_timeseries <- function(Day=Sys.Date(),
 }
 
 
-# 1) GENERALIZZARE
-# 2) USARE STESSI LIVELLI DELLE STAZIONI
-# 3) AGGIUNGERE A MAPPA-PROXY GIA' ESISTENTE
 plot_cams <- function(r, title="PM10", 
                       bb=c(0,25,50,75,100,150,200,300,600)) {
   library(leaflet)
   rmax <- round(cellStats(r,"max"))
   bb <- c(bb[bb<rmax],rmax)
-  pal <- colorBin(palette = c("white","steelblue","olivedrab", "greenyellow","orange", "darkred", 
-                              "purple","grey","black","cyan"), 
-                  domain = 0:600,
-                  bins = bb,
-                  na.color = "transparent")
+  vv <- quantile(values(r),c(0.05,1))
+  Pal <- colorNumeric(c("steelblue", "olivedrab", "yellow", "orange", "darkred", "purple"),
+                      vv,
+  na.color = "transparent")
   leaflet() %>% addTiles() %>% 
     addProviderTiles("Stamen.TonerLite", group = "toner lite") %>%
-    addRasterImage(r, colors = pal, opacity = 0.5) %>%
-    addLegend(pal = pal, values = values(r), title = title)
+    addRasterImage(r, colors = Pal, opacity = 0.5) %>%
+    addLegend(pal = Pal, values = vv, title = title)
 }
 
 

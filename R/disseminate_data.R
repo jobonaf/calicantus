@@ -9,7 +9,8 @@ available_sources <- function(user) {
 
 data_for_user <- function(user,
                           first=Sys.Date()-10,
-                          last=Sys.Date()-1) {
+                          last=Sys.Date()-1,
+                          verbose=F) {
   library(dplyr)
   dd <- as.character(seq.Date(first,last,"1 day"))
   ff <- NULL
@@ -22,6 +23,7 @@ data_for_user <- function(user,
   Dat <- NULL
   nf <- length(ff)
   for (i in 1:nf) {
+    if(verbose) cat(paste0("Loading file ",ff[i]),sep="\n")
     load(ff[i])
     Dat <- bind_rows(Dat,dat)
   }

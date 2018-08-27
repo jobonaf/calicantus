@@ -1,43 +1,44 @@
-ID,NAME,LAT,LON,ZoneType,StationType,ID_EU
-ANN,p.le D'Annunzio,46.0578355,13.245081,,,
-AOS,via Duca D'Aosta - Gorizia,45.9370116,13.616333,Urban,Traffic,IT1587A
-BAN,via di Tor Bandena - Trieste,45.6500956,13.7710353,Urban,Background,
-BAT,via Battisti,45.65308,13.781464,Urban,Traffic,
-BRU,Brugnera,45.8986483,12.5363089,Suburban,Background,IT1097A
-CAI,via Cairoli - Udine,46.0661156,13.2406876,Urban,Background,IT0966A
-CAN,Caneva,45.9659362,12.4446162,Urban,Traffic,
-CAR,v. del Carpineto - Trieste,45.6231899,13.7874573,Suburban,Background,
-CLA,Claut,46.2629761,12.4684609,Rural,Background,
-DOB,Doberdò del Lago,45.8438605,13.5447226,Rural,Background,IT1474A
-FAN,Fanna,46.1820959,12.7485501,Suburban,Industrial,
-LIB,piazza Libertà - Trieste,45.6571,13.7721,Urban,Traffic,
-LIG,Lignano,45.6756874,13.1067053,Urban,Traffic,
-LUC,Lucinico - Gorizia,45.9310836,13.5723057,Urban,Traffic,
-LUG,p.le XXVI Luglio,46.0605031,13.2293596,Urban,Traffic,
-MAN,v.Manzoni,46.0593981,13.2371347,Urban,Traffic,
-MAR,viale Marconi - Pordenone,45.9623374,12.6579491,Urban,Traffic,IT1099A
-MON,Monfalcone,45.8100089,13.5288611,Urban,Background,IT1538A
-MSP,Monte San Pantaleone - Trieste,45.6187353,13.7945056,Suburban,Industrial,
-MUG,Muggia,45.599455,13.7800136,Suburban,Industrial,
-OPP,Osoppo,46.221007,13.0668945,Suburban,Background,
-OSO,p.le Osoppo,46.07101,13.2345592,Urban,Traffic,
-OSV,Sant'Osvaldo - Udine,46.0350956,13.2252971,Suburban,Background,IT1170A
-PIT,via Pitacco - Trieste,45.6242061,13.7802604,Suburban,Industrial,
-PNC,Pordenone Centro,45.96254,12.65595,Urban,Traffic,IT2201A
-POR,Porcia,45.9576658,12.618708,Suburban,Background,IT1112A
-PRA,Prata di Pordenone,45.8961504,12.5995762,Urban,Traffic,
-RFI,via San Lorenzo in Selva - Trieste,45.62241667,13.78010556,Suburban,Industrial,
-SAB,via San Sabba - Trieste,45.617628,13.7878046,Suburban,Industrial,
-SAC,Sacile,45.9491335,12.4962289,Suburban,Traffic,IT1863A
-SCL,Sacile 1,45.95092,12.50168,Suburban,Traffic,IT2200A
-SEQ,Sequals,46.1631431,12.8877763,Suburban,Background,
-SGN,S.Giorgio di Nogaro,45.8132945,13.2156866,Suburban,Industrial,
-SGV,San Giovanni al Natisone,45.9733094,13.3934033,Suburban,Background,IT1168A
-SPN,San Pietro al Natisone,46.1143782,13.4869129,,,
-SVE,via Svevo - Trieste,45.6303298,13.7807863,Urban,Traffic,
-TAR,Tarvisio,46.503385,13.5769663,Suburban,Background,
-TOL,Tolmezzo,46.4018691,13.0109822,Urban,Background,IT1166A
-TRI,Tribil,46.119308,13.5853482,Rural,Background,
-TRV,Torviscosa,45.819619,13.2753353,Suburban,Industrial,
-VIC,p.zza vico,45.6454732,13.7750267,Urban,Traffic,
-ZON,Monte Zoncolan,46.5070964,12.93175,Rural,Background,
+ID,NAME,LAT,LON,ZoneType,StationType,EuStationCode,EuZoneCode
+ANN,p.le D'Annunzio,46.0578355,13.245081,,,,
+AOS,via Duca D'Aosta - Gorizia,45.9370116,13.616333,Urban,Traffic,IT1587A,IT0608
+BAN,via di Tor Bandena - Trieste,45.6500956,13.7710353,Urban,Background,IT1537A,IT0607
+BAT,via Battisti,45.65308,13.781464,Urban,Traffic,IT1138A,
+BRU,Brugnera,45.8986483,12.5363089,Suburban,Background,IT1097A,
+CAI,via Cairoli - Udine,46.0661156,13.2406876,Urban,Background,IT0966A,IT0608
+CAN,Caneva,45.9659362,12.4446162,Urban,Traffic,IT1107A,
+CAR,v. del Carpineto - Trieste,45.6231899,13.7874573,Suburban,Background,IT1090A,IT0607
+CLA,Claut,46.2629761,12.4684609,Rural,Background,IT1478A,IT0609
+DOB,Doberdò del Lago,45.8438605,13.5447226,Rural,Background,IT1474A,IT0608
+FAN,Fanna,46.1820959,12.7485501,Suburban,Industrial,IT1113A,
+LIB,piazza Libertà - Trieste,45.6571,13.7721,Urban,Traffic,IT1137A,IT0607
+LIG,Lignano,45.6756874,13.1067053,Urban,Traffic,IT1167A,
+LUC,Lucinico - Gorizia,45.9310836,13.5723057,Urban,Traffic,IT1216A,IT0608
+LUG,p.le XXVI Luglio,46.0605031,13.2293596,Urban,Traffic,IT0758A,
+MAN,v.Manzoni,46.0593981,13.2371347,Urban,Traffic,IT0760A,
+MAR,viale Marconi - Pordenone,45.9623374,12.6579491,Urban,Traffic,IT1099A,
+MON,Monfalcone,45.8100089,13.5288611,Urban,Background,IT1538A,IT0608
+MSP,Monte San Pantaleone - Trieste,45.6187353,13.7945056,Suburban,Industrial,IT1091A,IT0607
+MUG,Muggia,45.599455,13.7800136,Suburban,Industrial,IT1477A,IT0607
+OPP,Osoppo,46.221007,13.0668945,Suburban,Background,IT1259A,
+OSO,p.le Osoppo,46.07101,13.2345592,Urban,Traffic,IT1305A,
+OSV,Sant'Osvaldo - Udine,46.0350956,13.2252971,Suburban,Background,IT1170A,IT0608
+PIT,via Pitacco - Trieste,45.6242061,13.7802604,Suburban,Industrial,IT1475A,IT0607
+PNC,Pordenone Centro,45.96254,12.65595,Urban,Traffic,,
+POR,Porcia,45.9576658,12.618708,Suburban,Background,IT1112A,IT0608
+PRA,Prata di Pordenone,45.8961504,12.5995762,Urban,Traffic,IT1098A,IT0608
+RFI,via San Lorenzo in Selva - Trieste,45.62241667,13.78010556,Suburban,Industrial,,
+SAB,via San Sabba - Trieste,45.617628,13.7878046,Suburban,Industrial,IT1651A,
+SAC,Sacile,45.9491335,12.4962289,Suburban,Traffic,IT1853A,
+SAC,Sacile,45.9491335,12.4962289,Suburban,Traffic,IT2200A,
+SCL,Sacile 1,45.95092,12.50168,Suburban,Traffic,,
+SEQ,Sequals,46.1631431,12.8877763,Suburban,Background,IT1108A,
+SGN,S.Giorgio di Nogaro,45.8132945,13.2156866,Suburban,Industrial,IT0821A,
+SGV,San Giovanni al Natisone,45.9733094,13.3934033,Suburban,Background,IT1168A,IT0608
+SPN,San Pietro al Natisone,46.1143782,13.4869129,,,,
+SVE,via Svevo - Trieste,45.6303298,13.7807863,Urban,Traffic,IT1476A,IT0607
+TAR,Tarvisio,46.503385,13.5769663,Suburban,Background,IT0824A,
+TOL,Tolmezzo,46.4018691,13.0109822,Urban,Background,IT1166A,IT0609
+TRI,Tribil,46.119308,13.5853482,Rural,Background,,
+TRV,Torviscosa,45.819619,13.2753353,Suburban,Industrial,IT0822A,IT0608
+VIC,p.zza vico,45.6454732,13.7750267,Urban,Traffic,IT1140A,
+ZON,Monte Zoncolan,46.5070964,12.93175,Rural,Background,IT1539A,

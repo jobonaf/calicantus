@@ -1,34 +1,43 @@
-ID,NAME,LAT,LON
-AOS,via Duca D'Aosta - Gorizia,45.93701,13.61633
-BAN,via di Tor Bandena - Trieste,45.6500956,13.7710353
-BRU,Brugnera,45.8986483,12.5363089
-CAI,via Cairoli - Udine,46.0661156,13.2406876
-CAR,v. del Carpineto - Trieste,45.6231899,13.7874573
-CAS,Castions di Strada - Bagnaria Arsa,45.842075,13.3019659
-DBR,Doberdò A2A,45.84298,13.54305
-EDI,Edison (via Marconi) - Torviscosa,45.82199,13.27140
-FIU,Fiumicello A2A,45.79945,13.42324
-GRA,Grado A2A,45.73975,13.47650
-MAL,Malisana - Torviscosa,45.81078,13.26213
-MAR,viale Marconi - Pordenone,45.96234,12.65795
-MNF,Monfalcone A2A,45.8051881648927,13.5220591806888
-MON,Monfalcone,45.8100089,13.5288611
-MOR,Morsano al Tagliamento,45.8682412339537,12.9314289295656
-MUG,Muggia,45.59945,13.78001
-OPP,Osoppo,46.221007,13.0668945
-OSV,Sant'Osvaldo - Udine,46.0350956,13.2252971
-PCA,p.zza Carlo Alberto,45.64232,13.75605
-PIT,via Pitacco - Trieste,45.62421,13.78026
-PNC,Pordenone Centro,45.96254,12.65595
-PON,v. del Ponticello,45.62062,13.78376
-POR,Porcia,45.95767,12.61871
-PVG,p.zza Volontari Giuliani,45.65439,13.78895
-RON,Ronchi A2A,45.8406119987796,13.4983664575289
-SAC,Sacile,45.94913,12.49623
-SCL,Sacile1,45.95092,12.50168
-SDN,via San Daniele - Udine,46.07096,13.22985
-SGV,San Giovanni al Natisone,45.9733094,13.3934033
-SIN,Basovizza Sincrotrone,45.64731,13.85497
-SVE,via Svevo - Trieste,45.63033,13.78079
-TOL,Tolmezzo,46.4018691,13.0109822
-UGO,Ugovizza - Tarvisio,46.5100184496267,13.4745167472509
+ID,NAME,LAT,LON,ZoneType,StationType,ID_EU
+ANN,p.le D'Annunzio,46.0578355,13.245081,,,
+AOS,via Duca D'Aosta - Gorizia,45.9370116,13.616333,Urban,Traffic,IT1587A
+BAN,via di Tor Bandena - Trieste,45.6500956,13.7710353,Urban,Background,
+BAT,via Battisti,45.65308,13.781464,Urban,Traffic,
+BRU,Brugnera,45.8986483,12.5363089,Suburban,Background,IT1097A
+CAI,via Cairoli - Udine,46.0661156,13.2406876,Urban,Background,IT0966A
+CAN,Caneva,45.9659362,12.4446162,Urban,Traffic,
+CAR,v. del Carpineto - Trieste,45.6231899,13.7874573,Suburban,Background,
+CLA,Claut,46.2629761,12.4684609,Rural,Background,
+DOB,Doberdò del Lago,45.8438605,13.5447226,Rural,Background,IT1474A
+FAN,Fanna,46.1820959,12.7485501,Suburban,Industrial,
+LIB,piazza Libertà - Trieste,45.6571,13.7721,Urban,Traffic,
+LIG,Lignano,45.6756874,13.1067053,Urban,Traffic,
+LUC,Lucinico - Gorizia,45.9310836,13.5723057,Urban,Traffic,
+LUG,p.le XXVI Luglio,46.0605031,13.2293596,Urban,Traffic,
+MAN,v.Manzoni,46.0593981,13.2371347,Urban,Traffic,
+MAR,viale Marconi - Pordenone,45.9623374,12.6579491,Urban,Traffic,IT1099A
+MON,Monfalcone,45.8100089,13.5288611,Urban,Background,IT1538A
+MSP,Monte San Pantaleone - Trieste,45.6187353,13.7945056,Suburban,Industrial,
+MUG,Muggia,45.599455,13.7800136,Suburban,Industrial,
+OPP,Osoppo,46.221007,13.0668945,Suburban,Background,
+OSO,p.le Osoppo,46.07101,13.2345592,Urban,Traffic,
+OSV,Sant'Osvaldo - Udine,46.0350956,13.2252971,Suburban,Background,IT1170A
+PIT,via Pitacco - Trieste,45.6242061,13.7802604,Suburban,Industrial,
+PNC,Pordenone Centro,45.96254,12.65595,Urban,Traffic,IT2201A
+POR,Porcia,45.9576658,12.618708,Suburban,Background,IT1112A
+PRA,Prata di Pordenone,45.8961504,12.5995762,Urban,Traffic,
+RFI,via San Lorenzo in Selva - Trieste,45.62241667,13.78010556,Suburban,Industrial,
+SAB,via San Sabba - Trieste,45.617628,13.7878046,Suburban,Industrial,
+SAC,Sacile,45.9491335,12.4962289,Suburban,Traffic,IT1863A
+SCL,Sacile 1,45.95092,12.50168,Suburban,Traffic,IT2200A
+SEQ,Sequals,46.1631431,12.8877763,Suburban,Background,
+SGN,S.Giorgio di Nogaro,45.8132945,13.2156866,Suburban,Industrial,
+SGV,San Giovanni al Natisone,45.9733094,13.3934033,Suburban,Background,IT1168A
+SPN,San Pietro al Natisone,46.1143782,13.4869129,,,
+SVE,via Svevo - Trieste,45.6303298,13.7807863,Urban,Traffic,
+TAR,Tarvisio,46.503385,13.5769663,Suburban,Background,
+TOL,Tolmezzo,46.4018691,13.0109822,Urban,Background,IT1166A
+TRI,Tribil,46.119308,13.5853482,Rural,Background,
+TRV,Torviscosa,45.819619,13.2753353,Suburban,Industrial,
+VIC,p.zza vico,45.6454732,13.7750267,Urban,Traffic,
+ZON,Monte Zoncolan,46.5070964,12.93175,Rural,Background,

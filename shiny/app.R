@@ -4,15 +4,24 @@
 options(shiny.sanitize.errors = FALSE)
 
 #packages
-suppressMessages({
-  lib1 <- "/home/giovanni/R/x86_64-pc-linux-gnu-library/3.4"
-  .libPaths(unique(c(.libPaths(),lib1)))
-  libs <- c("shinyBS","base64enc","lubridate","dplyr","plyr","sp","rgdal",
-            "geosphere","shinyjs","leaflet","raster","data.table","tidyr",
+#suppressMessages({
+  loc1 <- "/usr/local/lib/R/site-library"
+  loc2 <- "/usr/lib/R/library"
+  loc3 <- "/home/giovanni/R/x86_64-pc-linux-gnu-library/3.4"
+  lib1 <- c("Rcpp","R6")
+  lib2 <- c("cluster")
+  lib3 <- c("shinyBS","base64enc","dplyr","plyr","lubridate","sp","rgdal",
+            "geosphere","shinyjs","raster","data.table","tidyr",
             "scales","ggplot2","ggrepel","stringi","RColorBrewer","maps",
-            "cluster","bitops","RCurl","markdown","yaml")
-  lapply(libs, require, character.only=T)
-})
+            "cluster","bitops","RCurl","markdown","yaml","tidyselect",
+            "htmlwidgets","leaflet"
+            )
+  .libPaths(unique(loc3,.libPaths()))
+  lapply(c(lib1,lib2,lib3), require, character.only=T)
+  #lapply(lib1, require, character.only=T, lib.loc=loc1)
+  #lapply(lib2, require, character.only=T, lib.loc=loc2)
+  #lapply(lib3, require, character.only=T, lib.loc=loc3)
+#})
 
 # scripts
 source("/home/giovanni/R/projects/calicantus/config/ui_credentials.R")
@@ -84,6 +93,7 @@ ui_about <- fluidPage(
 ui_debug <- fluidPage(
   verbatimTextOutput("summary"),
   verbatimTextOutput("sessionInfo"),
+  verbatimTextOutput("uiInput"),
   verbatimTextOutput("uiInput")
 )
   
@@ -283,7 +293,7 @@ server <- function(input, output, session) {
     },
     content = function(con) {
       dataOfPeriod() %>% dplyr::arrange(Day,Source) -> data
-      write.csv(data, con, fileEncoding = "latin1")
+      write.table(data, con, fileEncoding = "latin1", quote=T, row.names=F, sep=";")
     }
   )
   
@@ -1244,6 +1254,7 @@ server <- function(input, output, session) {
   output$sessionInfo <- renderPrint({sessionInfo()})
   output$uiInput <- renderPrint({input})
   output$summary <- renderPrint({summary(dataOfDay())})
+  output$libPaths <- renderPrint({.libPaths()})
   
   # contacts
   output$contacts <- renderTable({

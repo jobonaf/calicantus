@@ -47,3 +47,6 @@
 "priv_enviroware","Monza"     , 9.2848 ,45.6218 ,"PrivModel","2018-08-01","rbianconi@enviroware.com"
 "com_bologna"    ,"Bologna"   ,11.34262,44.49489,"PublAdmin","2019-06-01","chiara.caranti@comune.bologna.it"
 "reg_emiliaromag","Bologna"   ,11.34262,44.49489,"PublAdmin","2019-06-01","matteo.balboni@regione.emilia-romagna.it"
+"priv_hera"      ,"Bologna"   ,11.34262,44.49489,"PrivModel","2019-09-01","leonardo.oppi@gruppohera.it"
+"com_terni"      ,"Terni"     ,12.65   ,42.56667,"PublAdmin","2019-09-01","marta.frittella@comune.terni.it"
+

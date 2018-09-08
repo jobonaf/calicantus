@@ -26,6 +26,9 @@ read_rse <- function(ncLocal, poll="PM10") {
   
   # concentration
   conc <- ncvar_get(nc,poll)
+  # unit conversion
+  conv_fact <- switch(poll, PM10=1, PM25=1, O3=2.00, NO2=1.91, SO2=2.66)
+  conc <- conc*conv_fact
   
   # time
   tt <- ncvar_get(nc,"TFLAG")
@@ -113,6 +116,42 @@ plot_ctms <- function(rs, title="PM10",
   m
 }
 
-ctm_timeseries <- function(dat, Lat, Lon) {
+ctm_timeseries <- function(dat, Lat, Lon, Names) {
+  # convert points coordinates to the Coordinate Reference System of the dataset
+  source("~/R/projects/calicantus/R/util.R")
+  points <- convertcoords(coords  = cbind(Lon, Lat), 
+                          crs.out = dat$crs, 
+                          crs.in  = "+init=epsg:4326")  
+  y <- dat$lat
+  x <- dat$lon
+  Y <- points@coords[,2]
+  X <- points@coords[,1]
   
+  # for each point, find closest cell in the dataset
+  np <- length(X)
+  ii <- jj <- rep(NA,np)
+  for (k in 1:np) {
+    iX <- ifelse(X[k]<0,X[k]+360,X[k])
+    iY <- Y[k]
+    if(iX>max(x) | iX<min(x) | iY>max(y) | iY<min(y)) {
+      ii[k] <- NA
+      jj[k] <- NA
+    } else {
+      ii[k] <- which.min(abs(iX-x))
+      jj[k] <- which.min(abs(iY-y))
+    }
+  }
+  
+  # extract data
+  out <- NULL
+  for (k in 1:np) {
+    if(!is.na(ii[k]) & !is.na(jj[k])) {
+      out <- bind_rows(out, data.frame(Name=Names[k],
+                                       Lon=Lon[k],
+                                       Lat=Lat[k],
+                                       Time=dat$Time,
+                                       conc=dat$conc[ii[k],jj[k],]))
+    }
+  }
+  return(out)
 }

@@ -55,7 +55,10 @@ MapData <- map_data(map = "world",
                                "France","Switzerland","Austria","Germany","Bosnia and Herzegovina",
                                "Tunisia","Malta","Montenegro","Hungary","Albania","Greece","Algeria",
                                "Czech Republic", "Slovakia", "Liechtenstein","Poland","Kosovo",
-                               "Bulgaria","Romania","Turkey","Macedonia","Ukraine"))
+                               "Bulgaria","Romania","Turkey","Macedonia","Ukraine",
+                               "Luxembourg", "Belgium", "Netherlands", "UK", "Ireland",
+                               "Spain", "Portugal", "Andorra", 
+                               "Russia", "Belarus"))
 
 
 
@@ -309,7 +312,7 @@ server <- function(input, output, session) {
                                               `PM2.5 daily mean`="PM2.5",
                                               `NO2 daily max`="NO2",
                                               `O3 daily max`="O3")),
-                   selectInput("scaleDay",label = "color scale", choices = c("classic","extended")),
+                   selectInput("scaleDay",label = "color scale", choices = c("classic","high values")),
                    actionButton("goDay", label="plot", icon = icon("arrow-circle-right")),
                    conditionalPanel(condition = "input.goDay",
                                     helpText("Please note that the map on the right side is interactive:",
@@ -854,7 +857,7 @@ server <- function(input, output, session) {
       if(input$pollutantDay=="PM2.5") bb <- c(0,10,25,50,75,100)
       if(input$pollutantDay=="NO2")   bb <- c(0,25,50,75,100,150)
       if(input$pollutantDay=="O3")    bb <- c(0,90,120,180,240,300)
-    }else if(input$scaleDay == "extended") {
+    }else if(input$scaleDay == "high values") {
       if(input$pollutantDay=="PM10")  bb <- c(0,25,50,75,100,150,200,250,300,400)
       if(input$pollutantDay=="PM2.5") bb <- c(0,10,25,50,75,100,150,200,250,300)
       if(input$pollutantDay=="NO2")   bb <- c(0,25,50,75,100,150,200,250,300,400)
@@ -873,7 +876,7 @@ server <- function(input, output, session) {
   colorpal <- reactive({
     if(input$scaleDay == "classic") {
       cc <- c("steelblue","olivedrab","orange","red","purple")
-    }else if(input$scaleDay == "extended") {
+    }else if(input$scaleDay == "high values") {
       cc <- c("white",rev(RColorBrewer::brewer.pal(name="Spectral",n=length(Breaks())-4)),"magenta","black")
     }
     colorFactor(palette = cc, 
@@ -947,9 +950,10 @@ server <- function(input, output, session) {
   
   
   # UI: map of models -----------------------------------------------------
-  avail_modeldays <- as.Date(substr(dir(path="/home/giovanni/R/projects/calicantus/data/mod-data/grid/",
-                                         pattern="rda",recursive = T),1,10), 
-                              format ="%Y/%m/%d")
+  avail_modeldays <- unique(as.Date(substr(dir(path="/home/giovanni/R/projects/calicantus/data/mod-data/grid/",
+                                               pattern="rda",recursive = T),1,10), 
+                                    format ="%Y/%m/%d"))
+  avail_models <- c("CHIMERE","EMEP","EURAD","LOTOSEUROS","MATCH","MOCAGE","SILAM","FARMEurope","FARMItaly","CAMxItaly")
   maxscad <- 3
   output$ui_modelmap <- renderUI({
     sidebarLayout(
@@ -963,9 +967,9 @@ server <- function(input, output, session) {
                                    "ozone daily maximum"="O3_Max",
                                    "ozone daily maximum of 8h running mean"="O3_MaxAvg8h",
                                    "PM2.5 daily average"="PM25_Mean")),
-        selectInput("scaleDayMod",label = "color scale", choices = c("classic","extended"), selected = "extended"),
-        selectInput("mapMod",label = "model",
-                    choices = c("CHIMERE","EMEP","EURAD","LOTOSEUROS","MATCH","MOCAGE","SILAM")),
+        selectInput("scaleDayMod",label = "color scale", choices = c("classic","high values","continuous","extended"), 
+                    selected = "continuous"),
+        selectInput("mapMod",label = "model", choices = avail_models, selected = sample(avail_models, 1)),
         bsButton("buttonLicense_modmap", label = "license", style="primary", icon=icon("external-link"),
                  onclick ="window.open('http://macc-raq.copernicus-atmosphere.eu/doc/CAMS_data_license_final.pdf', '_blank')"),
         bsButton("buttonInfo_modmap", label = "info", style="primary", icon=icon("external-link"),
@@ -973,7 +977,9 @@ server <- function(input, output, session) {
         bsButton("buttonCite_modmap", label = "citations", style="primary"),
         bsModal("modalCite_modmap",title = "Citations", trigger = "buttonCite_modmap", 
                 HTML(citeHtml(files = c("/home/giovanni/R/projects/calicantus/CITATION",
-                                        "/home/giovanni/R/projects/calicantus/shiny/citations/citation_cams.R"),
+                                        "/home/giovanni/R/projects/calicantus/shiny/citations/citation_cams.R",
+                                        "/home/giovanni/R/projects/calicantus/shiny/citations/citation_RSE.R",
+                                        "/home/giovanni/R/projects/calicantus/shiny/citations/citation_ARIANET.R"),
                               pkgs = c("raster","base","shiny","leaflet")))),
         width=3),
       mainPanel(leafletOutput("MapMod", width="100%", height="800px"))
@@ -986,13 +992,22 @@ server <- function(input, output, session) {
   rangeLon <- c(-24.95,44.95)
   modelTimeseries <- reactive({
     refDays <- as.Date(format(Sys.time()-8*3600-(0:7)*3600*24, "%Y-%m-%d"))
-    Files <- paste0("/home/giovanni/R/projects/calicantus/data/mod-data/timeseries/",
-                    format(refDays,"%Y/%m/%d/CAMS50_ref%Y%m%d"),
-                    "_timeseries.rda")
-    File <- Files[which(file.exists(Files))[1]]
-    load(File)
-    Dat$Name <- as.character(Dat$Name)
-    return(Dat)
+    dat <- NULL
+    for (mS in modelSources) {
+      Files <- paste0("/home/giovanni/R/projects/calicantus/data/mod-data/timeseries/",
+                      format(refDays,paste0("%Y/%m/%d/",mS,"_ref%Y%m%d")),
+                      "_timeseries.rda")
+      File <- Files[which(file.exists(Files))[1]]
+      if(exists("cities_data")) rm("cities_data")
+      load(File)
+      if(exists("cities_data")) Dat <- cities_data # manage different name
+      Dat$Name <- as.character(Dat$Name)
+      dat <- bind_rows(dat,
+                       Dat %>% 
+                         mutate(Model= if (exists('Grid', where = Dat)) paste0(Model,Grid) else Model) %>%
+                         dplyr::select(Lon,Lat,Name,Conc,Time,Pollutant,Model))
+    }
+    return(dat)
   })
   aoiCities <- eventReactive(input$plot_brush$ymin,{
     ee <- try({aoi <- input$plot_brush}, silent = T)
@@ -1028,7 +1043,12 @@ server <- function(input, output, session) {
   output$ui_tsmod <- renderUI({
     sidebarLayout(
       sidebarPanel(
-        helpText(paste0("Here you can plot models forecasts as time series on selected cities.")),
+        helpText(paste0("Here you can plot selected models forecasts as time series on selected cities.")),
+        selectInput("tsmod_selModels",label = "models",
+                    choices = avail_models,
+                    selected = sample(avail_models, 3),
+                    multiple=T, selectize = F, size = 10),
+        bsTooltip("tsmod_selModels","Three models have been randomly selected.", placement = "right"),
         bsCollapse(
           bsCollapsePanel(
             title = "cities", style = "default",
@@ -1048,7 +1068,9 @@ server <- function(input, output, session) {
         bsButton("buttonCite_modts", label = "citations", style="primary"),
         bsModal("modalCite_modts",title = "Citations", trigger = "buttonCite_modts", 
                 HTML(citeHtml(files = c("/home/giovanni/R/projects/calicantus/CITATION",
-                                        "/home/giovanni/R/projects/calicantus/shiny/citations/citation_cams.R"),
+                                        "/home/giovanni/R/projects/calicantus/shiny/citations/citation_cams.R",
+                                        "/home/giovanni/R/projects/calicantus/shiny/citations/citation_RSE.R",
+                                        "/home/giovanni/R/projects/calicantus/shiny/citations/citation_ARIANET.R"),
                               pkgs = c("ggplot2","base","shiny","dplyr")))),
         width=3),
       mainPanel( 
@@ -1062,7 +1084,8 @@ server <- function(input, output, session) {
   pollName <- function(x) ifelse(x=="PM25","PM2.5",as.character(x))
   tsMod <- reactive({
     dat <- modelTimeseries() %>%
-      filter(Name %in% input$tsmod_selCities) %>%
+      filter(Name %in% input$tsmod_selCities,
+             Model %in% input$tsmod_selModels) %>%
       mutate(Pollutant=pollName(Pollutant))
     p <- ggplot(dat, aes(x=Time,y=Conc,col=Model,group=Model)) +
       geom_line() + geom_point(alpha=0.5) +
@@ -1071,8 +1094,7 @@ server <- function(input, output, session) {
     p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
       labs(title=paste0(paste(unique(dat$Pollutant), collapse=", "),": hourly forecast"),
            subtitle=paste0("period: ",paste(range(dat$Time),collapse=" to ")),
-           caption=paste("Generated using Copernicus Atmosphere Monitoring Service Information",
-                         format(Sys.Date(),"%Y"))) +
+           caption=modelTimeseriesAttr()) +
       ylab(expression("Concentration"~(mu*g/m^3))) +
       scale_x_datetime(date_labels = "%Y-%m-%d")
     withProgress(message = 'Making plot...', value = 1, {
@@ -1089,7 +1111,24 @@ server <- function(input, output, session) {
   
   
 # daily models map -----------------------------------------------------
-  # load model data of single day
+  
+  # model source
+  modelSources <- c("CAMS50", "RSE", "ARIANET")
+  modelSource <- reactive({
+    model <- ifelse(is.null(input) || is.null(input$mapMod), "CHIMERE", input$mapMod)
+    if(model %in% c("CHIMERE","EMEP","EURAD","LOTOSEUROS","MATCH","MOCAGE","SILAM")) {
+      sou <- "CAMS50"
+    }
+    if(model %in% c("CAMxItaly")) {
+      sou <- "RSE"
+    }
+    if(model %in% c("FARMItaly", "FARMEurope")) {
+      sou <- "ARIANET"
+    }
+    sou
+  })
+
+    # load model data of single day
   changeOfDayMod <- reactive({
     input$dayMod;input$mapMod;input$pollutantDayMod
   })
@@ -1102,9 +1141,11 @@ server <- function(input, output, session) {
       if(class(valDay)[1]=="try-error") valDay <- Sys.Date()
       model <- ifelse(is.null(input) || is.null(input$mapMod), "CHIMERE", input$mapMod)
       poll <- ifelse(is.null(input) || is.null(input$pollutantDayMod), "PM10_Mean", input$pollutantDayMod)
-      rm("r")
+      if(exists("r")) rm("r")
       File <- paste0("/home/giovanni/R/projects/calicantus/data/mod-data/grid/",
-                     format(refDay,"%Y/%m/%d/CAMS50_ref%Y%m%d"),
+                     format(refDay,"%Y/%m/%d/"),
+                     modelSource(),
+                     format(refDay,"_ref%Y%m%d"),
                      format(valDay,"_val%Y%m%d_"),
                      model,"_",poll,".rda")
       if(file.exists(File)) {
@@ -1122,15 +1163,15 @@ server <- function(input, output, session) {
     scale <- ifelse(is.null(input) || is.null(input$scaleDayMod), "classic", input$scaleDayMod)
     poll <- ifelse(is.null(input) || is.null(input$pollutantDayMod), "PM10_Mean", input$pollutantDayMod)
     if(scale == "classic") {
-      if(poll=="PM10_Mean")   bb <- c(25,50,75,100,150)
-      if(poll=="PM25_Mean")   bb <- c(10,25,50,75,100)
-      if(poll=="O3_Max")      bb <- c(90,120,180,240,300)
-      if(poll=="O3_MaxAvg8h") bb <- c(60,90,120,150,180)
-    }else if(scale == "extended") {
-      if(poll=="PM10_Mean")   bb <- c(25,50,75,100,150,200,250,300,400)
-      if(poll=="PM25_Mean")   bb <- c(10,25,50,75,100,150,200,250,300)
-      if(poll=="O3_Max")      bb <- c(60,90,120,150,180,210,240,270,300)
-      if(poll=="O3_MaxAvg8h") bb <- c(60,90,120,150,180,210,240,270,300)
+      if(poll=="PM10_Mean")   bb <- c(0,25,50,75,100,150)
+      if(poll=="PM25_Mean")   bb <- c(0,10,25,50,75,100)
+      if(poll=="O3_Max")      bb <- c(0,90,120,180,240,300)
+      if(poll=="O3_MaxAvg8h") bb <- c(0,60,90,120,150,180)
+    }else if(scale %in% c("high values","continuous","extended")) {
+      if(poll=="PM10_Mean")   bb <- c(0,25,50,75,100,150,200,250,300,400)
+      if(poll=="PM25_Mean")   bb <- c(0,10,25,50,75,100,150,200,250,300)
+      if(poll=="O3_Max")      bb <- c(0,60,90,120,150,180,210,240,270,300)
+      if(poll=="O3_MaxAvg8h") bb <- c(0,60,90,120,150,180,210,240,270,300)
     }
     bb
   })
@@ -1139,41 +1180,68 @@ server <- function(input, output, session) {
   unitDayMod <- reactive({
     poll <- ifelse(is.null(input) || is.null(input$pollutantDayMod), "PM10_Mean", input$pollutantDayMod)
     poll <- strsplit(poll,split = "_")[[1]][1]
-    if(poll %in% c("PM10","O3","PM25")) uu <- "ug/m^3"
+    if(poll %in% c("PM10","O3","PM25")) uu <- '<span class="math"><em>μg/m</em><sup>3</sup></span>'
     uu
   })
   
-  # model units
-  modelAttribution <- reactive({
-    model <- ifelse(is.null(input) || is.null(input$mapMod), "CHIMERE", input$mapMod)
-    if(model %in% c("CHIMERE","EMEP","EURAD","LOTOSEUROS","MATCH","MOCAGE","SILAM")) {
-      att <- paste0("Generated using Copernicus Atmosphere Monitoring Service Information ",
-                    format(Sys.Date(),"%Y"))
+  # model attribution
+  model_attr <- function(models) {
+    att <- NULL
+    if(any(models %in% c("CHIMERE","EMEP","EURAD","LOTOSEUROS","MATCH","MOCAGE","SILAM"))) {
+      att <- c(att,paste0("Generated using Copernicus Atmosphere Monitoring Service Information ", 
+                          format(Sys.Date(),"%Y"), " (",
+                          paste(intersect(models, c("CHIMERE","EMEP","EURAD","LOTOSEUROS","MATCH","MOCAGE","SILAM")),
+                                collapse=", "),")"))
     }
-    att
+    if(any(models %in% c("CAMxItaly"))) {
+      att <- c(att,paste0("Forecast by RSE S.p.A. (Research on Energy Systems) ", 
+                          format(Sys.Date(),"%Y"), " (",
+                          paste(intersect(models, c("CAMxItaly")),
+                                collapse=", "),")"))
+    }
+    if(any(models %in% c("FARMItaly", "FARMEurope"))) {
+      att <- c(att,paste0("Forecast by ARIANET Srl ", 
+                          format(Sys.Date(),"%Y"), " (",
+                          paste(intersect(models, c("FARMItaly", "FARMEurope")),
+                                collapse=", "),")"))
+    }
+    paste(att, collapse="\n")
+  }
+  modelMapAttr <- reactive({
+    model <- ifelse(is.null(input) || is.null(input$mapMod), "CHIMERE", input$mapMod)
+    model_attr(model)
+  })
+  modelTimeseriesAttr <- reactive({
+    models <- input$tsmod_selModels
+    model_attr(models)
   })
   
   # daily model map: palette
   colorpalMod <- reactive({
     scale <- ifelse(is.null(input) || is.null(input$scaleDayMod), "classic", input$scaleDayMod)
     if(scale == "classic") {
-      cc <- c("olivedrab","orange","red","purple")
-    }else if(scale == "extended") {
-      cc <- c(rev(RColorBrewer::brewer.pal(name="Spectral",
-                                           n=length(BreaksMod())-3)),
-              "magenta","black")
+      cc <- c("white", "olivedrab","orange","red","purple")
+    }else if(scale %in% c("high values","continuous","extended")) {
+      cc <- c("white", rev(RColorBrewer::brewer.pal(name="Spectral", n=length(BreaksMod())-3)), "magenta","black")
     }
     bb <- BreaksMod()
     Dat <- modelOfDay()
     if(!is.null(Dat)) {
-      rmax <- round(cellStats(modelOfDay(),"max"))
-      if(max(bb)<rmax) bb[length(bb)] <- rmax
+      rmax <- ceiling(cellStats(modelOfDay(),"max"))
+      rmin <- floor(cellStats(modelOfDay(),"min"))
+    } else {
+      rmax <- max(bb)
+      rmin <- min(bb)
     }
-    colorBin(palette = cc, 
-             domain = range(bb),
-             bins = bb,
-             na.color = "transparent")
-  })
+    if(scale == "continuous") {
+      colorNumeric(palette = cc, domain = range(bb), na.color = "transparent")
+    }else if(scale == "extended") {
+      colorNumeric(palette = cc, domain = c(0,rmax), na.color = "transparent")
+    }else{
+      if(max(bb)<rmax) bb[length(bb)] <- rmax
+      colorBin(palette = cc, domain = range(bb), bins = bb, na.color = "transparent")
+    }
+    })
   
   
   # daily models map: initialize basemap
@@ -1194,14 +1262,16 @@ server <- function(input, output, session) {
     leafletProxy("MapMod",session) %>% clearShapes() %>% clearImages() -> map
     if (!is.null(Dat)) {
       map %>% 
-        addRasterImage(Dat, colors = Pal, opacity = 0.5, layerId = "model", 
-                       attribution = modelAttribution()) %>%
-        addRectangles(lng1 = Dat@extent[1],
-                      lng2 = Dat@extent[2],
-                      lat1 = Dat@extent[3],
-                      lat2 = Dat@extent[4],
-                      fill = F, stroke = T, weight = 5, color = "black", 
-                      dashArray = "10, 10")-> map
+        addRasterImage(x = Dat, colors = Pal, opacity = 0.5, layerId = "model", 
+                       attribution = modelMapAttr()) -> map#%>%
+        # addPolygons(data=spTransform(rasterToPolygons(Dat>-Inf, dissolve=TRUE), 
+        #                              CRS=CRS("+init=epsg:4326")),
+        # # addRectangles(lng1 = Dat@extent[1],
+        # #               lng2 = Dat@extent[2],
+        # #               lat1 = Dat@extent[3],
+        # #               lat2 = Dat@extent[4],
+        #               fill = F, stroke = T, weight = 5, color = "black", 
+        #               dashArray = "10, 10")-> map
     }else{
       map %>% addPopups(lng=11,lat=42.5,
                         popup="Data not available for this model.<br>Please try another one.") -> map
@@ -1222,11 +1292,14 @@ server <- function(input, output, session) {
                    "O3_Max"="O3 daily maximum",
                    "O3_MaxAvg8h"="O3 max of 8h running mean",
                    "PM25_Mean"="PM2.5 daily average")
+    scale <- ifelse(is.null(input) || is.null(input$scaleDayMod), "classic", input$scaleDayMod)
+    vv <- values(Dat)
+    if(scale=="continuous") vv[vv>BreaksMod()] <- NA
     
     if(!is.null(Dat)) {
       proxyMod %>% 
         clearControls() %>%
-        addLegend(position = "bottomright", pal = Pal, values = values(Dat),
+        addLegend(position = "bottomright", pal = Pal, values = vv,
                   title = paste0("model ",model,"<br>",
                                  as.character(input$dayMod),":<br>",
                                  poll,"<br>(",
@@ -1310,7 +1383,7 @@ server <- function(input, output, session) {
                        box.padding = unit(0.1, "lines"),
                        label.padding = unit(0.1, "lines"), 
                        size=4, col="steelblue", show.legend=F,
-                       segment.size=0, max.iter = 5000, alpha = 0.8) +
+                       segment.size=0.2, max.iter = 5000, alpha = 0.8) +
       scale_fill_manual(values=c("white","yellow")) +
       coord_map(xlim = c(xmin-2,xmax+0.8),
                 ylim = c(ymin-0.5,ymax+0.5)) +

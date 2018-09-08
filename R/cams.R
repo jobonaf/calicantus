@@ -234,49 +234,58 @@ cams2ts <- function(ncLocal, Lon, Lat, Names=paste0("p",1:length(Lon))) {
   return(out)
 }
 
-select_cities <- function() {
-  country.focus <- c("Italy","Sicily","Slovenia","Switzerland","Croatia","Austria",
-                     "Vatican City","San Marino","Tunisia")
-  library(maps)
-  library(cluster)
-  library(dplyr)
-  data(world.cities)
+select_cities <- function(filein="~/R/projects/calicantus/data/sites-info/selected_cities.csv",
+                          fileout=NULL) {
+  if(!is.null(filein) & file.exists(filein)) {
+    cities <- read.csv(filein, stringsAsFactors = F)
+  } else {
+    country.focus <- c("Italy","Sicily","Slovenia","Switzerland","Croatia","Austria",
+                       "Vatican City","San Marino","Tunisia")
+    library(maps)
+    library(cluster)
+    library(dplyr)
+    data(world.cities)
+    
+    rangeLat <- c( 30.05,69.95)
+    rangeLon <- c(-24.95,44.95)
+    world.cities %>% 
+      filter(!country.etc%in%country.focus,
+             lat>=rangeLat[1],
+             lat<=rangeLat[2],
+             long>=rangeLon[1],
+             long<=rangeLon[2],
+             capital>0|pop>100000) -> c1
+    cl1 <- clara(cbind(c1$long,c1$lat),200,samples = 20)
+    c1 %>% mutate(cluster=cl1$clustering) %>% 
+      arrange(desc(pop)) %>%
+      group_by(cluster) %>%
+      dplyr::summarize(name=dplyr::first(name),pop=dplyr::first(pop),
+                       lat=dplyr::first(lat),long=dplyr::first(long),
+                       country.etc=dplyr::first(country.etc)) %>%
+      ungroup() %>% dplyr::select(-cluster) -> c1
+    world.cities %>% 
+      filter(country.etc%in%country.focus,
+             lat>=rangeLat[1],
+             lat<=rangeLat[2],
+             long>=rangeLon[1],
+             long<=rangeLon[2],
+             capital>0|pop>30000) -> c2
+    cl2 <- clara(cbind(c2$long,c2$lat),200,samples = 20)
+    c2 %>% mutate(cluster=cl2$clustering) %>%
+      arrange(desc(pop)) %>%
+      group_by(cluster) %>%
+      dplyr::summarize(name=dplyr::first(name),pop=dplyr::first(pop),
+                       lat=dplyr::first(lat),long=dplyr::first(long),
+                       country.etc=dplyr::first(country.etc)) %>%
+      ungroup() %>% dplyr::select(-cluster) -> c2
+    cities <- bind_rows(c2,c1)
+    dd <- which(duplicated(cities$name)|duplicated(cities$name,fromLast = T))
+    if(length(dd)>0) cities$name[dd] <- paste0(cities$name[dd]," (",cities$country.etc[dd],")")
+    cities$country.etc <- NULL
+  }
   
-  rangeLat <- c( 30.05,69.95)
-  rangeLon <- c(-24.95,44.95)
-  world.cities %>% 
-    filter(!country.etc%in%country.focus,
-           lat>=rangeLat[1],
-           lat<=rangeLat[2],
-           long>=rangeLon[1],
-           long<=rangeLon[2],
-           capital>0|pop>100000) -> c1
-  cl1 <- clara(cbind(c1$long,c1$lat),200,samples = 20)
-  c1 %>% mutate(cluster=cl1$clustering) %>% 
-    arrange(desc(pop)) %>%
-    group_by(cluster) %>%
-    dplyr::summarize(name=dplyr::first(name),pop=dplyr::first(pop),
-              lat=dplyr::first(lat),long=dplyr::first(long),
-              country.etc=dplyr::first(country.etc)) %>%
-    ungroup() %>% dplyr::select(-cluster) -> c1
-  world.cities %>% 
-    filter(country.etc%in%country.focus,
-           lat>=rangeLat[1],
-           lat<=rangeLat[2],
-           long>=rangeLon[1],
-           long<=rangeLon[2],
-           capital>0|pop>30000) -> c2
-  cl2 <- clara(cbind(c2$long,c2$lat),200,samples = 20)
-  c2 %>% mutate(cluster=cl2$clustering) %>%
-    arrange(desc(pop)) %>%
-    group_by(cluster) %>%
-    dplyr::summarize(name=dplyr::first(name),pop=dplyr::first(pop),
-              lat=dplyr::first(lat),long=dplyr::first(long),
-              country.etc=dplyr::first(country.etc)) %>%
-    ungroup() %>% dplyr::select(-cluster) -> c2
-  cities <- bind_rows(c2,c1)
-  dd <- which(duplicated(cities$name)|duplicated(cities$name,fromLast = T))
-  if(length(dd)>0) cities$name[dd] <- paste0(cities$name[dd]," (",cities$country.etc[dd],")")
-  cities$country.etc <- NULL
+  if(!is.null(fileout)) {
+    write.table(cities, file = fileout, sep=",", row.names = F, col.names = T)
+  } 
   return(cities)
 }

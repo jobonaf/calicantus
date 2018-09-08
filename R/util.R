@@ -92,7 +92,11 @@ convertcoords <- function(coords,
                           crs.in="+init=epsg:25832",
                           crs.out="+init=epsg:4326") {
   library(rgdal)
-  d <- data.frame(x=coords[1], y=coords[2])
+  if(is.list(coords)) {
+    d <- data.frame(x=coords[[1]], y=coords[[2]])
+  } else if(is.matrix(coords)) {
+    d <- data.frame(x=coords[,1], y=coords[,2])
+  }
   coordinates(d) <- c("x", "y")
   proj4string(d) <- CRS(crs.in)
   CRS.new <- CRS(crs.out)

@@ -18,10 +18,22 @@ pollutants <- c("PM10","PM25","O3")
 library(dplyr)
 library(tidyr)
 cities <- select_cities()
+s1 <- read.csv("~/R/projects/calicantus/data/sites-info/extended_metadata/metadata_IT_O3.csv")
+s2 <- read.csv("~/R/projects/calicantus/data/sites-info/extended_metadata/metadata_IT_PM10.csv")
+s3 <- read.csv("~/R/projects/calicantus/data/sites-info/extended_metadata/metadata_IT_PM2.5.csv")
+bind_rows(s1,s2,s3) %>% 
+  filter(AirQualityStationType=="background") %>%
+  select(-InletHeight,-BuildingDistance,-KerbDistance) %>%
+  group_by(SiteCode) %>% slice(1) %>% ungroup() %>%
+  distinct() -> stations_metadata
+stations_metadata %>%
+  select(SiteCode, Lat, Lon) %>% 
+  distinct() -> stations
 
 for(reftime in as.character(reftimes)) {
   cat(reftime,sep="\n")
-  Dat <- NULL
+  cities_data <- NULL
+  stations_data <- NULL
   for(model in models) {
     cat(model,sep="\n")
     for(pollutant in pollutants) {
@@ -29,19 +41,27 @@ for(reftime in as.character(reftimes)) {
       Files <- paste0("CAMS50_",format(as.Date(reftime),"%Y%m%d"),
                       "_",pollutant,"_",model,"_",timeranges,".nc")
       if(all(file.exists(Files)) && all(file.size(Files)>0)) {
-        tss <- cams2ts(Files, Lon = cities$long, Lat = cities$lat, Names = cities$name)
-        tss <- data.frame(tss, Pollutant=pollutant, Model=model)
-        if(is.null(Dat)) {
-          Dat <- tss
+        tss  <- cams2ts(Files, Lon = cities$long,  Lat = cities$lat,   Names = cities$name)
+        tss2 <- cams2ts(Files, Lon = stations$Lon, Lat = stations$Lat, Names = stations$SiteCode)
+        tss  <- data.frame(tss,  Pollutant=pollutant, Model=model)
+        tss2 <- data.frame(tss2, Pollutant=pollutant, Model=model)
+        if(is.null(cities_data)) {
+          cities_data  <- tss
+          stations_data <- tss2
         } else {
-          Dat <- bind_rows(Dat,tss)
+          cities_data  <- bind_rows(cities_data ,tss)
+          stations_data <- bind_rows(stations_data,tss2)
         }
       }
     }
   }
-  Dat$Pollutant <- as.factor(Dat$Pollutant)
-  Dat$Name <- as.factor(Dat$Name)
-  Dat$Model <- as.factor(Dat$Model)
-  save(Dat,file=paste0("CAMS50_ref",format(as.Date(reftime),"%Y%m%d"),
-                       "_timeseries.rda"))
+  cities_data$Pollutant  <- as.factor(cities_data$Pollutant)
+  cities_data$Name       <- as.factor(cities_data$Name)
+  cities_data$Model      <- as.factor(cities_data$Model)
+  stations_data$Pollutant <- as.factor(stations_data$Pollutant)
+  stations_data$Name      <- as.factor(stations_data$Name)
+  stations_data$Model     <- as.factor(stations_data$Model)
+  save(cities_data ,stations_data, stations_metadata,
+       file=paste0("CAMS50_ref",format(as.Date(reftime),"%Y%m%d"),
+                   "_timeseries.rda"))
 }

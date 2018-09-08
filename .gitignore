@@ -4,6 +4,7 @@
 tmp/
 config/config_proxy.R
 config/obs-data-access/*.R
+config/mod-data-access/*.R
 config/registrations/*
 config/ui_credentials.R
 run/

@@ -1,4 +1,4 @@
-
+  
 # preliminar --------------------------------------------------------------
 
 options(shiny.sanitize.errors = FALSE)
@@ -153,19 +153,16 @@ server <- function(input, output, session) {
           pwd <- isolate(input$Pwd)
           Id.usr <- which(ui_usr == usr)
           Id.pwd <- which(ui_pwd == pwd)
+          logfile <- paste0("/home/giovanni/R/projects/calicantus/log/web-interface.log")
+          if(!file.exists(logfile)) file.create(logfile)
           if (length(Id.usr)==1 & length(Id.pwd)==1 && Id.usr==Id.pwd) {
-            logfile <- paste0("/home/giovanni/R/projects/calicantus/log/web-interface.log")
-            if(!file.exists(logfile)) file.create(logfile)
             rec <- paste0("login success: ",Sys.time()," | usr: ",input$Usr)
-            write(rec,file=logfile,append=TRUE)
             USER$Logged <- TRUE
           } else {
-            logfile <- paste0("/home/giovanni/R/projects/calicantus/log/web-interface.log")
-            if(!file.exists(logfile)) file.create(logfile)
-            rec <- paste0("login failure: ",Sys.time()," | usr: ",input$Usr," | pwd: ",input$Pwd)
-            write(rec,file=logfile,append=TRUE)
+            rec <- paste0("login failure: ",Sys.time()," | usr: ",input$Usr)
             USER$Logged <- FALSE
           }
+          write(rec,file=logfile,append=TRUE)
     }    
   })
   observe({
@@ -886,10 +883,10 @@ server <- function(input, output, session) {
   
   # daily obs. map: initialize basemap
   output$Map <- renderLeaflet({
-    lon0 <- 11
-    lat0 <- 42.5
+    lon0 <- userLocation()$lon
+    lat0 <- userLocation()$lat
     leaflet() %>% 
-      setView(lon0, lat0, 6) %>% 
+      setView(lon0, lat0, 7) %>% 
       addTiles(group = "classic")  %>% 
       addProviderTiles("CartoDB.Positron", group = "grey minimal") %>%
       addProviderTiles("Stamen.TonerLite", group = "toner lite") %>%
@@ -953,7 +950,8 @@ server <- function(input, output, session) {
   avail_modeldays <- unique(as.Date(substr(dir(path="/home/giovanni/R/projects/calicantus/data/mod-data/grid/",
                                                pattern="rda",recursive = T),1,10), 
                                     format ="%Y/%m/%d"))
-  avail_models <- c("CHIMERE","EMEP","EURAD","LOTOSEUROS","MATCH","MOCAGE","SILAM","FARMEurope","FARMItaly","CAMxItaly")
+  avail_models <- c("CHIMERE","EMEP","EURAD","LOTOSEUROS","MATCH","MOCAGE","SILAM",
+                    "FARMEurope","FARMItaly","CAMxItaly","CHIMERENorthernItaly")
   maxscad <- 3
   output$ui_modelmap <- renderUI({
     sidebarLayout(
@@ -967,7 +965,8 @@ server <- function(input, output, session) {
                                    "ozone daily maximum"="O3_Max",
                                    "ozone daily maximum of 8h running mean"="O3_MaxAvg8h",
                                    "PM2.5 daily average"="PM25_Mean")),
-        selectInput("scaleDayMod",label = "color scale", choices = c("classic","high values","continuous","extended"), 
+        selectInput("scaleDayMod",label = "color scale",
+                    choices = c("classic","high values","continuous","extended"), 
                     selected = "continuous"),
         selectInput("mapMod",label = "model", choices = avail_models, selected = sample(avail_models, 1)),
         bsButton("buttonLicense_modmap", label = "license", style="primary", icon=icon("external-link"),
@@ -1113,7 +1112,7 @@ server <- function(input, output, session) {
 # daily models map -----------------------------------------------------
   
   # model source
-  modelSources <- c("CAMS50", "RSE", "ARIANET")
+  modelSources <- c("CAMS50", "RSE", "ARIANET", "ARPAE")
   modelSource <- reactive({
     model <- ifelse(is.null(input) || is.null(input$mapMod), "CHIMERE", input$mapMod)
     if(model %in% c("CHIMERE","EMEP","EURAD","LOTOSEUROS","MATCH","MOCAGE","SILAM")) {
@@ -1125,6 +1124,9 @@ server <- function(input, output, session) {
     if(model %in% c("FARMItaly", "FARMEurope")) {
       sou <- "ARIANET"
     }
+    if(model %in% c("CHIMERENorthernItaly")) {
+      sou <- "ARPAE"
+    }
     sou
   })
 
@@ -1135,20 +1137,16 @@ server <- function(input, output, session) {
   modelOfDay <- eventReactive(
     eventExpr = changeOfDayMod(), #ignoreNULL = FALSE,
     valueExpr = {
-      refDay <- as.Date(format(Sys.time()-8*3600, "%Y-%m-%d"))
       valDay <- try(as.Date(input$dayMod))
-      if(refDay>valDay) refDay <- valDay
       if(class(valDay)[1]=="try-error") valDay <- Sys.Date()
       model <- ifelse(is.null(input) || is.null(input$mapMod), "CHIMERE", input$mapMod)
       poll <- ifelse(is.null(input) || is.null(input$pollutantDayMod), "PM10_Mean", input$pollutantDayMod)
       if(exists("r")) rm("r")
-      File <- paste0("/home/giovanni/R/projects/calicantus/data/mod-data/grid/",
-                     format(refDay,"%Y/%m/%d/"),
-                     modelSource(),
-                     format(refDay,"_ref%Y%m%d"),
-                     format(valDay,"_val%Y%m%d_"),
-                     model,"_",poll,".rda")
-      if(file.exists(File)) {
+      Files <- system(paste0("ls /home/giovanni/R/projects/calicantus/data/mod-data/grid/????/??/??/",
+                             modelSource(),"_ref????????", format(valDay,"_val%Y%m%d_"),
+                             model,"_",poll,".rda"), intern=T)
+      if(length(Files)>0) {
+        File <- Files[length(Files)]
         load(File)
         Dat <- r
       } else {
@@ -1162,12 +1160,17 @@ server <- function(input, output, session) {
   BreaksMod <- reactive({
     scale <- ifelse(is.null(input) || is.null(input$scaleDayMod), "classic", input$scaleDayMod)
     poll <- ifelse(is.null(input) || is.null(input$pollutantDayMod), "PM10_Mean", input$pollutantDayMod)
-    if(scale == "classic") {
+    if(scale %in% c("classic")) {
       if(poll=="PM10_Mean")   bb <- c(0,25,50,75,100,150)
       if(poll=="PM25_Mean")   bb <- c(0,10,25,50,75,100)
       if(poll=="O3_Max")      bb <- c(0,90,120,180,240,300)
       if(poll=="O3_MaxAvg8h") bb <- c(0,60,90,120,150,180)
-    }else if(scale %in% c("high values","continuous","extended")) {
+    }else if(scale %in% c("continuous")) {
+      if(poll=="PM10_Mean")   bb <- c(0,25,50,75,100,150,200)
+      if(poll=="PM25_Mean")   bb <- c(0,10,25,50,75,100,150)
+      if(poll=="O3_Max")      bb <- c(60,90,120,150,180,210,240,270)
+      if(poll=="O3_MaxAvg8h") bb <- c(60,90,120,150,180,210,240,270)
+    }else if(scale %in% c("high values","extended")) {
       if(poll=="PM10_Mean")   bb <- c(0,25,50,75,100,150,200,250,300,400)
       if(poll=="PM25_Mean")   bb <- c(0,10,25,50,75,100,150,200,250,300)
       if(poll=="O3_Max")      bb <- c(0,60,90,120,150,180,210,240,270,300)
@@ -1203,6 +1206,12 @@ server <- function(input, output, session) {
       att <- c(att,paste0("Forecast by ARIANET Srl ", 
                           format(Sys.Date(),"%Y"), " (",
                           paste(intersect(models, c("FARMItaly", "FARMEurope")),
+                                collapse=", "),")"))
+    }
+    if(any(models %in% c("CHIMERENorthernItaly"))) {
+      att <- c(att,paste0("Forecast by Arpae ", 
+                          format(Sys.Date(),"%Y"), " (",
+                          paste(intersect(models, c("CHIMERENorthernItaly")),
                                 collapse=", "),")"))
     }
     paste(att, collapse="\n")
@@ -1246,10 +1255,10 @@ server <- function(input, output, session) {
   
   # daily models map: initialize basemap
   output$MapMod <- renderLeaflet({
-    lon0 <- 11
-    lat0 <- 42.5
+    lon0 <- userLocation()$lon
+    lat0 <- userLocation()$lat
     leaflet() %>% 
-      setView(lon0, lat0, 5) %>% 
+      setView(lon0, lat0, 6) %>% 
       addTiles(group = "classic")  %>% 
       addProviderTiles("CartoDB.Positron", group = "grey minimal") 
   })
@@ -1260,21 +1269,18 @@ server <- function(input, output, session) {
     Pal <- colorpalMod()
     
     leafletProxy("MapMod",session) %>% clearShapes() %>% clearImages() -> map
-    if (!is.null(Dat)) {
+    if (!is.null(Dat) && length(values(Dat))>0) {
       map %>% 
         addRasterImage(x = Dat, colors = Pal, opacity = 0.5, layerId = "model", 
-                       attribution = modelMapAttr()) -> map#%>%
-        # addPolygons(data=spTransform(rasterToPolygons(Dat>-Inf, dissolve=TRUE), 
-        #                              CRS=CRS("+init=epsg:4326")),
-        # # addRectangles(lng1 = Dat@extent[1],
-        # #               lng2 = Dat@extent[2],
-        # #               lat1 = Dat@extent[3],
-        # #               lat2 = Dat@extent[4],
-        #               fill = F, stroke = T, weight = 5, color = "black", 
-        #               dashArray = "10, 10")-> map
+                       attribution = modelMapAttr()) -> map
     }else{
-      map %>% addPopups(lng=11,lat=42.5,
-                        popup="Data not available for this model.<br>Please try another one.") -> map
+      showModal(modalDialog(
+        title = "No data.", footer = modalButton("Ok"),
+        paste0("Forecast of model ",input$mapMod,
+               " not (yet) available for day ",input$dayMod,"."),
+        br(),"Please change model or date.",
+        easyClose = TRUE
+      ))
     }
     map
   })
@@ -1293,10 +1299,10 @@ server <- function(input, output, session) {
                    "O3_MaxAvg8h"="O3 max of 8h running mean",
                    "PM25_Mean"="PM2.5 daily average")
     scale <- ifelse(is.null(input) || is.null(input$scaleDayMod), "classic", input$scaleDayMod)
-    vv <- values(Dat)
-    if(scale=="continuous") vv[vv>BreaksMod()] <- NA
     
     if(!is.null(Dat)) {
+      vv <- values(Dat)
+      if(scale=="continuous") vv <- BreaksMod() 
       proxyMod %>% 
         clearControls() %>%
         addLegend(position = "bottomright", pal = Pal, values = vv,
@@ -1365,6 +1371,12 @@ server <- function(input, output, session) {
   })
   
   # users locations
+  userLocation <- reactive({
+    uu <- read.table("/home/giovanni/R/projects/calicantus/config/config_users.csv", 
+                     stringsAsFactors = F, header = T, quote = '\"', fill=T, sep=",",
+                     strip.white = T)
+    uu %>% dplyr::filter(as.character(user) == as.character(input$Usr)) %>% dplyr::select(lon, lat)
+  })
   output$usersCities <- renderPlot({
     uu <- read.table("/home/giovanni/R/projects/calicantus/config/config_users.csv", 
                      stringsAsFactors = F, header = T, quote = '\"', fill=T, sep=",",

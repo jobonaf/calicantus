@@ -5,20 +5,22 @@ registration_form <- function(){
             12,offset = 0,
             p("If you want to register as",
               strong("end-user"),
-              "to the service, please fill the following form and read carefully the data policy."),
+              "to the service, please fill the following form and read carefully the data policy and the privacy policy below.",
+              em(" Please note that all fields marked with an asterisk (*) are required.")),
             fluidRow(
-              column(6, textInput("name","name",width = "100%")),
-              column(6, textInput("surname","surname",width = "100%"))
+              column(6, textInput("name","name*",width = "100%")),
+              column(6, textInput("surname","surname*",width = "100%"))
             ),
             fluidRow(
-              column(6, textInput("email","e-mail",width = "100%"),
-                     textInput("institution","institution",width = "100%"),
+              column(6, textInput("email","e-mail*",width = "100%"),
+                     textInput("institution","institution*",width = "100%"),
                      textInput("department","department or working group",
                                width = "100%")
               ),
-              column(6, textInput("phone","phone",placeholder = "+39-06-123456",width = "100%"),
-                     selectInput("category","category",
-                                 c("environmental agency",
+              column(6, textInput("phone","phone*",placeholder = "+39-06-123456",width = "100%"),
+                     selectInput("category","category*",
+                                 c("",
+                                   "environmental agency",
                                    "other public administration",
                                    "university/reasearch institute",
                                    "private air quality modeller"),width = "100%")
@@ -27,7 +29,7 @@ registration_form <- function(){
             fluidRow(
               helpText("Please specify for which purpose(s) you will use data and graphical products."),
               column(4,
-                     checkboxGroupInput("purpose","purpose(s)",
+                     checkboxGroupInput("purpose","purpose(s)*",
                                         c("episode analysis",
                                           "air quality forecast",
                                           "research",
@@ -48,11 +50,32 @@ registration_form <- function(){
                                        tableOutput("use_policy")
                        )
             ),
+            bsCollapse(id = "privacy_it_collapse", open = NULL,
+                       bsCollapsePanel(title = "Informativa sulla privacy", style = "warning", 
+                                       includeMarkdown("/home/giovanni/R/projects/calicantus/shiny/intro/privacy_IT.md")
+                       )
+            ),
+            bsCollapse(id = "privacy_en_collapse", open = NULL,
+                       bsCollapsePanel(title = "Privacy Policy", style = "warning", 
+                                       includeMarkdown("/home/giovanni/R/projects/calicantus/shiny/intro/privacy_EN.md")
+                       )
+            ),
             fluidRow(
               column(6,
                      checkboxInput("accept_policy","I agree to the data use policy.")),
               column(6,
-                     conditionalPanel("input.accept_policy==true",
+                     checkboxInput("accept_privacy","I agree to the privacy policy.")),
+              column(6,
+                     conditionalPanel(paste("input.accept_policy==true",
+                                            "input.accept_privacy==true",
+                                            "input.surname!==''",
+                                            "input.name!==''",
+                                            "input.institution!==''",
+                                            "input.email!==''",
+                                            "input.phone!==''",
+                                            "input.category!==''",
+                                            "input.purpose.length>0",
+                                            sep=" && "),
                                       actionButton("register","register now",icon=icon("sign-in"))),
                      bsModal("registration_success",title = "Your registration was successful.",trigger = "register", size="small",
                              p("Within one week you will receive the login credentials. Otherwise, please contact",

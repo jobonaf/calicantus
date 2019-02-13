@@ -79,12 +79,14 @@ for (File in Files) {
   }
 }
 # save timeseries
-cities_data %>% rename(Conc=conc) -> cities_data
-stations_data %>% rename(Conc=conc) -> stations_data
-save(cities_data, stations_data, stations_metadata,
-     file=paste0(path_mod_ts,format(as.Date(reftime),"/%Y/%m/%d/"),
-                 Source,"_ref",format(as.Date(reftime),"%Y%m%d"),
-                 "_timeseries.rda"))
+if(length(cities_data)>0 & length(stations_data)>0) {
+  cities_data %>% rename(Conc=conc) -> cities_data
+  stations_data %>% rename(Conc=conc) -> stations_data
+  save(cities_data, stations_data, stations_metadata,
+       file=paste0(path_mod_ts,format(as.Date(reftime),"/%Y/%m/%d/"),
+                   Source,"_ref",format(as.Date(reftime),"%Y%m%d"),
+                   "_timeseries.rda"))
+}
 
 
 # ARIANET -----------------------------------------------------------------
@@ -135,9 +137,64 @@ for (ig in 1:length(Grids)) {
   }
 }
 # save timeseries
-cities_data %>% rename(Conc=conc) -> cities_data
-stations_data %>% rename(Conc=conc) -> stations_data
-save(cities_data, stations_data, stations_metadata,
-     file=paste0(path_mod_ts,format(as.Date(reftime),"/%Y/%m/%d/"),
-                 Source,"_ref",format(as.Date(reftime),"%Y%m%d"),
-                 "_timeseries.rda"))
+if(length(cities_data)>0 & length(stations_data)>0) {
+  cities_data %>% rename(Conc=conc) -> cities_data
+  stations_data %>% rename(Conc=conc) -> stations_data
+  save(cities_data, stations_data, stations_metadata,
+       file=paste0(path_mod_ts,format(as.Date(reftime),"/%Y/%m/%d/"),
+                   Source,"_ref",format(as.Date(reftime),"%Y%m%d"),
+                   "_timeseries.rda"))
+}
+
+
+# ARPAE ---------------------------------------------------------------------
+
+# parameters
+validity <- 0:2
+Source <- "ARPAE"
+Model <- "CHIMERE"
+Grid <- "NorthernItaly"
+getmodel_gdrive(config = "~/R/projects/calicantus/config/mod-data-access/access.ARPAE_CHIMERE_NorthernItaly.R",
+                day = reftime) -> Files
+stations_data <- cities_data <- NULL
+for (File in Files) {
+  for (pollutant in pollutants) {
+    # read and process gridded data
+    dat <- read_ninfa(File, pollutant)
+    Dat <- ctm_daily_stat(dat,   
+                          dMean="Mean" %in% stats[[pollutant]],
+                          dMax="Max" %in% stats[[pollutant]],
+                          dMaxAvg8h="MaxAvg8h" %in% stats[[pollutant]])
+    # extract timeseries
+    s_data <- ctm_timeseries(dat, Lat=stations$Lat, Lon=stations$Lon, Names=stations$SiteCode)
+    c_data <- ctm_timeseries(dat, Lat=cities$lat,   Lon=cities$long,  Names=cities$name)
+    s_data <- data.frame(s_data, Pollutant=pollutant, Source=Source, Model=Model, Grid=Grid)
+    c_data <- data.frame(c_data, Pollutant=pollutant, Source=Source, Model=Model, Grid=Grid)
+    stations_data <- bind_rows(stations_data, s_data)
+    cities_data   <- bind_rows(cities_data,   c_data)
+    # convert gridded data to rasters and save them
+    for (val in validity) {
+      valtime <- as.Date(reftime)+val
+      for (stat in stats[[pollutant]]) {
+        r <- ctm2raster(Dat,day=format(valtime,"%Y-%m-%d"),stat,crs = dat$crs)
+        if(!is.null(r)) {
+          save(r,file=paste0(path_mod_grid,format(as.Date(reftime),"/%Y/%m/%d/"),
+                             Source,"_ref",format(as.Date(reftime),"%Y%m%d"),
+                             "_val",format(valtime,"%Y%m%d"),"_",Model,Grid,
+                             "_",pollutant,"_",stat,".rda"))
+        }
+      }
+    }
+  }
+}
+# save timeseries
+if(length(cities_data)>0 & length(stations_data)>0) {
+  cities_data %>% rename(Conc=conc) -> cities_data
+  stations_data %>% rename(Conc=conc) -> stations_data
+  save(cities_data, stations_data, stations_metadata,
+       file=paste0(path_mod_ts,format(as.Date(reftime),"/%Y/%m/%d/"),
+                   Source,"_ref",format(as.Date(reftime),"%Y%m%d"),
+                   "_timeseries.rda"))
+}
+
+

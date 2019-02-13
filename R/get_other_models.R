@@ -8,6 +8,26 @@ getmodel_ftp <- function(config,day){
   return(out)
 }
 
+getmodel_gdrive <- function(config, day, verbose=F) {
+  source(config)
+  library(futile.logger)
+  FilesIn <- format(as.Date(day), format=FileTemplate)
+  if(verbose) flog.info(paste0("FileIn: ",paste(FilesIn,collapse=", ")))
+  library(googledrive)
+  drive_auth(oauth_token = "~/R/projects/calicantus/config/gdrive.rds")
+  remoteFolder <- drive_get(as_id(Path))
+  if(verbose) flog.info(paste0("remote folder ID: ",remoteFolder$id))
+  localFiles <- NULL
+  for (fileIn in FilesIn) {
+    if(exists("remoteFile")) rm("remoteFile")
+    remoteFile <- drive_ls(remoteFolder, pattern=fileIn)
+    if(verbose) flog.info(paste0("remote file ID for file ",fileIn,": ",remoteFile$id))
+    localFile <- drive_download(as_id(remoteFile$id), overwrite = T)
+    if(!"try-error" %in% class(localFile)) localFiles <- c(localFiles, localFile$local_path)
+  }
+  return(localFiles)
+}
+
 read_rse <- function(ncLocal, poll="PM10") {
   library(ncdf4)
   nc_open(ncLocal)->nc
@@ -45,6 +65,30 @@ read_rse <- function(ncLocal, poll="PM10") {
   return(out)
 }
 
+read_ninfa <- function(ncLocal, poll="PM10") {
+  library(ncdf4)
+  nc_open(ncLocal)->nc
+
+  # concentration
+  conc <- ncvar_get(nc,poll)
+  # unit conversion
+  conv_fact <- switch(poll, PM10=1, PM25=1, O3=2.00, NO2=1.91, SO2=2.66)
+  conc <- conc*conv_fact
+  
+  # coordinates
+  x <- 262450 + (nc$dim$west_east$vals-1)*5000
+  y <- 4782700 + (nc$dim$south_north$vals-1)*5000
+  
+  # time
+  tt <- ncvar_get(nc,"Times")
+  library(lubridate)
+  Time <- ymd_hms(tt)
+  
+  nc_close(nc)
+  out <- list(conc=conc, crs="+init=epsg:32632", lon=x, lat=y, Time=Time)
+  return(out)
+}
+
 prepare_arianet <- function(inFiles=system("ls ARIANET4CALICANTUS_20180607*tgz", intern=T)) {
   outFiles <- NULL
   for (File in inFiles) {
@@ -57,6 +101,7 @@ read_arianet <- function(ncLocal="QualeAria_g1_20180607.nc",
                          crs="+init=epsg:32632 +units=km",
                          poll="PM10") {
   library(ncdf4)
+  library(lubridate)
   nc_open(ncLocal)->nc
   
   # coordinates
@@ -95,6 +140,7 @@ plot_ctms <- function(rs, title="PM10",
                       bb=c(0,25,50,75,100,150,200,300,600),
                       modelnames) {
   library(leaflet)
+  library(raster)
   leaflet() %>% addTiles() %>% 
     addProviderTiles("Stamen.TonerLite", group = "toner lite") -> m
   

@@ -108,9 +108,9 @@ read.AzoCroatia <- function(file,IDs, stat=NULL) {
     tmp <- RJSONIO::fromJSON(file[i])
     if(length(tmp)>0) {
       if(is.null(stat)) {
-        out$VAL[i] <- tmp[[1]]$Podatak$vrijednost
+        out$VAL[i] <- tmp[[1]]$vrijednost
       }else if(stat=="max") {
-        mm <- max(unlist(lapply(tmp, function(x) {x$Podatak$vrijednost})), na.rm=T)
+        mm <- max(unlist(lapply(tmp, function(x) {x$vrijednost})), na.rm=T)
         if(mm>=0) out$VAL[i] <- mm
       }
     }
@@ -141,13 +141,17 @@ read.UacerTicino <- function(file,IDs, stat=NULL) {
   if(nf!=length(IDs)) stop("IDs and files must have the same number of elements!")
   for (i in 1:nf) {
     tmp <- read.table(file[i],comment.char = "#", blank.lines.skip = T, header = T, sep=";")
-    if(length(tmp)>0) {
+    if(length(tmp)>0 && ncol(tmp)>1) {
       if(is.null(stat)) {
         out$VAL[i] <- tmp[1,2]
       }else if(stat=="max") {
         h <- format(strptime(tmp[,1],"%d.%m.%Y %H:%M"),"%H")
-        mm <- max(tapply(tmp[,2],h,mean,na.rm=T),na.rm=T)
-        if(mm>=0) out$VAL[i] <- mm
+        mm <- try(max(tapply(tmp[,2],h,mean,na.rm=T),na.rm=T))
+        if(class(mm)[1]=="try-error" && mm>=0) {
+          out$VAL[i] <- mm
+        }else{
+          out$VAL[i] <- NA
+        }
       }
     }
   }
@@ -323,7 +327,7 @@ get_metadata.ArpaLombardia <- function(file_ana="https://www.dati.lombardia.it/r
 }
 
 
-get_metadata.AppaBolzano <- function(fix=T) {
+get_metadata.AppaBolzano <- function(fix=F) {
   ana <- RJSONIO::fromJSON("http://dati.retecivica.bz.it/services/airquality/stations")$features
   ana <- lapply(X = ana, 
                 FUN = function(x) sapply(X = x$properties, 

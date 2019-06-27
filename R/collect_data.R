@@ -4,14 +4,18 @@ source("/home/giovanni/R/projects/calicantus/R/get_data.R")
 source("/home/giovanni/R/projects/calicantus/R/prepare_data.R")
 
 # parameters
-sources <- c("ARPA-Sicilia","ARPA-Lombardia","ARPAV","ARPA-FVG","ARPAB",
-             "ARPA-Liguria","ARPAC","ARPA-Lazio","ARPA-Umbria","ARPA-Puglia",
-             "ARPAT","AZO-Croatia","DT-DA-SPAAS-UACER-Ticino","ARPA-Piemonte",
-             "ARPAE","ARSO-Slovenia", "Umweltbundesamt-Austria","SEPA-Serbia",
-             "APPA-Trento","APPA-Bolzano","ExEA-Bulgaria", "ARPA-VdA")
-#sources <- c("ARPA-Liguria")
-pollutants <- c("PM10","PM2.5","NO2","O3")
-#pollutants <- c("PM10")
+if(interactive()) {
+  sources <- c("ARPA-Marche")
+  pollutants <- c("PM10","NO2","O3")
+} else {
+  sources <- c("ARPA-Sicilia","ARPA-Lombardia","ARPAV","ARPA-FVG","ARPAB",
+               "ARPA-Liguria","ARPAC","ARPA-Lazio","ARPA-Umbria","ARPA-Puglia",
+               "ARPAT","AZO-Croatia","DT-DA-SPAAS-UACER-Ticino","ARPA-Piemonte",
+               "ARPAE","ARSO-Slovenia", "Umweltbundesamt-Austria","SEPA-Serbia",
+               "APPA-Trento","APPA-Bolzano","ExEA-Bulgaria", "ARPA-VdA",
+               "ARPA-Marche")
+  pollutants <- c("PM10","PM2.5","NO2","O3")
+}
 
 # arguments
 if(interactive()) {

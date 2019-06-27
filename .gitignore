@@ -10,7 +10,10 @@ config/ui_credentials.R
 run/
 log/
 old/
+etc/
 data/obs-data/
 data/mod-data/
 *.html
 shiny/data-upload/global.R
+shiny/intro/rsconnect/
+.httr-oauth*

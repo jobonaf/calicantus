@@ -220,22 +220,6 @@ coord2nuts <- function(Lat, Lon, nuts=nuts) {
   return(nn)
 }
 
-
-# distinguish <- function(.x) {
-#   data.frame(x0=x) %>%
-#     mutate(x1=str_trunc(as.character(x0),
-#               width = str_length(x0)-digits,
-#               ellipsis = "")) %>%
-#     group_by(x0) %>% mutate(n0=n()) %>% ungroup() %>% 
-#     group_by(x1) %>% mutate(n1=n(), i1=sequence(n())-1) %>% ungroup() %>% 
-#     mutate(x2=ifelse(n0>1,
-#                      paste0(x1,sprintf(paste0("%0",digits,"i"),i1)),
-#                      x0)) %>%
-#     ungroup() %>%
-#     select(x2) %>% combine()
-# }
-
-
 to_base <- function(x, base) {
   ch <- c(0:9,LETTERS,letters)
   if(x%%1!=0 || x<0 || base<2 || base>length(ch) || base%%1!=0) futile.logger::flog.error(paste0("to_base(",x,",",base,")"))

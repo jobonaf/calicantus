@@ -1,3 +1,5 @@
+source("/home/giovanni/R/projects/calicantus/config/config_cams.R")
+
 # get NetCDF
 get_cams <- function(
   model=c("CHIMERE","EMEP","EURAD","LOTOSEUROS","MATCH","MOCAGE","SILAM"),
@@ -7,7 +9,7 @@ get_cams <- function(
   level=c("SURFACE","ALLLEVELS"),
   address="http://download.regional.atmosphere.copernicus.eu/services/",
   service="CAMS50",
-  token="__M0bChV6QsoOFqHz31VRqnpr4GhWPtcpaRy3oeZjBNSg__",
+  token=cams_token,
   grid=0.1,
   reftime=Sys.Date(),
   proxyconfig="/home/giovanni/R/projects/calicantus/config/config_proxy.R",

@@ -3,25 +3,35 @@
 
 options(shiny.sanitize.errors = FALSE)
 
-#packages
-#suppressMessages({
-  loc1 <- "/usr/local/lib/R/site-library"
-  loc2 <- "/usr/lib/R/library"
-  loc3 <- "/home/giovanni/R/x86_64-pc-linux-gnu-library/3.4"
-  lib1 <- c("Rcpp","R6")
-  lib2 <- c("cluster")
-  lib3 <- c("shinyBS","base64enc","dplyr","plyr","lubridate","sp","rgdal",
-            "geosphere","shinyjs","raster","data.table","tidyr",
-            "scales","ggplot2","ggrepel","stringi","RColorBrewer","maps",
-            "cluster","bitops","RCurl","markdown","yaml","tidyselect",
-            "htmlwidgets","leaflet"
-            )
-  .libPaths(unique(loc3,.libPaths()))
-  lapply(c(lib1,lib2,lib3), require, character.only=T)
-  #lapply(lib1, require, character.only=T, lib.loc=loc1)
-  #lapply(lib2, require, character.only=T, lib.loc=loc2)
-  #lapply(lib3, require, character.only=T, lib.loc=loc3)
-#})
+# detach packages
+basic.packages <- c("stats","graphics","grDevices", "shiny",
+                    "utils","datasets","methods","base")
+basic.packages <- paste0("package:", basic.packages)
+package.list <- search()[ifelse(unlist(gregexpr("package:",search()))==1,TRUE,FALSE)]
+package.list <- setdiff(package.list,basic.packages)
+if (length(package.list)>0)  for (package in package.list) detach(package, character.only=TRUE)
+
+# load packages
+local_libloc <- "/home/giovanni/R/x86_64-pc-linux-gnu-library/3.5"
+.libPaths(unique(local_libloc,.libPaths()))
+
+req.pckgs <- c("Rcpp","digest","R6","cluster","shinyBS","base64enc",
+               "dplyr","plyr","lubridate","sp","rgdal",
+               "geosphere","shinyjs","raster","data.table","tidyr",
+               "scales","ggplot2","ggrepel","stringi","RColorBrewer","maps",
+               "cluster","bitops","RCurl","markdown","yaml","tidyselect",
+               "promises", "later", "httpuv", "htmltools","htmlwidgets",
+               "leaflet")
+
+require_last <- function(package) {
+  ip <- as.data.frame(installed.packages(), stringsAsFactors = F)
+  ip <- ip[ip$Package==package,]
+  ip <- ip[order(ip$Built, decreasing = T), ]
+  lib_loc <- ip$LibPath[1]
+  ok <- require(package, lib.loc = lib_loc, character.only = T)
+  cat(paste0("package ",package,c(" loaded"," not available")[2-ok]),sep="\n")
+}
+lapply(req.pckgs, require_last) -> devnull
 
 # scripts
 source("/home/giovanni/R/projects/calicantus/config/ui_credentials.R")

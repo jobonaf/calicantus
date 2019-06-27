@@ -3,13 +3,29 @@
 
 options(shiny.sanitize.errors = FALSE)
 
-#packages
-suppressMessages({
-  lib1 <- "/home/giovanni/R/x86_64-pc-linux-gnu-library/3.4"
+# detach packages
+basic.packages <- c("stats","graphics","grDevices", "shiny",
+                    "utils","datasets","methods","base")
+basic.packages <- paste0("package:", basic.packages)
+package.list <- search()[ifelse(unlist(gregexpr("package:",search()))==1,TRUE,FALSE)]
+package.list <- setdiff(package.list,basic.packages)
+if (length(package.list)>0)  for (package in package.list) detach(package, character.only=TRUE)
+
+# load packages
+#suppressMessages({
+  lib1 <- "/home/giovanni/R/x86_64-pc-linux-gnu-library/3.5"
   .libPaths(unique(c(.libPaths(),lib1)))
-  libs <- c("shinyBS","plyr","markdown")
-  lapply(libs, require, character.only=T)
-})
+  libs <- c("httpuv","shinyBS","plyr","markdown")
+  require_last <- function(package) {
+    ip <- as.data.frame(installed.packages(), stringsAsFactors = F)
+    ip <- ip[ip$Package==package,]
+    ip <- ip[order(ip$Built, decreasing = T), ]
+    lib_loc <- ip$LibPath[1]
+    ok <- require(package, lib.loc = lib_loc, character.only = T)
+    cat(paste0("package ",package,c(" loaded"," not available")[2-ok]),sep="\n")
+  }
+  lapply(libs, require_last) -> devnull
+#})
 
 #scripts
 source("/home/giovanni/R/projects/calicantus/shiny/forms/forms.R")

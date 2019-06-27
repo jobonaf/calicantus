@@ -1,6 +1,6 @@
 ### Data access
 
-To access to the service "calicantus" an account is needed. The account is personal and cannot be shared, except with collaborators of the same working group and institution. To get an account, fill the form at [shiny.arpae.it/calicantus-intro](https://shiny.arpae.it/calicantus-intro).
+To access to the service "calicantus" an account is needed. The account is personal and cannot be shared, except with collaborators of the same working group and institution. To get an account, fill the form at [sdati.arpae.it/calicantus-intro](https://sdati.arpae.it/calicantus-intro).
 
 The access to the platform is reserved for air quality experts of the public environmental agencies and, with some restrictions, to researchers, private air quality modelling experts and public administrators. Access restrictions are defined by each data provider for its own data, by declaring for which user category access is granted. Only users of the public environmental agencies have access to all the data.
 

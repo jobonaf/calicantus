@@ -306,8 +306,8 @@ read.ArpaLombardia <- function(file,poll,stat,token,path,
                  stato=="VA",
                  valore>=0) -> Dat
   if(stat=="max")  Dat %>% 
-    group_by(idstazione) %>%
-    summarize(valore=max(valore,na.rm=T),
+    dplyr::group_by(idstazione) %>%
+    dplyr::summarize(valore=max(valore,na.rm=T),
               valid=n()) %>%
     filter(valid>=18) -> Dat
   as.data.frame(Dat)

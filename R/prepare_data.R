@@ -19,7 +19,10 @@ read_data <- function(config,filedata,metadata,day,pollutant,
     if(verbose) cat(paste0("file[s] read: ",paste(filedata,collapse=", ")), sep="\n")
 #    ana <- read.csv(metadata, stringsAsFactors = FALSE)
     ana <- as.data.frame(read_csv(metadata, 
-                                  locale = locale(encoding = guess_encoding(metadata)$encoding[1])))
+                                  locale = locale(encoding = guess_encoding(metadata)$encoding[1]),
+                                  col_types = cols(LAT = "d",
+                                                   LON = "d",
+                                                   .default = "c")))
     id.dat <- match(as.character(ana[,Id.metadata]),as.character(dat[,Id.data]))
     id.ana <- which(!is.na(id.dat))
     check <- length(id.ana)>0

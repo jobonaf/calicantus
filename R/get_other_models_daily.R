@@ -2,6 +2,7 @@
 setwd("~/R/projects/calicantus/run/other-models/")
 source("~/R/projects/calicantus/R/get_other_models.R")
 source("~/R/projects/calicantus/R/cams.R")
+library(futile.logger)
 
 # reference time (day of emission)
 if(!interactive()) {
@@ -47,6 +48,7 @@ Model <- "CAMx"
 Grid <- "Italy"
 getmodel_ftp(config = "~/R/projects/calicantus/config/mod-data-access/access.RSE_CAMx_Italy.R",
              day = reftime) -> Files
+Files <- Files[file.exists(Files)]
 stations_data <- cities_data <- NULL
 for (File in Files) {
   for (pollutant in pollutants) {
@@ -87,6 +89,9 @@ if(length(cities_data)>0 & length(stations_data)>0) {
                    Source,"_ref",format(as.Date(reftime),"%Y%m%d"),
                    "_timeseries.rda"))
 }
+flog.info(paste0("Removing files ",paste0(Files,collapse=" ")))
+file.remove(Files)
+Files <- NULL
 
 
 # ARIANET -----------------------------------------------------------------
@@ -99,6 +104,7 @@ GridCodes <- c("g1","g2")
 Grids <- c("Europe","Italy")
 getmodel_ftp(config = "~/R/projects/calicantus/config/mod-data-access/access.ARIANET_FARM_Italy.R",
              day = reftime) -> Files
+Files <- Files[file.exists(Files)]
 stations_data <- cities_data <- NULL
 for (ig in 1:length(Grids)) {
   for (pollutant in pollutants) {
@@ -145,6 +151,9 @@ if(length(cities_data)>0 & length(stations_data)>0) {
                    Source,"_ref",format(as.Date(reftime),"%Y%m%d"),
                    "_timeseries.rda"))
 }
+flog.info(paste0("Removing files ",paste0(Files,collapse=" ")))
+file.remove(Files)
+Files <- NULL
 
 
 # ARPAE ---------------------------------------------------------------------
@@ -154,8 +163,9 @@ validity <- 0:2
 Source <- "ARPAE"
 Model <- "CHIMERE"
 Grid <- "NorthernItaly"
-getmodel_gdrive(config = "~/R/projects/calicantus/config/mod-data-access/access.ARPAE_CHIMERE_NorthernItaly.R",
-                day = reftime) -> Files
+try(getmodel_gdrive(config = "~/R/projects/calicantus/config/mod-data-access/access.ARPAE_CHIMERE_NorthernItaly.R",
+                day = reftime) -> Files)
+Files <- Files[file.exists(Files)]
 stations_data <- cities_data <- NULL
 for (File in Files) {
   for (pollutant in pollutants) {
@@ -196,5 +206,8 @@ if(length(cities_data)>0 & length(stations_data)>0) {
                    Source,"_ref",format(as.Date(reftime),"%Y%m%d"),
                    "_timeseries.rda"))
 }
+flog.info(paste0("Removing files ",paste0(Files,collapse=" ")))
+file.remove(Files)
+Files <- NULL
 
 

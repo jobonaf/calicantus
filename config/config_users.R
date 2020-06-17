@@ -1,6 +1,8 @@
 authorizedSources <- function(usr){
-  userInfo <- read.csv("/home/giovanni/R/projects/calicantus/config/config_users.csv", stringsAsFactors = F,strip.white = T)
-  sourcesPolicy <- read.csv("/home/giovanni/R/projects/calicantus/data/data-sources/policy.csv", stringsAsFactors = F,strip.white = T)
+  userInfo <- read.csv("/home/giovanni/R/projects/calicantus/config/config_users.csv", 
+                       stringsAsFactors = F,strip.white = T)
+  sourcesPolicy <- read.csv("/home/giovanni/R/projects/calicantus/data/data-sources/policy.csv", 
+                            stringsAsFactors = F,strip.white = T)
   userCategory <- userInfo$category[match(usr,userInfo$user)[1]]
   if(is.na(userCategory)) {
     aS <- NA
@@ -14,4 +16,14 @@ authorizedSources <- function(usr){
     aS <- sourcesPolicy$data_source[which(sourcesPolicy$user_private %in% c("yes","tmp"))]
   }
   return(aS)
+}
+
+expireDate <- function(usr) {
+  userInfo <- read.csv("/home/giovanni/R/projects/calicantus/config/config_users.csv", 
+                       stringsAsFactors = F,strip.white = T)
+  expDate <- userInfo$expire[match(usr,userInfo$user)[1]]
+  as.character(expDate)
+}
+expiredAccount <- function(usr) {
+  Sys.Date() > as.Date(expireDate(usr))
 }

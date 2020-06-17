@@ -193,7 +193,7 @@ read.EEA <- function(file, poll, day, sep=",",
   library(dplyr)
   
   ## read metadata
-  fread(filein_metadata) %>%
+  fread(filein_metadata, encoding = "Latin-1") %>%
     filter(Namespace==namespace) %>%
     select(Countrycode,Namespace,AirQualityStationEoICode,
            Longitude,Latitude,Altitude,AirQualityStationType,

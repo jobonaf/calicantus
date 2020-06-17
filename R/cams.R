@@ -101,7 +101,7 @@ cams_daily_stat <- function(dat,dMean=T,dMax=T,dMaxAvg8h=T) {
   ny <- length(Lat)
   
   cat(paste0(Sys.time()," preparing data.table..."),sep="\n")
-  DT<-data.table(Dat=dat$conc,
+  DT<-data.table(Dat=c(dat$conc),
                  Lon=Lon,
                  Lat=rep(Lat,each=nx),
                  Day=rep(format(dat$Time-1,"%Y-%m-%d",tz="UTC"),each=nx*ny))

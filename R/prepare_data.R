@@ -1,6 +1,6 @@
 source("/home/giovanni/R/projects/calicantus/R/reading_functions.R")
 source("/home/giovanni/R/projects/calicantus/R/get_data.R")
-
+library(readr)
 
 read_data <- function(config,filedata,metadata,day,pollutant,
                       clean=!interactive(),verbose=F){
@@ -17,7 +17,9 @@ read_data <- function(config,filedata,metadata,day,pollutant,
   }
   if(check) {
     if(verbose) cat(paste0("file[s] read: ",paste(filedata,collapse=", ")), sep="\n")
-    ana <- read.csv(metadata, stringsAsFactors = FALSE)
+#    ana <- read.csv(metadata, stringsAsFactors = FALSE)
+    ana <- as.data.frame(read_csv(metadata, 
+                                  locale = locale(encoding = guess_encoding(metadata)$encoding[1])))
     id.dat <- match(as.character(ana[,Id.metadata]),as.character(dat[,Id.data]))
     id.ana <- which(!is.na(id.dat))
     check <- length(id.ana)>0

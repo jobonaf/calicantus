@@ -5,31 +5,37 @@ options(shiny.sanitize.errors = FALSE)
 
 # detach packages
 basic.packages <- c("stats","graphics","grDevices", "shiny",
-                    "utils","datasets","methods","base")
+                    "utils","datasets","methods","base",
+                    "httpuv")
 basic.packages <- paste0("package:", basic.packages)
 package.list <- search()[ifelse(unlist(gregexpr("package:",search()))==1,TRUE,FALSE)]
 package.list <- setdiff(package.list,basic.packages)
-if (length(package.list)>0)  for (package in package.list) detach(package, character.only=TRUE)
+if (length(package.list)>0)  for (package in package.list) {
+  try(detach(package, character.only=TRUE, force=T))
+}
 
 # load packages
 local_libloc <- "/home/giovanni/R/x86_64-pc-linux-gnu-library/3.5"
 .libPaths(unique(local_libloc,.libPaths()))
 
 req.pckgs <- c("Rcpp","digest","R6","cluster","shinyBS","base64enc",
-               "dplyr","plyr","lubridate","sp","rgdal",
+               "plyr","dplyr","lubridate","sp","rgdal",
                "geosphere","shinyjs","raster","data.table","tidyr",
                "scales","ggplot2","ggrepel","stringi","RColorBrewer","maps",
                "cluster","bitops","RCurl","markdown","yaml","tidyselect",
                "promises", "later", "httpuv", "htmltools","htmlwidgets",
-               "leaflet")
+               "leaflet","DT")
 
 require_last <- function(package) {
   ip <- as.data.frame(installed.packages(), stringsAsFactors = F)
   ip <- ip[ip$Package==package,]
   ip <- ip[order(ip$Built, decreasing = T), ]
   lib_loc <- ip$LibPath[1]
-  ok <- require(package, lib.loc = lib_loc, character.only = T)
-  cat(paste0("package ",package,c(" loaded"," not available")[2-ok]),sep="\n")
+  ok <- try(require(package, 
+                    lib.loc = lib_loc,
+                    character.only = T))
+  if(class(ok)[1]=="try-error") ok <- -1
+  cat(paste0("package ",package,c(" loaded"," not available"," cannot be unloaded")[2-ok]),sep="\n")
 }
 lapply(req.pckgs, require_last) -> devnull
 
@@ -60,15 +66,17 @@ if(!is.null(proxy_usr)) {
 }
 
 # geographic data
-MapData <- map_data(map = "world", 
-                    region = c("Italy","Slovenia","Croatia","Serbia","San Marino","Vatican",
-                               "France","Switzerland","Austria","Germany","Bosnia and Herzegovina",
-                               "Tunisia","Malta","Montenegro","Hungary","Albania","Greece","Algeria",
-                               "Czech Republic", "Slovakia", "Liechtenstein","Poland","Kosovo",
-                               "Bulgaria","Romania","Turkey","Macedonia","Ukraine",
-                               "Luxembourg", "Belgium", "Netherlands", "UK", "Ireland",
-                               "Spain", "Portugal", "Andorra", 
-                               "Russia", "Belarus"))
+# MapData <- map_data(map = "world", 
+#                     region = c("Italy","Slovenia","Croatia","Serbia","San Marino","Vatican",
+#                                "France","Switzerland","Austria","Germany","Bosnia and Herzegovina",
+#                                "Tunisia","Malta","Montenegro","Hungary","Albania","Greece","Algeria",
+#                                "Czech Republic", "Slovakia", "Liechtenstein","Poland","Kosovo",
+#                                "Bulgaria","Romania","Turkey","Macedonia","Ukraine",
+#                                "Luxembourg", "Belgium", "Netherlands", "UK", "Ireland",
+#                                "Spain", "Portugal", "Andorra", 
+#                                "Russia", "Belarus",
+#                                "Costa Rica"))
+MapData <- map_data(map = "world")
 
 
 
@@ -175,6 +183,7 @@ server <- function(input, output, session) {
           write(rec,file=logfile,append=TRUE)
     }    
   })
+
   observe({
     # login page
     if (!USER$Logged) {
@@ -187,8 +196,17 @@ server <- function(input, output, session) {
       output$page <- renderUI({
         div(class="outer",do.call(navbarPage,c(inverse=TRUE,title = "[calicantus]",ui_menu())))
       })
-      #print(ui)
     }
+  })
+  
+  # check account expire date
+  expAccount <- reactive({
+    source("/home/giovanni/R/projects/calicantus/config/config_users.R",local=TRUE)
+    expiredAccount(input$Usr)
+  })
+  expDate <- reactive({
+    source("/home/giovanni/R/projects/calicantus/config/config_users.R",local=TRUE)
+    expireDate(input$Usr)
   })
   
   # available data sources (personalized depending on user)
@@ -216,16 +234,16 @@ server <- function(input, output, session) {
   output$ui_home <- renderUI({
     fluidPage(
       column(4,
-             wellPanel(
+             wellPanel( 
                helpText("Welcome back to ",em("calicantus"),
                         ". Please contact the ",
                         a("platform manager",href="mailto:giovanni.bonafe@arpa.fvg.it"),
-                        " if you find a bug. Thanks for your cooperation.")
+                        " if you find a bug. Thanks for your cooperation!")
              ),
              wellPanel(
                helpText("If you want to participate to ",em("calicantus"),
                         "as data provider, please click ",em("Participate"),
-                        a("on these page",
+                        a("on this page",
                           href="http://sdati.arpae.it/calicantus-intro",
                           target="_blank"),
                         ".")
@@ -233,10 +251,30 @@ server <- function(input, output, session) {
              actionButton(inputId = "logout",label = "Log out",icon = icon("sign-out"), width="120",
                           onclick ="location.href='https://sdati.arpae.it/calicantus-intro';"),
              bsTooltip("logout","Click here to log out")
+      ),
+      column(4,
+             wellPanel(
+               helpText("Remember that your account will expire after"),
+               textOutput("expDate")
+             ),
+             bsAlert("homeAlert")
       )
     )
   })
   
+  output$expDate <- renderText({
+    if(expAccount()) {
+      createAlert(session, "homeAlert", "dateAlert",
+                  title = "Your account has expired", style="danger",
+                  content = "Please contact the platform manager to renew your registration.", 
+                  append = FALSE)
+      return(expDate())
+    } else {
+      return(expDate())
+    }
+  })
+    
+
   # UI: data table------------------------------------------------------------------
   output$ui_data <- renderUI({
     sidebarLayout(
@@ -260,7 +298,8 @@ server <- function(input, output, session) {
                                              "filter the data by writing in the cells below the table, and so on."),
                                     downloadButton('downloadData', 'download')
                                     ,permissionButton(id="buttonPermis_obsdf", sources=availableSources()),
-                                    bsModal("modalPermis_obsdf",title = "Permissions", trigger = "buttonPermis_obsdf", 
+                                    bsModal("modalPermis_obsdf",title = "Permissions", 
+                                            trigger = "buttonPermis_obsdf", 
                                             HTML(policyByPurpose(availableSources())))
                                     ),
                    bsTooltip("downloadData","Data downloaded from the platform cannot be distributed"),
@@ -268,7 +307,7 @@ server <- function(input, output, session) {
                    helpText("Data are not verified and may differ from the validated data."),
                    width=3),
       mainPanel(tags$head(tags$style(HTML(progressBarStyle))),
-                dataTableOutput("df"))
+                DT::dataTableOutput("df"))
     )
   })
   
@@ -486,7 +525,7 @@ server <- function(input, output, session) {
                     downloadButton("exc_map_PDF", label = "download (PDF)"),
                     downloadButton("exc_map_PNG", label = "download (PNG)"),
                     plotOutput("exc_map"))
-          ,tabPanel("table", dataTableOutput("exc_table"))
+          ,tabPanel("table", DT::dataTableOutput("exc_table"))
         ))
     )
   })
@@ -532,13 +571,13 @@ server <- function(input, output, session) {
                   downloadButton("clu_plot_PDF", label = "download (PDF)"),
                   downloadButton("clu_plot_PNG", label = "download (PNG)"),
                   plotOutput("clu_plot"))
-        ,tabPanel("table", dataTableOutput("clu_table"))
+        ,tabPanel("table", DT::dataTableOutput("clu_table"))
       ))
     )
   })
   
   # data table------------------------------------------------------------------
-  output$df <- renderDataTable(options = list(pageLength = 10),
+  output$df <- DT::renderDataTable(options = list(pageLength = 10),
                                expr={
                                  withProgress(message = 'Loading...', value = 1, {
                                    dataOfPeriod()
@@ -733,7 +772,7 @@ server <- function(input, output, session) {
   output$exc_map_PNG <- downloadHandler("exceedances_map.png",function(file){ggsave(file,excMap(),width=10,height=12)})
   
   # exceedances: table------------------------------------------------------------------
-  output$exc_table <- renderDataTable({
+  output$exc_table <- DT::renderDataTable({
     dataOfPeriod() %>% dplyr::mutate(Exc=Value>input$threshold) %>% group_by(Name,Lat,Lon) %>%
       dplyr::summarize(Exceed=sum(Exc, na.rm=T),
                        Valid=sum(!is.na(Exc))) -> Dat
@@ -765,7 +804,7 @@ server <- function(input, output, session) {
   })
   
   # clustering: table
-  output$clu_table <- renderDataTable({
+  output$clu_table <- DT::renderDataTable({
     dataWithClusters() %>% dplyr::select(Name,Source,Cluster,isMedoid) %>% distinct() -> Dat
     Dat
   })
@@ -960,7 +999,7 @@ server <- function(input, output, session) {
   avail_modeldays <- unique(as.Date(substr(dir(path="/home/giovanni/R/projects/calicantus/data/mod-data/grid/",
                                                pattern="rda",recursive = T),1,10), 
                                     format ="%Y/%m/%d"))
-  avail_models <- c("CHIMERE","EMEP","EURAD","LOTOSEUROS","MATCH","MOCAGE","SILAM",
+  avail_models <- c(#"CHIMERE","EMEP","EURAD","LOTOSEUROS","MATCH","MOCAGE","SILAM",
                     "FARMEurope","FARMItaly","CAMxItaly","CHIMERENorthernItaly")
   maxscad <- 3
   output$ui_modelmap <- renderUI({
@@ -1008,13 +1047,15 @@ server <- function(input, output, session) {
                       "_timeseries.rda")
       File <- Files[which(file.exists(Files))[1]]
       if(exists("cities_data")) rm("cities_data")
-      load(File)
-      if(exists("cities_data")) Dat <- cities_data # manage different name
-      Dat$Name <- as.character(Dat$Name)
-      dat <- bind_rows(dat,
-                       Dat %>% 
-                         mutate(Model= if (exists('Grid', where = Dat)) paste0(Model,Grid) else Model) %>%
-                         dplyr::select(Lon,Lat,Name,Conc,Time,Pollutant,Model))
+      if(file.exists(File))load(File)
+      if(exists("cities_data")) {
+        Dat <- cities_data # manage different name
+        Dat$Name <- as.character(Dat$Name)
+        dat <- bind_rows(dat,
+                         Dat %>% 
+                           dplyr::mutate(Model= if (exists('Grid', where = Dat)) paste0(Model,Grid) else Model) %>%
+                           dplyr::select(Lon,Lat,Name,Conc,Time,Pollutant,Model))
+      } 
     }
     return(dat)
   })
@@ -1122,9 +1163,10 @@ server <- function(input, output, session) {
 # daily models map -----------------------------------------------------
   
   # model source
-  modelSources <- c("CAMS50", "RSE", "ARIANET", "ARPAE")
+  modelSources <- c(#"CAMS50", 
+    "RSE", "ARIANET", "ARPAE")
   modelSource <- reactive({
-    model <- ifelse(is.null(input) || is.null(input$mapMod), "CHIMERE", input$mapMod)
+    model <- ifelse(is.null(input) || is.null(input$mapMod), "FARMItaly", input$mapMod)
     if(model %in% c("CHIMERE","EMEP","EURAD","LOTOSEUROS","MATCH","MOCAGE","SILAM")) {
       sou <- "CAMS50"
     }
@@ -1400,15 +1442,20 @@ server <- function(input, output, session) {
     dy<-ymax-ymin
     pl <- ggplot() + 
       geom_polygon(data=MapData, aes(x=long, y=lat, group = group),
-                   colour="grey30", fill="grey70" ) +
-      geom_label_repel(data=uu, aes(x=lon, y=lat, fill=isMe, label=user), 
-                       box.padding = unit(0.1, "lines"),
-                       label.padding = unit(0.1, "lines"), 
-                       size=4, col="steelblue", show.legend=F,
-                       segment.size=0.2, max.iter = 5000, alpha = 0.8) +
-      scale_fill_manual(values=c("white","yellow")) +
-      coord_map(xlim = c(xmin-2,xmax+0.8),
-                ylim = c(ymin-0.5,ymax+0.5)) +
+                   colour="grey50", fill="white" ) +
+      # geom_label_repel(data=uu %>% mutate(user=ifelse(isMe,user,"")),
+      #                  aes(x=lon, y=lat, label=user),
+      #                  box.padding = unit(0.2, "lines"),
+      #                  label.padding = unit(0.2, "lines"),
+      #                  size=4, col="steelblue", show.legend=F,
+      #                  segment.size=0, max.iter = 5000, alpha = 0.8) +
+      geom_point(data=uu, aes(x=lon, y=lat), size=1.8, shape=21, col="red", fill="red") +
+      # scale_fill_manual(values=c("red","steelblue")) +
+      coord_map(xlim = c(xmin-dx*0.05,xmax+dx*0.05),
+                ylim = c(ymin-dy*0.05,ymax+dy*0.05), 
+                projection = "lambert",
+                lat0=ymin, lat1=ymax) +
+      # coord_map(xlim=c(-180,180)) +
       theme_bw()+
       theme(axis.title=element_blank(),
             axis.text=element_blank(),
@@ -1448,7 +1495,8 @@ server <- function(input, output, session) {
   # account info
   output$ui_account <- renderUI({
     fluidPage(
-      p("You are logged in as: ",strong(input$Usr)),
+      p("You are logged in as: ",strong(input$Usr),
+        ". Expire date: ",expDate()),
       column(6,
              plotOutput("loginStat",width="100%"),
              plotOutput("loginTrend",width="100%")),

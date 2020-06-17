@@ -73,9 +73,6 @@ for(ff in files) {
 
 
 ## to get the data from the bash:
-# wget 'ftp://<user_ftp>:<passw_ftp>@ftp.smr.arpa.emr.it/data-out/latest_data_for_<user_calicantus>.json.enc.gz'
+# wget 'ftp://<user_ftp>:<passw_ftp>@ms06lxarpa.arpa.fvg.it/storage/crma/CALICANTUS/data-out/latest_data_for_<user_calicantus>.json.enc.gz'
 # gunzip latest_data_for_<user_calicantus>.json.enc.gz
 # openssl enc -in latest_data_for_<user_calicantus>.json.enc -d -aes-256-cbc -out mydata.json -k <passw_calicantus>
-
-
-
